@@ -1,1 +1,33 @@
-{{yield}}
+{{#if openLabel}}
+  <button {{action 'open'}} class="ember-remodal open button" data-test-id="openLabel">{{openLabel}}</button>
+{{/if}}
+
+<div data-remodal-id="{{elementId}}" class="ember-remodal window" data-test-id="modal">
+
+  {{#unless disableNativeClose}}
+    <button {{action 'close'}} class="remodal-close ember-remodal native close" data-test-id="nativeClose"></button>
+  {{/unless}}
+
+  {{#if title}}
+    <h2 class="ember-remodal title text" data-test-id="title">{{title}}</h2>
+  {{/if}}
+
+  {{#if text}}
+    <p class="ember-remodal paragraph text" data-test-id="text">{{text}}</p>
+  {{/if}}
+
+  {{#if hasBlock}}
+    <div class="ember-remodal yielded content" data-test-id="yielded">
+      {{yield}}
+    </div>
+  {{/if}}
+
+  {{#if cancelLabel}}
+    <button {{action 'cancel'}} class="ember-remodal cancel button" data-test-id="cancelLabel">{{cancelLabel}}</button>
+  {{/if}}
+
+  {{#if confirmLabel}}
+    <button {{action 'confirm'}} class="ember-remodal confirm button" data-test-id="confirmLabel">{{confirmLabel}}</button>
+  {{/if}}
+  
+</div>

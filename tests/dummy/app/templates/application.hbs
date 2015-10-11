@@ -1,3 +1,11 @@
-<h2 id="title">Welcome to Ember</h2>
+<h2 id="title">Ember Remodal</h2>
+
+{{#ember-remodal options=options1}}
+  <p>And triggered with included button</p>
+{{/ember-remodal}}
+
+{{ember-remodal options=options2 showModal=showModal2 onClose='resetModal2'}}
+
+<button {{action 'showModal2'}}>Show Modal 2</button>
 
 {{outlet}}
