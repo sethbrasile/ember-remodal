@@ -10,6 +10,8 @@ export default Component.extend({
   modal: null,
   options: null,
   showModal: false,
+  isOpen: false,
+  shouldClose: false,
   closeOnEscape: true,
   hashTracking: false,
   closeOnOutsideClick: true,
@@ -30,11 +32,13 @@ export default Component.extend({
     }
   }),
 
-  actions: {
-    setCloseToTrue() {
-      this.sendAction('setCloseToTrue');
-    },
+  watchShouldClose: observer('shouldClose', function() {
+    if (this.get('shouldClose')) {
+      this.send('close');
+    }
+  }),
 
+  actions: {
     open() {
       const modal = $(`[data-remodal-id=${this.get('elementId')}]`);
       const opts = {
@@ -46,6 +50,7 @@ export default Component.extend({
 
       this.sendAction('onOpen');
       this.set('modal', modal.remodal(opts));
+      this.set('isOpen', true);
       this.get('modal').open();
     },
 
@@ -63,6 +68,8 @@ export default Component.extend({
 
     close() {
       this.sendAction('onClose');
+      this.set('shouldClose', false);
+      this.set('isOpen', false);
       this.get('modal').close();
     }
   }
