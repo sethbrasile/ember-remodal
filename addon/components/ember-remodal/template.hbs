@@ -2,7 +2,7 @@
   <button {{action 'open'}} class="ember-remodal open button" data-test-id="openLabel">{{openLabel}}</button>
 {{/if}}
 
-<div data-remodal-id="{{elementId}}" class="ember-remodal window" data-test-id="modal">
+<div data-remodal-id="{{elementId}}" class="ember-remodal window" data-test-id="modal" data-is-open="{{isOpen}}">
 
   {{#unless disableNativeClose}}
     <button {{action 'close'}} class="remodal-close ember-remodal native close" data-test-id="nativeClose"></button>
@@ -29,5 +29,5 @@
   {{#if confirmLabel}}
     <button {{action 'confirm'}} class="ember-remodal confirm button" data-test-id="confirmLabel">{{confirmLabel}}</button>
   {{/if}}
-  
+
 </div>
