@@ -21,9 +21,6 @@ export default Ember.Controller.extend({
   actions: {
     showModal2() {
       this.set('showModal2', true);
-    },
-    resetModal2() {
-      this.set('showModal2', false);
     }
   }
 });
