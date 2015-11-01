@@ -8,6 +8,9 @@
   {{ember-remodal options=options2 isOpen=showModal2}}
 
   <button {{action 'showModal2'}}>Show Modal 2</button>
+  <button {{action 'showApplicationModal'}}>Show Service Modal</button>
 
   {{outlet}}
+
+  {{ember-remodal isApplicationModal=true}}
 </div>

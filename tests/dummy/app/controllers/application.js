@@ -1,8 +1,12 @@
 import Ember from 'ember';
 
-export default Ember.Controller.extend({
+const {
+  computed: { alias },
+  Controller
+} = Ember;
+
+export default Controller.extend({
   showModal2: false,
-  close: false,
 
   options1: {
     confirmButton: 'Confirm',
@@ -15,12 +19,24 @@ export default Ember.Controller.extend({
     confirmButton: 'Confirm',
     cancelButton: 'Cancel',
     title: 'Inline Form',
-    text: 'And triggered by a setting a passed-in property to true'
+    text: 'And triggered by a setting the passed-in "isOpen" to true'
   },
 
   actions: {
     showModal2() {
       this.set('showModal2', true);
+    },
+
+    showApplicationModal() {
+      const modal = this.get('remodal');
+
+      modal.setProperties({
+        title: 'Lasagna',
+        text: 'Lorem Ipsum Dolar Sit Amet.',
+        confirmButton: 'OK!'
+      });
+
+      modal.open();
     }
   }
 });

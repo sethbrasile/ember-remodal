@@ -19,6 +19,7 @@ export default Component.extend({
   closeOnConfirm: true,
   hashTracking: false,
   closeOnOutsideClick: true,
+  isApplicationModal: false,
 
   didInitAttrs() {
     const opts = this.get('options');
@@ -32,6 +33,10 @@ export default Component.extend({
       this.set('shouldClose', false);
       this.set('isOpen', false);
     });
+
+    if (this.get('isApplicationModal')) {
+      this.get('remodal').set('modal', this);
+    }
   },
 
   modalisOpen: observer('isOpen', function() {
