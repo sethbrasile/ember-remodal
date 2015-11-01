@@ -2,10 +2,10 @@ import Ember from 'ember';
 import { initialize } from '../../../initializers/remodal';
 import { module, test } from 'qunit';
 
-var registry, application;
+let registry, application;
 
 module('Unit | Initializer | remodal', {
-  beforeEach: function() {
+  beforeEach() {
     Ember.run(function() {
       application = Ember.Application.create();
       registry = application.registry;

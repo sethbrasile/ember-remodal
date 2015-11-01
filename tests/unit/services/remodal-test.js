@@ -7,6 +7,6 @@ moduleFor('service:remodal', 'Unit | Service | remodal', {
 
 // Replace this with your real tests.
 test('it exists', function(assert) {
-  var service = this.subject();
+  const service = this.subject();
   assert.ok(service);
 });

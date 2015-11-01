@@ -1,11 +1,6 @@
 import Ember from 'ember';
 
-const {
-  computed: { alias },
-  Controller
-} = Ember;
-
-export default Controller.extend({
+export default Ember.Controller.extend({
   showModal2: false,
 
   options1: {
