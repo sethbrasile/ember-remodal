@@ -20,10 +20,17 @@ export default Component.extend({
 
   didInitAttrs() {
     const opts = this.get('options');
+    const modal = `[data-remodal-id=${this.get('elementId')}]`;
 
     if (opts) {
       this.setProperties(opts);
     }
+
+    $(document).on('closing', modal, () => {
+      this.set('shouldClose', false);
+      this.set('showModal', false);
+      this.set('isOpen', false);
+    });
   },
 
   modalChange: observer('showModal', function() {
@@ -60,7 +67,6 @@ export default Component.extend({
       this.sendAction('onConfirm');
 
       if (this.get('closeOnConfirm')) {
-        this.set('showModal', false);
         this.send('close');
       }
     },
@@ -69,15 +75,12 @@ export default Component.extend({
       this.sendAction('onCancel');
 
       if (this.get('closeOnCancel')) {
-        this.set('showModal', false);
         this.send('close');
       }
     },
 
     close() {
       this.sendAction('onClose');
-      this.set('shouldClose', false);
-      this.set('isOpen', false);
       this.get('modal').close();
     }
   }
