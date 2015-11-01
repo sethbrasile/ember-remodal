@@ -5,7 +5,7 @@ const { Component, observer } = Ember;
 
 export default Component.extend({
   layout,
-  tagName: '',
+  tagName: 'span',
   modifier: '',
   modal: null,
   options: null,
@@ -13,6 +13,8 @@ export default Component.extend({
   isOpen: false,
   shouldClose: false,
   closeOnEscape: true,
+  closeOnCancel: true,
+  closeOnConfirm: true,
   hashTracking: false,
   closeOnOutsideClick: true,
 
@@ -56,14 +58,20 @@ export default Component.extend({
 
     confirm() {
       this.sendAction('onConfirm');
-      this.set('showModal', false);
-      this.send('close');
+
+      if (this.get('closeOnConfirm')) {
+        this.set('showModal', false);
+        this.send('close');
+      }
     },
 
     cancel() {
       this.sendAction('onCancel');
-      this.set('showModal', false);
-      this.send('close');
+
+      if (this.get('closeOnCancel')) {
+        this.set('showModal', false);
+        this.send('close');
+      }
     },
 
     close() {

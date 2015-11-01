@@ -5,15 +5,15 @@ export default Ember.Controller.extend({
   close: false,
 
   options1: {
-    confirmLabel: 'Confirm',
-    openLabel: 'Show Modal 1',
-    cancelLabel: 'Cancel',
+    confirmButton: 'Confirm',
+    openButton: 'Show Modal 1',
+    cancelButton: 'Cancel',
     title: 'Block Form'
   },
 
   options2: {
-    confirmLabel: 'Confirm',
-    cancelLabel: 'Cancel',
+    confirmButton: 'Confirm',
+    cancelButton: 'Cancel',
     title: 'Inline Form',
     text: 'And triggered by a setting a passed-in property to true'
   },
