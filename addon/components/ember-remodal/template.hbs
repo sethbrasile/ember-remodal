@@ -1,7 +1,8 @@
+
 {{#if link}}
-  <a {{action 'open'}} class="ember-remodal outer link text">{{link}}</a>
+  <a {{action 'openModal'}} class="ember-remodal outer link text">{{link}}</a>
 {{else if openButton}}
-  <button {{action 'open'}} class="ember-remodal outer open button {{buttonClasses}}" data-test-id="openButton">{{openButton}}</button>
+  <button {{action 'openModal'}} class="ember-remodal outer open button {{buttonClasses}}" data-test-id="openButton">{{openButton}}</button>
 {{/if}}
 
 <div data-remodal-id="{{elementId}}" class="ember-remodal window" data-test-id="modalWindow" data-is-open="{{isOpen}}">

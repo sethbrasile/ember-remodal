@@ -1,7 +1,10 @@
 import Ember from 'ember';
 import layout from './template';
 
-const { Component, observer } = Ember;
+const {
+  observer,
+  Component
+} = Ember;
 
 export default Component.extend({
   layout,
@@ -9,7 +12,6 @@ export default Component.extend({
   modifier: '',
   modal: null,
   options: null,
-  showModal: false,
   isOpen: false,
   shouldClose: false,
   closeOnEscape: true,
@@ -28,26 +30,45 @@ export default Component.extend({
 
     $(document).on('closing', modal, () => {
       this.set('shouldClose', false);
-      this.set('showModal', false);
       this.set('isOpen', false);
     });
   },
 
-  modalChange: observer('showModal', function() {
-    if (this.get('showModal')) {
+  modalisOpen: observer('isOpen', function() {
+    if (this.get('isOpen')) {
       this.send('open');
     } else {
       this.send('close');
     }
   }),
 
-  watchShouldClose: observer('shouldClose', function() {
+  modalShouldClose: observer('shouldClose', function() {
     if (this.get('shouldClose')) {
       this.send('close');
     }
   }),
 
   actions: {
+    openModal() {
+      this.set('isOpen', true);
+    },
+
+    confirm() {
+      this.sendAction('onConfirm');
+
+      if (this.get('closeOnConfirm')) {
+        this.set('shouldClose', true);
+      }
+    },
+
+    cancel() {
+      this.sendAction('onCancel');
+
+      if (this.get('closeOnCancel')) {
+        this.set('shouldClose', true);
+      }
+    },
+
     open() {
       const modal = $(`[data-remodal-id=${this.get('elementId')}]`);
       const opts = {
@@ -59,24 +80,7 @@ export default Component.extend({
 
       this.sendAction('onOpen');
       this.set('modal', modal.remodal(opts));
-      this.set('isOpen', true);
       this.get('modal').open();
-    },
-
-    confirm() {
-      this.sendAction('onConfirm');
-
-      if (this.get('closeOnConfirm')) {
-        this.send('close');
-      }
-    },
-
-    cancel() {
-      this.sendAction('onCancel');
-
-      if (this.get('closeOnCancel')) {
-        this.send('close');
-      }
     },
 
     close() {
