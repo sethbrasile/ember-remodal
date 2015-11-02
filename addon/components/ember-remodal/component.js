@@ -30,8 +30,13 @@ export default Component.extend({
     }
 
     $(document).on('closing', modal, () => {
+      this.sendAction('onClose');
       this.set('shouldClose', false);
       this.set('isOpen', false);
+    });
+
+    $(document).on('opening', modal, () => {
+      this.sendAction('onOpen');
     });
 
     if (this.get('isApplicationModal')) {
@@ -89,7 +94,6 @@ export default Component.extend({
     },
 
     close() {
-      this.sendAction('onClose');
       this.get('modal').close();
     }
   }
