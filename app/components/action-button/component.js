@@ -1,1 +1,0 @@
-export { default } from 'ember-remodal/components/action-button/component';
