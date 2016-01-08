@@ -1,3 +1,9 @@
+# This ember addon is not ready for public consumption.
+
+Feel free to try it out or whatever, but this readme is probably not correct.
+I'm releasing it so that I can test/tweak it with a non-local app I'm working on.
+I'll do a real release when I'm confident that it's ready.
+
 # ember-remodal
 
 There are many modal addons for Ember, but most of them (in my experience) are
