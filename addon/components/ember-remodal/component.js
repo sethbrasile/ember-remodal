@@ -3,6 +3,7 @@ import layout from './template';
 
 const {
   observer,
+  computed: { oneWay },
   Component
 } = Ember;
 
@@ -20,6 +21,8 @@ export default Component.extend({
   hashTracking: false,
   closeOnOutsideClick: true,
   isApplicationModal: false,
+  disableForeground: false,
+  disableNativeClose: oneWay('disableForeground'),
 
   didInitAttrs() {
     const opts = this.get('options');

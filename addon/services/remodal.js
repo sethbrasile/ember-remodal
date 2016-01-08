@@ -12,6 +12,7 @@ export default Service.extend({
   confirmButton: alias('modal.confirmButton'),
   cancelButton: alias('modal.cancelButton'),
   disableNativeClose: alias('modal.disableNativeClose'),
+  disableForeground: alias('modal.disableForeground'),
   buttonClasses: alias('modal.buttonClasses'),
   modifier: alias('modal.modifier'),
   closeOnEscape: alias('modal.closeOnEscape'),

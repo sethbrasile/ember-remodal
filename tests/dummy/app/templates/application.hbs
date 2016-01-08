@@ -13,4 +13,9 @@
   {{outlet}}
 
   {{ember-remodal isApplicationModal=true}}
+
+  {{#ember-remodal openButton='Invisible Modal' disableForeground=true}}
+    This is white text over the "overlay" background.
+    The normal white modal background is hidden.
+  {{/ember-remodal}}
 </div>
