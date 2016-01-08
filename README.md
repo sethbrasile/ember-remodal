@@ -7,6 +7,8 @@ I'm releasing it so that I can test/tweak it with a non-local app I'm working on
 I'll do a real release when I'm confident that it's ready.
 
 # ember-remodal
+[![Build Status](https://travis-ci.org/sethbrasile/ember-remodal.svg?branch=master)](https://travis-ci.org/sethbrasile/ember-remodal) [![npm version](https://badge.fury.io/js/ember-remodal.svg)](http://badge.fury.io/js/ember-remodal) [![Ember Observer Score](http://emberobserver.com/badges/ember-remodal.svg)](http://emberobserver.com/addons/ember-remodal)
+
 
 There are many modal addons for Ember, but most of them (in my experience) are
 only useful in a very specific situation. Often, when building large apps, you
