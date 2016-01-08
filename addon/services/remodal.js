@@ -47,6 +47,6 @@ export default Service.extend({
   },
 
   modalNotSetError(name) {
-    console.error(`"${name}" can not be opened. In order to use ember-remodal as a service, you must include an {{ember-remodal}} instance in your application template, with "isApplicationModal=true"`);
+    console.error(`"${name}" can not be opened. In order to use ember-remodal as a service, you must include an {{ember-remodal}} instance in your application template, with "forService=true"`);
   }
 });
