@@ -14,9 +14,5 @@ module.exports = function(defaults) {
     behave. You most likely want to be modifying `./index.js` or app's build file
   */
 
-  app.import('bower_components/remodal/dist/remodal.js');
-  app.import('bower_components/remodal/dist/remodal.css');
-  app.import('bower_components/remodal/dist/remodal-default-theme.css');
-
   return app.toTree();
 };
