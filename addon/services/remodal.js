@@ -21,10 +21,14 @@ export default Service.extend({
   hashTracking: alias('modal.hashTracking'),
   closeOnOutsideClick: alias('modal.closeOnOutsideClick'),
 
-  open(name='modal') {
+  open(name='modal', opts) {
     const modal = this.get(name);
 
     if (modal) {
+      if (opts) {
+        modal.setProperties(opts);
+      }
+
       modal.set('isOpen', true);
     } else {
       this.modalNotSetError(name);
