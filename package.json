@@ -1,7 +1,7 @@
 {
   "name": "ember-remodal",
   "version": "0.0.1",
-  "description": "The default blueprint for ember-cli addons.",
+  "description": "Remodal ember addon.",
   "directories": {
     "doc": "doc",
     "test": "tests"
