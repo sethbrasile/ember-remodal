@@ -1,3 +1,4 @@
+/* jshint -W138 */
 import Ember from 'ember';
 
 const {
