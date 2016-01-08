@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/sethbrasile/ember-remodal.svg)](https://travis-ci.org/sethbrasile/ember-remodal)
-
 # This ember addon is not ready for public consumption.
 
 Feel free to try it out or whatever, but this readme is probably not correct.
