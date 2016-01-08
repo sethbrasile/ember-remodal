@@ -36,7 +36,7 @@ export default Ember.Controller.extend({
 
     showApplicationModal2() {
       const modal = this.get('remodal');
-      modal.open('appModal2')
+      modal.open('appModal2');
     },
 
     showApplicationModal3() {
