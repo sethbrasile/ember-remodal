@@ -27,7 +27,7 @@ export default Service.extend({
     if (modal) {
       modal.set('isOpen', true);
     } else {
-      this.modalNotSetError();
+      this.modalNotSetError(name);
     }
   },
 
@@ -37,11 +37,11 @@ export default Service.extend({
     if (modal) {
       modal.set('isOpen', false);
     } else {
-      this.modalNotSetError();
+      this.modalNotSetError(name);
     }
   },
 
-  modalNotSetError() {
-    console.error('In order to use ember-remodal as a service, you must include an {{ember-remodal}} instance in your application template, with "isApplicationModal=true"');
+  modalNotSetError(name) {
+    console.error(`"${name}" can not be opened. In order to use ember-remodal as a service, you must include an {{ember-remodal}} instance in your application template, with "isApplicationModal=true"`);
   }
 });
