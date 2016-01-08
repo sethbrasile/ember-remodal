@@ -1,6 +1,6 @@
 {
   "name": "ember-remodal",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "The default blueprint for ember-cli addons.",
   "directories": {
     "doc": "doc",
@@ -11,7 +11,7 @@
     "start": "ember server",
     "test": "ember try:testall"
   },
-  "repository": "",
+  "repository": "https://github.com/sethbrasile/ember-remodal",
   "engines": {
     "node": ">= 0.10.0"
   },
@@ -38,7 +38,9 @@
     "ember-try": "~0.0.8"
   },
   "keywords": [
-    "ember-addon"
+    "ember-addon",
+    "remodal",
+    "modal"
   ],
   "dependencies": {
     "ember-cli-babel": "^5.1.5",

@@ -6,6 +6,25 @@ moduleForComponent('ember-remodal', 'Integration | Component | ember remodal', {
   integration: true
 });
 
+test('it renders', function(assert) {
+
+  // Set any properties with this.set('myProperty', 'value');
+  // Handle any actions with this.on('myAction', function(val) { ... });" + EOL + EOL +
+
+  this.render(hbs`{{ember-remodal}}`);
+
+  assert.equal(this.$().text().trim(), '');
+
+  // Template block usage:" + EOL +
+  this.render(hbs`
+    {{#ember-remodal}}
+      template block text
+    {{/ember-remodal}}
+  `);
+
+  assert.equal(this.$().text().trim(), 'template block text');
+});
+
 test('it works by clicking the provided button', function(assert) {
   assert.expect(0);
 
