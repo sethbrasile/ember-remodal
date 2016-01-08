@@ -25,7 +25,7 @@ write one :D
 ### Options Summary
 
 #### Remodal Options
-[these options](https://github.com/VodkaBears/Remodal#options) are supported.
+these [options](https://github.com/VodkaBears/Remodal#options) are supported:
 
 - `closeOnOutsideClick` defaults to `true`
 - `closeOnEscape` defaults to `true`
