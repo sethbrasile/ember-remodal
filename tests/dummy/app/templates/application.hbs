@@ -15,7 +15,12 @@
   {{outlet}}
 
   {{ember-remodal isApplicationModal=true}}
-  {{ember-remodal isApplicationModal=true name='appModal2' title='Application Modal 2'}}
+
+  {{#ember-remodal isApplicationModal=true name='appModal2' title='Named Modal triggered with the "remodal" service'}}
+    <p>This modal is triggered by adding a named "application modal" to the "application" template and calling "this.get("remodal").open("name")"</p>
+    <p>This example is in block form and this text is provided by adding it to this modal's "block"</p>
+  {{/ember-remodal}}
+
   {{ember-remodal isApplicationModal=true name='appModal3'}}
 
   {{#ember-remodal openButton='Invisible Modal' disableForeground=true}}

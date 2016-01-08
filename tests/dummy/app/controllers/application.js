@@ -1,6 +1,13 @@
 import Ember from 'ember';
 
-export default Ember.Controller.extend({
+const {
+  inject,
+  Controller
+} = Ember;
+
+export default Controller.extend({
+  remodal: inject.service(),
+
   showModal2: false,
 
   options1: {
@@ -26,8 +33,8 @@ export default Ember.Controller.extend({
       const modal = this.get('remodal');
 
       modal.setProperties({
-        title: 'Lasagna',
-        text: 'Lorem Ipsum Dolar Sit Amet.',
+        title: 'Modal triggered with the "remodal" service',
+        text: 'This modal is triggered by adding an un-named "application modal" to the "application" template and calling this.get("remodal").open()',
         confirmButton: 'OK!'
       });
 
@@ -43,8 +50,8 @@ export default Ember.Controller.extend({
       const modal = this.get('remodal.appModal3');
 
       modal.setProperties({
-        title: 'Pizza',
-        text: 'Lorem Ipsum Dolar Sit Amet.',
+        title: 'Named Modal triggered with the "remodal" service',
+        text: 'This modal is triggered by adding a named "application modal" to the "application" template and calling this.get("remodal").open("name")',
         confirmButton: 'OK!'
       });
 
