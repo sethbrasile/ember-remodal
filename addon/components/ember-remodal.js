@@ -3,11 +3,14 @@ import layout from '../templates/components/ember-remodal';
 
 const {
   observer,
+  inject,
   computed: { oneWay },
   Component
 } = Ember;
 
 export default Component.extend({
+  remodal: inject.service(),
+
   layout,
   tagName: 'span',
   name: 'modal',
