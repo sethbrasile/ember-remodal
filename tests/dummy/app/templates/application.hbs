@@ -8,11 +8,15 @@
   {{ember-remodal options=options2 isOpen=showModal2}}
 
   <button {{action 'showModal2'}}>Show Modal 2</button>
-  <button {{action 'showApplicationModal'}}>Show Service Modal</button>
+  <button {{action 'showApplicationModal1'}}>Show Service Modal</button>
+  <button {{action 'showApplicationModal2'}}>Show Service Modal 2</button>
+  <button {{action 'showApplicationModal3'}}>Show Service Modal 3</button>
 
   {{outlet}}
 
   {{ember-remodal isApplicationModal=true}}
+  {{ember-remodal isApplicationModal=true name='appModal2' title='Application Modal 2'}}
+  {{ember-remodal isApplicationModal=true name='appModal3'}}
 
   {{#ember-remodal openButton='Invisible Modal' disableForeground=true}}
     This is white text over the "overlay" background.

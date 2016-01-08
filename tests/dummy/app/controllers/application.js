@@ -22,7 +22,7 @@ export default Ember.Controller.extend({
       this.set('showModal2', true);
     },
 
-    showApplicationModal() {
+    showApplicationModal1() {
       const modal = this.get('remodal');
 
       modal.setProperties({
@@ -32,6 +32,23 @@ export default Ember.Controller.extend({
       });
 
       modal.open();
-    }
+    },
+
+    showApplicationModal2() {
+      const modal = this.get('remodal');
+      modal.open('appModal2')
+    },
+
+    showApplicationModal3() {
+      const modal = this.get('remodal.appModal3');
+
+      modal.setProperties({
+        title: 'Pizza',
+        text: 'Lorem Ipsum Dolar Sit Amet.',
+        confirmButton: 'OK!'
+      });
+
+      modal.open();
+    },
   }
 });

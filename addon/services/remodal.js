@@ -21,8 +21,8 @@ export default Service.extend({
   hashTracking: alias('modal.hashTracking'),
   closeOnOutsideClick: alias('modal.closeOnOutsideClick'),
 
-  open() {
-    const modal = this.get('modal');
+  open(name='modal') {
+    const modal = this.get(name);
 
     if (modal) {
       modal.set('isOpen', true);
@@ -31,8 +31,8 @@ export default Service.extend({
     }
   },
 
-  close() {
-    const modal = this.get('modal');
+  close(name='modal') {
+    const modal = this.get(name);
 
     if (modal) {
       modal.set('isOpen', false);

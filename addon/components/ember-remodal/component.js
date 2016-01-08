@@ -10,6 +10,7 @@ const {
 export default Component.extend({
   layout,
   tagName: 'span',
+  name: 'modal',
   modifier: '',
   modal: null,
   options: null,
@@ -43,7 +44,7 @@ export default Component.extend({
     });
 
     if (this.get('isApplicationModal')) {
-      this.get('remodal').set('modal', this);
+      this.get('remodal').set(this.get('name'), this);
     }
   },
 
@@ -60,6 +61,14 @@ export default Component.extend({
       this.send('close');
     }
   }),
+
+  open() {
+    this.send('open');
+  },
+
+  close() {
+    this.send('close');
+  },
 
   actions: {
     openModal() {
