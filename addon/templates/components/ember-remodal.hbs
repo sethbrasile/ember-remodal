@@ -1,5 +1,5 @@
-{{#if link}}
-  <a {{action 'openModal'}} class="ember-remodal outer link text">{{link}}</a>
+{{#if linkButton}}
+  <a {{action 'openModal'}} class="ember-remodal outer link text">{{linkButton}}</a>
 {{else if openButton}}
   <button {{action 'openModal'}} class="ember-remodal outer open button {{buttonClasses}}" data-test-id="openButton">{{openButton}}</button>
 {{/if}}
