@@ -1,12 +1,11 @@
-# This ember addon is not ready for public consumption.
-
-Feel free to try it out or whatever, but this readme is probably not correct.
-I'm releasing it so that I can test/tweak it with a non-local app I'm working on.
-I'll do a real release when I'm confident that it's ready.
+# Beta!
+Testing this out on my own at the moment. Feel free to give it a try, and please
+leave an issue or a PR if you find any problems.
 
 # ember-remodal
 [![Build Status](https://travis-ci.org/sethbrasile/ember-remodal.svg?branch=master)](https://travis-ci.org/sethbrasile/ember-remodal) [![npm version](https://badge.fury.io/js/ember-remodal.svg)](http://badge.fury.io/js/ember-remodal) [![Ember Observer Score](http://emberobserver.com/badges/ember-remodal.svg)](http://emberobserver.com/addons/ember-remodal)
 
+*This README is up-to-date and accurate as of ember-remodal v0.0.4*
 
 There are many modal addons for Ember, but most of them (in my experience) are
 only useful in a very specific situation. Often, when building large apps, you
@@ -22,7 +21,7 @@ write one :D
 ## Installation
 `ember install ember-remodal`
 
-This will add `remodal` to your `bower.json` and make the `{{ember-remodal}}`
+This will add [remodal](http://vodkabears.github.io/remodal/) to your `bower.json` and make the `{{ember-remodal}}`
 component available in your application.
 
 ## Usage
@@ -93,7 +92,8 @@ By default, setting this option to true also sets `disableNativeClose` to `true`
 but `disableNativeClose` can be explicitly set back to `false` if you prefer.
 
 - `forService`: If `true`, the modal is registered with the `remodal`
-service in your application. You'll find more on using modals as a service below.
+service in your application. You'll find more on using modals as a service
+[below][1].
 
 ##### Content Options
 
@@ -107,7 +107,7 @@ rendered below the `title`/`text`, or by itself if no `title`/`text` are provide
 
 *If you will be using more than a couple modals in your application,
 please read through here to understand how many of the options work, but refer
-to the "using ember-remodal as a service" section for implementation"*
+to the [using ember-remodal as a service][1] section for implementation"*
 
 Apply the `remodal-bg` class to anything on your page that you would like blurred
 while the modal is open. A common pattern would be to apply this class to a `div`
@@ -164,7 +164,7 @@ Template:
 
 ### Programmatically Opening or Closing
 
-Please see the section on using ember-remodal as a service for more information on
+Please see the section on [using ember-remodal as a service][1] for more information on
 programmatically opening or closing a modal.
 
 ### Action Hooks
@@ -361,6 +361,8 @@ You can easily target every portion of the modal.
 - Text: `.ember-remodal.paragraph.text`
 - Content yielded with block form: `.ember-remodal.yielded.content`
 - Overlay: `.remodal-overlay` optionally in combination with `.remodal-is-opened` or `.remodal-is-closed`
+- Buttons inside the modal: `.ember-remodal.inner.button`
+- Button outside the modal: `.ember-remodal.outer.button`
 
 
 # Notes
@@ -393,3 +395,6 @@ please feel free to fix it and PR or open an issue.
 * `ember build`
 
 For more information on using ember-cli, visit [http://www.ember-cli.com/](http://www.ember-cli.com/).
+
+
+[1]: https://github.com/sethbrasile/ember-remodal#using-ember-remodal-as-a-service
