@@ -35,7 +35,7 @@ blurred while a modal is open!*
 ### Options Summary
 
 #### Remodal Options
-[These options](https://github.com/VodkaBears/Remodal#options) are supported:
+These [remodal options](https://github.com/VodkaBears/Remodal#options) are supported:
 
 - `closeOnOutsideClick` defaults to `true`
 - `closeOnEscape` defaults to `true`
@@ -138,7 +138,7 @@ Note that the `title` and `text` properties still work. Both will be displayed
 above the yielded content from the block.
 
 ```hbs
-{{#ember-remodal title='someTitle'}}
+{{#ember-remodal title='Some Title'}}
   <!-- Any content you want displayed in the modal! -->
 {{/ember-remodal}}
 ```
@@ -148,10 +148,10 @@ above the yielded content from the block.
 In order to keep your templates clean, you may pass all the modal's options in
 as a single hash called `options`.
 
-Controller:
+Controller or Component:
 
 ```js
-export default Ember.Component.extend({
+export default Ember.Whatever.extend({
   modalOptions: {
     openButton: 'Open Modal',
     confirmButton: 'OK',
@@ -221,8 +221,6 @@ You can then access the modal via the `remodal` service throughout your
 application:
 
 ```js
-import Ember from 'ember';
-
 export default Ember.Whatever.extend({
   remodal: Ember.inject.service(),
 
@@ -238,8 +236,6 @@ Options can be set directly on the `remodal` service, or they can be passed in
 to the `open` call:
 
 ```js
-import Ember from 'ember';
-
 export default Ember.Whatever.extend({
   remodal: Ember.inject.service(),
 
@@ -257,8 +253,6 @@ export default Ember.Whatever.extend({
 OR
 
 ```js
-import Ember from 'ember';
-
 export default Ember.Whatever.extend({
   remodal: Ember.inject.service(),
 
@@ -291,6 +285,9 @@ etc.. to exist at the same time:
 Named service modals are just like un-named service modals, except that you
 refer to them by name:
 
+*An "un-named" service modal is not actually "un-named", it just uses the default
+name, `modal`.*
+
 ```js
 export default Ember.Whatever.extend({
   remodal: Ember.inject.service(),
@@ -322,8 +319,6 @@ the name of a named service modal. To close an un-named service modal, call
 ##### Un-named:
 
 ```js
-import Ember from 'ember';
-
 export default Ember.Whatever.extend({
   remodal: Ember.inject.service(),
 
@@ -338,8 +333,6 @@ export default Ember.Whatever.extend({
 ##### Named:
 
 ```js
-import Ember from 'ember';
-
 export default Ember.Whatever.extend({
   remodal: Ember.inject.service(),
 
@@ -368,11 +361,6 @@ You can easily target every portion of the modal.
 - Overlay: `.remodal-overlay` optionally in combination with `.remodal-is-opened` or `.remodal-is-closed`
 - Buttons inside the modal: `.ember-remodal.inner.button`
 - Button outside the modal: `.ember-remodal.outer.button`
-
-
-# Notes
-An "un-named" service modal is not actually "un-named", it just uses the default
-name, `modal`.
 
 # Collaborating
 
