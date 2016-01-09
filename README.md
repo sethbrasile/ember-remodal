@@ -18,6 +18,9 @@ This addon aims to be usable in a variety of situations. Also, there weren't any
 [remodal](http://vodkabears.github.io/remodal/) ember addons, so I thought I'd
 write one :D
 
+## Compatibility
+ember-remodal is compatible with Ember 1.13.x and up.
+
 ## Installation
 `ember install ember-remodal`
 
