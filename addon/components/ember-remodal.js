@@ -24,7 +24,7 @@ export default Component.extend({
   closeOnConfirm: true,
   hashTracking: false,
   closeOnOutsideClick: true,
-  isApplicationModal: false,
+  forService: false,
   disableForeground: false,
   disableNativeClose: oneWay('disableForeground'),
 
@@ -46,7 +46,7 @@ export default Component.extend({
       this.sendAction('onOpen');
     });
 
-    if (this.get('isApplicationModal')) {
+    if (this.get('forService')) {
       this.get('remodal').set(this.get('name'), this);
     }
   },

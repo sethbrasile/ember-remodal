@@ -22,12 +22,18 @@ write one :D
 ## Installation
 `ember install ember-remodal`
 
-## Use
+This will add `remodal` to your `bower.json` and make the `{{ember-remodal}}`
+component available in your application.
+
+## Usage
+
+*Remember to add the `remodal-bg` class to anything in your app that you want
+blurred while a modal is open!*
 
 ### Options Summary
 
 #### Remodal Options
-these [options](https://github.com/VodkaBears/Remodal#options) are supported:
+[These options](https://github.com/VodkaBears/Remodal#options) are supported:
 
 - `closeOnOutsideClick` defaults to `true`
 - `closeOnEscape` defaults to `true`
@@ -35,51 +41,115 @@ these [options](https://github.com/VodkaBears/Remodal#options) are supported:
 - `closeOnConfirm` defaults to `true`
 - `modifier` defaults to an empty string
 - `hashTracking` defaults to `false` - You probably want to leave this one alone.
-It messes with Ember's routes a bit. It's there if you want to mess around.
+It affects Ember's routes/browser-history. It's there if you want to mess.
 
-#### Options Specific to this addon
+#### Options Specific to this addon:
 
-- `openLabel`:
-- `confirmLabel`:
-- `cancelLabel`:
-- `disableNativeClose`:
-- `title`:
-- `text`:
+##### Button Options
+
+Providing `string` values to these will enable the corresponding button and set
+it's label value to the value provided. There are no default values. If a value
+is not provided, that button will not show up.
+
+- `openButton`: Shows up outside of the modal, allowing a user to click and open
+the modal.
+
+- `linkButton`: Just like `openButton`, but rendered as an `a` tag instead of a
+`button`.
+
+- `confirmButton`: Shows up inside the modal, toward the bottom. With it's
+default setup, when a user clicks this button, the component will:
+
+  1. Fire it's `onConfirm` action.
+  2. Close the modal.
+  3. Fire it's `onClose` action.
+
+  `closeOnConfirm` can be set to `false` which will keep steps 2 and 3 from
+  taking place.
+
+- `cancelButton`: Exactly the same as `confirmButton`, but `onCancel` is fired
+instead of `onConfirm`. `closeOnCancel` can also be set to `false`.
+
+- `disableNativeClose`: If `true`, this keeps the little `x` button from
+appearing in the top left corner of the modal.
+
+*Note on close events:* `onClose` fires when a modal closes for any reason.
+`remodal` doesn't currently offer a hook to allow for `onNativeClose` or
+`onOverlayClose` actions.
+
+##### Functionality Options
+
+- `closeOnOutsideClick`: If `true` (which is the default), this allows the user
+to click the dark overlay outside the modal window to close the modal.
+
+- `closeOnEscape`: If `true` (which is the default), this allows the user to hit
+the `escape` key on their keyboard to close the modal.
+
+- `disableForeground`: If `true`, this causes the white box surrounding the modal
+content to be transparent, and switches the default text color from
+`black` to `white`. When combined with `closeOnOutsideClick: false` This allows
+one to use the modal as an un-exitable overlay, such as a `loading state`.
+By default, setting this option to true also sets `disableNativeClose` to `true`,
+but `disableNativeClose` can be explicitly set back to `false` if you prefer.
+
+- `forService`: If `true`, the modal is registered with the `remodal`
+service in your application. You'll find more on using modals as a service below.
+
+##### Content Options
+
+- `title`: The (optional) title is displayed at the top of the modal as an `h2`.
+- `text`: The (optional) text is displayed just under the title as a `p`.
+- Content placed inside the component when used as a block-component will be
+rendered below the `title`/`text`, or by itself if no `title`/`text` are provided.
+
 
 ### Simplest Use-Case
-#### Inline, using the (optional) included triggers
+
+*If you will be using more than a couple modals in your application,
+please read through here to understand how many of the options work, but refer
+to the "using ember-remodal as a service" section for implementation"*
 
 Apply the `remodal-bg` class to anything on your page that you would like blurred
 while the modal is open. A common pattern would be to apply this class to a `div`
 that is wrapping your entire application. This is completely optional, this modal
 will work (and look) fine without this step.
 
+#### Inline Form
+
 ```hbs
 {{ember-remodal
-  openLabel='Open Modal'
-  confirmLabel='OK'
+  openButton='Open Modal'
+  confirmButton='OK'
   title='A Title!'
   text='lorem ipsum dolar sit amet'
 }}
 ```
 
-- `openLabel` is the label on the button that will appear to trigger the modal.
-- `confirmLabel` is the label on the button that will appear within the modal,
-allowing the user to close the modal.
-- `title` and `text` are the title and text contained in the modal.
+#### Block Form
 
-#### Options
+A modal can be used the same way as described above, but in block form.
+This will display anything contained in the block, inside the modal.
+Note that the `title` and `text` properties still work. Both will be displayed
+above the yielded content from the block.
 
-In order to keep your templates clean, you may pass all the modal's options in as
-a single hash called `options`.
+```hbs
+{{#ember-remodal title='someTitle'}}
+  <!-- Any content you want displayed in the modal! -->
+{{/ember-remodal}}
+```
+
+### Options as a hash
+
+In order to keep your templates clean, you may pass all the modal's options in
+as a single hash called `options`.
 
 Controller:
 
 ```js
 export default Ember.Component.extend({
   modalOptions: {
-    openLabel: 'Open Modal',
-    confirmLabel: 'OK',
+    openButton: 'Open Modal',
+    confirmButton: 'OK',
     title: 'A Title!',
     text: 'lorem ipsum dolar sit amet'
   }
@@ -92,39 +162,10 @@ Template:
 {{ember-remodal options=modalOptions}}
 ```
 
-### Block Form
-
-A modal can be used the same way as described above, but in block form.
-This will display anything contained in the block, inside the modal.
-Note that the `title` and `text` attributes still work. Both will be displayed
-above the `yield`ed content from the block.
-
-```hbs
-{{#ember-remodal options=modalOptions}}
-  <!-- Any content you want displayed in the modal! -->
-{{/ember-remodal}}
-```
-
 ### Programmatically Opening or Closing
 
-A modal can be programmatically opened by setting it's `showModal` property to `true`
-
-```hbs
-{{ember-remodal showModal=someBool}}
-```
-
-The opened modal can be programmatically closed by setting `showModal` back to false.
-
-A modal that has been opened using one of the provided triggers, can be programmatically
-closed by setting it's `shouldClose` property to true.
-
-```hbs
-{{ember-remodal openLabel='Open' shouldClose=someBool}}
-```
-
-When a modal has been closed (programmatically or via an included triggger),
-it's `shouldClose` property is always set back to `false`, but it's `showModal`
-property is up to you.
+Please see the section on using ember-remodal as a service for more information on
+programmatically opening or closing a modal.
 
 ### Action Hooks
 
@@ -132,43 +173,199 @@ property is up to you.
 - `onClose` is called when a modal has been closed for **any** reason
 - `onConfirm` is called when a modal has been closed via it's `confirm` button
 - `onCancel` is called when a modal has been closed via it's `cancel` button
-- TODO: (not implemented yet) `onNativeClose` is called when a modal has been closed via remodal's native
-close button (the little gray arrow on the top left of the modal)
-- TODO: (not implemented yet) `onOverlayClose` is called when a user clicks it's background overlay to close
 
 Template:
 
 ```hbs
-{{ember-remodal openLabel='Open' onClose='modalDidClose' onOpen='modalDidOpen'}}
+{{ember-remodal
+  openButton='Open'
+  onClose='someCloseAction'
+  onOpen='someOpenAction'
+}}
 ```
 
-Controller or Route:
+Controller, Route or Component:
 
 ```js
 actions: {
-  modalDidOpen() {
+  someOpenAction() {
     console.log('The modal was opened!');
   },
 
-  modalDidClose() {
+  someCloseAction() {
     console.log('The modal was closed!');
   }
 }
+```
+
+### Using ember-remodal as a service
+
+By setting a modal's `forService` property to `true`, the modal will register
+itself with the application-wide `remodal` service.
+
+```hbs
+{{ember-remodal forService=true}}
+```
+
+*You can technically place a service modal anywhere in your application, but keep
+in mind that it must currently be rendered in order for your service to use it.
+For this reason, the normal convention would be to place it in the application
+template, so that it is always accessible.*
+
+You can then access the modal via the `remodal` service throughout your
+application:
+
+```js
+import Ember from 'ember';
+
+export default Ember.Whatever.extend({
+  remodal: Ember.inject.service(),
+
+  actions: {
+    openModal() {
+      this.get('remodal').open();
+    }
+  }
+});
+```
+
+Options can be set directly on the `remodal` service, or they can be passed in
+to the `open` call:
+
+```js
+import Ember from 'ember';
+
+export default Ember.Whatever.extend({
+  remodal: Ember.inject.service(),
+
+  actions: {
+    openModal() {
+      this.get('remodal').open({
+        title: 'Modal',
+        text: 'Here is some text.'
+      });
+    }
+  }
+});
+```
+
+OR
+
+```js
+import Ember from 'ember';
+
+export default Ember.Whatever.extend({
+  remodal: Ember.inject.service(),
+
+  actions: {
+    openModal() {
+      const modal = this.get('remodal');
+
+      modal.setProperties({
+        title: 'Modal',
+        text: 'Here is some text'
+      });
+
+      modal.open();
+    }
+  }
+});
+```
+
+#### Named Service Modals
+
+A modal that has been registered with the `remodal` service can be named,
+allowing you to have multiple service modals, each with their own use, styling,
+etc.. to exist at the same time:
+
+```hbs
+{{ember-remodal forService=true name='modal1'}}
+{{ember-remodal forService=true name='modal2'}}
+```
+
+Named service modals are just like un-named service modals, except that you
+refer to them by name:
+
+```js
+export default Ember.Whatever.extend({
+  remodal: Ember.inject.service(),
+
+  someFunction() {
+    this.get('remodal').open('modal1');
+  }
+});
+```
+
+OR
+
+```js
+export default Ember.Whatever.extend({
+  remodal: Ember.inject.service(),
+
+  someFunction() {
+    this.get('remodal.modal2').open();
+  }
+});
+```
+
+#### Closing Service Modals
+
+`close` works just like `open`, except that the only argument that it accepts is
+the name of a named service modal. To close an un-named service modal, call
+`close` with no arguments.
+
+##### Un-named:
+
+```js
+import Ember from 'ember';
+
+export default Ember.Whatever.extend({
+  remodal: Ember.inject.service(),
+
+  actions: {
+    closeModal() {
+      this.get('remodal').close();
+    }
+  }
+});
+```
+
+##### Named:
+
+```js
+import Ember from 'ember';
+
+export default Ember.Whatever.extend({
+  remodal: Ember.inject.service(),
+
+  actions: {
+    closeModal() {
+      this.get('remodal').close('modal1');
+    }
+  }
+});
 ```
 
 ## Styling
 
 You can easily target every portion of the modal.
 
+- Main modal window: `.ember-remodal.window`
+- Named modal main window: `.ember-remodal.whatever-you-named-the-modal.window`
 - Open button: `.ember-remodal.open.button`
+- Open link: `.ember-remodal.link.text`
 - Confirm button: `.ember-remodal.confirm.button`
 - Cancel button: `.ember-remodal.cancel.button`
 - Native close button: `.ember-remodal.native.close`
-- Main modal window: `.ember-remodal.window`
 - Title: `.ember-remodal.title.text`
 - Text: `.ember-remodal.paragraph.text`
 - Content yielded with block form: `.ember-remodal.yielded.content`
 - Overlay: `.remodal-overlay` optionally in combination with `.remodal-is-opened` or `.remodal-is-closed`
+
+
+# Notes
+An "un-named" service modal is not actually "un-named", it just uses the default
+name, `modal`.
 
 # Collaborating
 
