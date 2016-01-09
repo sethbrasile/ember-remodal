@@ -72,6 +72,8 @@ default setup, when a user clicks this button, the component will:
 - `cancelButton`: Exactly the same as `confirmButton`, but `onCancel` is fired
 instead of `onConfirm`. `closeOnCancel` can also be set to `false`.
 
+**Button Booleans**
+
 - `disableNativeClose`: If `true`, this keeps the little `x` button from
 appearing in the top left corner of the modal.
 
