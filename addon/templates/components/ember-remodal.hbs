@@ -1,7 +1,7 @@
 {{#if linkButton}}
   <a {{action 'openModal'}} class="ember-remodal outer link text">{{linkButton}}</a>
 {{else if openButton}}
-  <button {{action 'openModal'}} class="ember-remodal outer open button {{buttonClasses}}" data-test-id="openButton">{{openButton}}</button>
+  <button {{action 'openModal'}} class="ember-remodal outer open button" data-test-id="openButton">{{openButton}}</button>
 {{/if}}
 
 <div data-remodal-id="{{elementId}}" class="ember-remodal {{name}} window {{if disableForeground 'invisible'}}" data-test-id="modalWindow">
@@ -25,10 +25,10 @@
   {{/if}}
 
   {{#if cancelButton}}
-    <button {{action 'cancel'}} class="ember-remodal inner cancel button {{buttonClasses}}" data-test-id="cancelButton">{{cancelButton}}</button>
+    <button {{action 'cancel'}} class="ember-remodal inner cancel button" data-test-id="cancelButton">{{cancelButton}}</button>
   {{/if}}
 
   {{#if confirmButton}}
-    <button {{action 'confirm'}} class="ember-remodal inner confirm button {{buttonClasses}}" data-test-id="confirmButton">{{confirmButton}}</button>
+    <button {{action 'confirm'}} class="ember-remodal inner confirm button" data-test-id="confirmButton">{{confirmButton}}</button>
   {{/if}}
 </div>
