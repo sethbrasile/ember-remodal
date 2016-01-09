@@ -56,6 +56,6 @@ export default Controller.extend({
       });
 
       modal.open();
-    },
+    }
   }
 });
