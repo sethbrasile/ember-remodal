@@ -21,14 +21,11 @@ export default Controller.extend({
     confirmButton: 'Confirm',
     cancelButton: 'Cancel',
     title: 'Inline Form',
-    text: 'And triggered by a setting the passed-in "isOpen" to true'
+    linkButton: 'Show Modal 2',
+    text: 'Triggered by the included <a> tag'
   },
 
   actions: {
-    showModal2() {
-      this.set('showModal2', true);
-    },
-
     showApplicationModal1() {
       const modal = this.get('remodal');
 

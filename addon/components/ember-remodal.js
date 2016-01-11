@@ -17,8 +17,6 @@ export default Component.extend({
   modifier: '',
   modal: null,
   options: null,
-  isOpen: false,
-  shouldClose: false,
   closeOnEscape: true,
   closeOnCancel: true,
   closeOnConfirm: true,
@@ -40,8 +38,6 @@ export default Component.extend({
 
     $(document).on('closing', modal, () => {
       this.sendAction('onClose');
-      this.set('shouldClose', false);
-      this.set('isOpen', false);
     });
 
     $(document).on('opening', modal, () => {
@@ -58,20 +54,6 @@ export default Component.extend({
     }
   },
 
-  modalisOpen: observer('isOpen', function() {
-    if (this.get('isOpen')) {
-      this.send('open');
-    } else {
-      this.send('close');
-    }
-  }),
-
-  modalShouldClose: observer('shouldClose', function() {
-    if (this.get('shouldClose')) {
-      this.send('close');
-    }
-  }),
-
   open() {
     this.send('open');
   },
@@ -81,15 +63,11 @@ export default Component.extend({
   },
 
   actions: {
-    openModal() {
-      this.set('isOpen', true);
-    },
-
     confirm() {
       this.sendAction('onConfirm');
 
       if (this.get('closeOnConfirm')) {
-        this.set('shouldClose', true);
+        this.send('close');
       }
     },
 
@@ -97,7 +75,7 @@ export default Component.extend({
       this.sendAction('onCancel');
 
       if (this.get('closeOnCancel')) {
-        this.set('shouldClose', true);
+        this.send('close');
       }
     },
 
