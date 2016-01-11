@@ -1,6 +1,6 @@
 {
   "name": "ember-remodal",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "An intensely usable modal addon for Ember.js",
   "directories": {
     "doc": "doc",
