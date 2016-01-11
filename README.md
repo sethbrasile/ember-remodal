@@ -1,6 +1,6 @@
 # Beta!
-Testing this out on my own at the moment. Feel free to give it a try, and please
-leave an issue or a PR if you find any problems.
+Until v1.0.0 expect possibly breaking changes even in point releases. I'm
+rapidly iterating and planning on hitting v1.0.0 by January 17th 2016.
 
 # ember-remodal
 [![Build Status](https://travis-ci.org/sethbrasile/ember-remodal.svg?branch=master)](https://travis-ci.org/sethbrasile/ember-remodal) [![npm version](https://badge.fury.io/js/ember-remodal.svg)](http://badge.fury.io/js/ember-remodal) [![Ember Observer Score](http://emberobserver.com/badges/ember-remodal.svg)](http://emberobserver.com/addons/ember-remodal)
