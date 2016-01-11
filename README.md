@@ -1,11 +1,12 @@
 # Beta!
-Until v1.0.0 expect possibly breaking changes even in point releases. I'm
-rapidly iterating and planning on hitting v1.0.0 by January 17th 2016.
+I'll try not to break things, but until v1.0.0 expect possibly breaking changes
+even in point releases. I'm rapidly iterating and planning on hitting v1.0.0 by
+January 17th 2016.
 
 # ember-remodal
 [![Build Status](https://travis-ci.org/sethbrasile/ember-remodal.svg?branch=master)](https://travis-ci.org/sethbrasile/ember-remodal) [![npm version](https://badge.fury.io/js/ember-remodal.svg)](http://badge.fury.io/js/ember-remodal) [![Ember Observer Score](http://emberobserver.com/badges/ember-remodal.svg)](http://emberobserver.com/addons/ember-remodal)
 
-*This README is up-to-date and accurate as of ember-remodal v0.0.6*
+*This README is up-to-date and accurate as of ember-remodal v0.0.8*
 
 There are many modal addons for Ember, but most of them (in my experience) are
 only useful in a very specific situation. Often, when building large apps, you
