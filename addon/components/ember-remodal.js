@@ -25,12 +25,14 @@ export default Component.extend({
   hashTracking: false,
   closeOnOutsideClick: true,
   forService: false,
+  isApplicationModal: false,
   disableForeground: false,
   disableNativeClose: oneWay('disableForeground'),
 
   didInitAttrs() {
     const opts = this.get('options');
     const modal = `[data-remodal-id=${this.get('elementId')}]`;
+    const isApplicationModal = this.get('isApplicationModal');
 
     if (opts) {
       this.setProperties(opts);
@@ -46,7 +48,12 @@ export default Component.extend({
       this.sendAction('onOpen');
     });
 
-    if (this.get('forService')) {
+    if (this.get('forService') || isApplicationModal) {
+
+      if (isApplicationModal) {
+        Ember.deprecate('ember-remodal\'s "isApplicationModal" is deprecated and will be removed in ember-remodal 1.0.0. Use "forService" instead.');
+      }
+
       this.get('remodal').set(this.get('name'), this);
     }
   },
