@@ -113,7 +113,7 @@ rendered below the `title`/`text`, or by itself if no `title`/`text` are provide
 
 *If you will be using more than a couple modals in your application,
 please read through here to understand how many of the options work, but refer
-to the [using ember-remodal as a service][1] section for implementation"*
+to the [using ember-remodal as a service][1] section for implementation*
 
 Apply the `remodal-bg` class to anything on your page that you would like blurred
 while the modal is open. A common pattern would be to apply this class to a `div`
