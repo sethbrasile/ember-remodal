@@ -213,10 +213,10 @@ itself with the application-wide `remodal` service.
 {{ember-remodal forService=true}}
 ```
 
-*You can technically place a service modal anywhere in your application, but keep
-in mind that it must currently be rendered in order for your service to use it.
-For this reason, the normal convention would be to place it in the application
-template, so that it is always accessible.*
+*You can place a service modal anywhere in your application, but keep in mind
+that it must currently be rendered in order for your service to use it. For this
+reason, a common convention would be to place `{{ember-remodal forService=true}}`
+in the application template, so that it is always accessible.*
 
 You can then access the modal via the `remodal` service throughout your
 application:
