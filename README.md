@@ -57,7 +57,7 @@ is not provided, that button will not show up.
 - `openButton`: Shows up outside of the modal, allowing a user to click and open
 the modal.
 
-- `linkButton`: Just like `openButton`, but rendered as an `a` tag instead of a
+- `openLink`: Just like `openButton`, but rendered as an `a` tag instead of a
 `button`.
 
 - `confirmButton`: Shows up inside the modal, toward the bottom. With it's
