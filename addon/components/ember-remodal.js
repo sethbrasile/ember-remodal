@@ -37,11 +37,11 @@ export default Component.extend({
       this.setProperties(opts);
     }
 
-    $(document).on('closing', modal, () => {
+    $(document).on('closed', modal, () => {
       this.sendAction('onClose');
     });
 
-    $(document).on('opening', modal, () => {
+    $(document).on('opened', modal, () => {
       this.sendAction('onOpen');
     });
 
