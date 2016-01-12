@@ -109,7 +109,6 @@ export default Component.extend({
         modifier: this.get('modifier')
       };
 
-      this.sendAction('onOpen');
       this.set('modal', modal.remodal(opts));
       this.get('modal').open();
     },
