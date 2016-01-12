@@ -26,6 +26,14 @@ export default Controller.extend({
   },
 
   actions: {
+    onOpenWasFired() {
+      console.log('the onOpen action was fired');
+    },
+
+    onCloseWasFired() {
+      console.log('the onClose action was fired');
+    },
+
     showApplicationModal1() {
       const modal = this.get('remodal');
 
@@ -40,7 +48,10 @@ export default Controller.extend({
 
     showApplicationModal2() {
       const modal = this.get('remodal');
-      modal.open('appModal2');
+
+      modal.open('appModal2').then(() => {
+        console.log('opening a modal can return a promise!');
+      });
     },
 
     showApplicationModal3() {
@@ -52,7 +63,13 @@ export default Controller.extend({
         confirmButton: 'OK!'
       });
 
-      modal.open();
+      modal.open().then(() => {
+        Ember.run.later(() => {
+          modal.close().then(() => {
+            console.log('Closing a modal can happen programmatically. It can also return a promise!');
+          });
+        }, 1000);
+      });
     }
   }
 });

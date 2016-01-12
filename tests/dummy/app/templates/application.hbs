@@ -13,7 +13,7 @@
 
   {{outlet}}
 
-  {{ember-remodal forService=true}}
+  {{ember-remodal forService=true onOpen='onOpenWasFired' onClose='onCloseWasFired'}}
 
   {{#ember-remodal forService=true name='appModal2' title='Named Modal triggered with the "remodal" service'}}
     <p>This modal is triggered by adding a named "application modal" to the "application" template and calling "this.get("remodal").open("name")"</p>
