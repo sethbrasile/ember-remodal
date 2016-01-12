@@ -73,6 +73,16 @@ default setup, when a user clicks this button, the component will:
 - `cancelButton`: Exactly the same as `confirmButton`, but `onCancel` is fired
 instead of `onConfirm`. `closeOnCancel` can also be set to `false`.
 
+- `buttonClasses`: If provided, this string value is added to the `class`
+attribute on all `<button>` tags: `confirmButton`, `openLink`, `confirmButton`,
+and `cancelButton`.
+
+- `outerButtonClasses`: If provided, this string value is added to the `class`
+attribute on `openButton` and `openLink`.
+
+- `innerButtonClasses`: If provided, this string value is added to the `class`
+attribute on the `confirmButton` and the `cancelButton`.
+
 **Button Booleans**
 
 - `disableNativeClose`: If `true`, this keeps the little `x` button from
@@ -389,6 +399,20 @@ You can easily target every portion of the modal.
 - Overlay: `.remodal-overlay` optionally in combination with `.remodal-is-opened` or `.remodal-is-closed`
 - Buttons inside the modal: `.ember-remodal.inner.button`
 - Button outside the modal: `.ember-remodal.outer.button`
+
+You can also set additional classes on any of the provided buttons via:
+
+- `buttonClasses`
+- `outerButtonClasses`
+- `innerButtonClasses`
+
+For instance, if you were using [semantic ui](http://semantic-ui.com/), you may
+want to add the `.ui` class to all of the included buttons. `.button` is already
+applied, so just do:
+
+```hbs
+{{ember-remodal buttonClasses='ui' openButton='Open' confirmButton='Ok!'}}
+```
 
 # Collaborating
 
