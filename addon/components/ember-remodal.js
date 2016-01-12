@@ -53,6 +53,10 @@ export default Component.extend({
 
       this.get('remodal').set(this.get('name'), this);
     }
+
+    if (this.get('linkButton')) {
+      Ember.deprecate('ember-remodal\'s "linkButton" is deprecated and will be removed in ember-remodal 1.0.0. It was a stupid name. You should use "openLink" instead.')
+    }
   },
 
   open() {
