@@ -345,6 +345,33 @@ export default Ember.Whatever.extend({
 });
 ```
 
+### Promises
+
+A modal's `open` and `close` methods return promises. The promise resolves when
+remodal's [corresponding event](https://github.com/VodkaBears/Remodal#events)
+fires. I believe these events are fired *after* opening/closing animations are
+complete.
+
+```js
+export default Ember.Whatever.extend({
+  remodal: Ember.inject.service(),
+
+  actions: {
+    openModal() {
+      this.get('remodal').open('some-modal').then(() => {
+        console.log('some-modal was opened!');
+      });
+    },
+
+    closeModal() {
+      this.get('remodal').close('some-modal').then(() => {
+        console.log('some-modal was closed!');
+      });
+    },
+  }
+});
+```
+
 ## Styling
 
 You can easily target every portion of the modal.
