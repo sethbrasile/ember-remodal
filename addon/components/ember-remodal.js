@@ -5,6 +5,7 @@ const {
   observer,
   inject,
   computed: { oneWay },
+  RSVP: { Promise },
   Component
 } = Ember;
 
@@ -55,11 +56,27 @@ export default Component.extend({
   },
 
   open() {
-    this.send('open');
+    const modal = `[data-remodal-id=${this.get('elementId')}]`;
+
+    return new Promise((resolve) => {
+      $(document).on('opened', modal, () => {
+        resolve();
+      });
+
+      this.send('open');
+    });
   },
 
   close() {
-    this.send('close');
+    const modal = `[data-remodal-id=${this.get('elementId')}]`;
+
+    return new Promise((resolve) => {
+      $(document).on('closed', modal, () => {
+        resolve();
+      });
+
+      this.send('close');
+    });
   },
 
   actions: {

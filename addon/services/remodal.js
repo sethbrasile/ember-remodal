@@ -29,7 +29,7 @@ export default Service.extend({
         modal.setProperties(opts);
       }
 
-      modal.open();
+      return modal.open();
     } else {
       this.modalNotSetError(name);
     }
@@ -39,7 +39,7 @@ export default Service.extend({
     const modal = this.get(name);
 
     if (modal) {
-      modal.close();
+      return modal.close();
     } else {
       this.modalNotSetError(name);
     }
