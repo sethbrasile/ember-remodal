@@ -419,6 +419,7 @@ You can easily target every portion of the modal.
 - Text: `.ember-remodal.paragraph.text`
 - Content yielded with block form: `.ember-remodal.yielded.content`
 - Overlay: `.remodal-overlay`
+- Buttons: `.ember-remodal.button`
 - Buttons inside the modal: `.ember-remodal.inner.button`
 - Button outside the modal: `.ember-remodal.outer.button`
 
