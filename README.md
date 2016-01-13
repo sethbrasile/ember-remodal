@@ -85,7 +85,7 @@ Note that the `title` and `text` properties still work. Both will be displayed
 above the yielded content from the block.
 
 ```hbs
-{{#ember-remodal title='Some Title'}}
+{{#ember-remodal openButton='Open'}}
   <!-- Any content you want displayed in the modal! -->
 {{/ember-remodal}}
 ```
