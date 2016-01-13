@@ -15,23 +15,19 @@ export default Component.extend({
   tagName: 'span',
   modal: null,
 
-  didInitAttrs() {
-    scheduleOnce('afterRender', this, '_registerWithModal');
-  },
-
-  _registerWithModal() {
+  didRender() {
     const modal = this.nearestOfType(EmberRemodal);
     assert('An "er-open-button" MUST be declared inside an "ember-remodal" component block.', !!modal);
-    modal.registerButton(this);
+    modal.set('customButton', true);
     this.set('modal', modal);
   },
 
-  destination: computed('modal', {
+  destination: computed('modal.elementId', {
     get() {
       const modalId = this.get('modal.elementId');
 
       if (modalId) {
-        return `button-outlet-for-${modalId}`;
+        return `open-button-${modalId}`;
       }
     }
   })

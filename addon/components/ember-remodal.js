@@ -17,6 +17,7 @@ export default Component.extend({
   name: 'modal',
   modifier: '',
   modal: null,
+  customButton: false,
   options: null,
   closeOnEscape: true,
   closeOnCancel: true,
@@ -81,10 +82,6 @@ export default Component.extend({
 
       this.send('close');
     });
-  },
-
-  registerButton(button) {
-    this.set('customButton', button);
   },
 
   actions: {
