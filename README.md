@@ -33,6 +33,32 @@ component available in your application.
 *Remember to add the `remodal-bg` class to anything in your app that you want
 blurred while a modal is open!*
 
+### Included Components
+- `ember-remodal`: This is the base component for ember-remodal. This
+component renders and controls a modal in your application. Example:
+
+  ```hbs
+    {{ember-remodal openButton='Open!' text='Text inside a modal.'}}
+  ```
+
+- `er-open-button`: Placed in the block of an `ember-remodal`, this optional
+component allows you to specify your own html to act as the "open button" for a
+modal. Example:
+
+  ```hbs
+    {{#ember-remodal}}
+      <p>This will show up inside the modal</p>
+
+      {{#er-open-button}}
+        <!-- You can put anything you want in here
+        and it will render outside the modal, opening
+        the modal when clicked -->
+      {{/er-open-button}}
+
+      <p>This will also show up inside the modal</p>
+    {{/ember-remodal}}
+  ```
+
 ### Options Summary
 
 #### Remodal Options
