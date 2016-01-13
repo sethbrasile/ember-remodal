@@ -6,7 +6,7 @@ January 17th 2016.
 # ember-remodal
 [![Build Status](https://travis-ci.org/sethbrasile/ember-remodal.svg?branch=master)](https://travis-ci.org/sethbrasile/ember-remodal) [![npm version](https://badge.fury.io/js/ember-remodal.svg)](http://badge.fury.io/js/ember-remodal) [![Ember Observer Score](http://emberobserver.com/badges/ember-remodal.svg)](http://emberobserver.com/addons/ember-remodal)
 
-*This README is up-to-date and accurate as of ember-remodal v0.0.10*
+*This README is up-to-date and accurate as of ember-remodal v0.0.11*
 
 There are many modal addons for Ember, but most of them (in my experience) are
 only useful in a very specific situation. Often, when building large apps, you
@@ -32,6 +32,32 @@ component available in your application.
 
 *Remember to add the `remodal-bg` class to anything in your app that you want
 blurred while a modal is open!*
+
+### Included Components
+- `ember-remodal`: This is the base component for ember-remodal. This
+component renders and controls a modal in your application. Example:
+
+  ```hbs
+    {{ember-remodal openButton='Open!' text='Text inside a modal.'}}
+  ```
+
+- `er-open-button`: Placed in the block of an `ember-remodal`, this optional
+component allows you to specify your own html to act as the "open button" for a
+modal. Example:
+
+  ```hbs
+    {{#ember-remodal}}
+      <p>This will show up inside the modal</p>
+
+      {{#er-open-button}}
+        <!-- You can put anything you want in here
+        and it will render outside the modal, opening
+        the modal when clicked -->
+      {{/er-open-button}}
+
+      <p>This will also show up inside the modal</p>
+    {{/ember-remodal}}
+  ```
 
 ### Options Summary
 
@@ -120,10 +146,6 @@ rendered below the `title`/`text`, or by itself if no `title`/`text` are provide
 
 
 ### Simplest Use-Case
-
-*If you will be using more than a couple modals in your application,
-please read through here to understand how many of the options work, but refer
-to the [using ember-remodal as a service][1] section for implementation*
 
 Apply the `remodal-bg` class to anything on your page that you would like blurred
 while the modal is open. A common pattern would be to apply this class to a `div`

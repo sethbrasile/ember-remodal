@@ -83,6 +83,10 @@ export default Component.extend({
     });
   },
 
+  registerButton(button) {
+    this.set('customButton', button);
+  },
+
   actions: {
     confirm() {
       this.sendAction('onConfirm');

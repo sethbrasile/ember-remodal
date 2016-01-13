@@ -35,7 +35,8 @@
     "ember-disable-proxy-controllers": "^1.0.1",
     "ember-export-application-global": "^1.0.4",
     "ember-suave": "1.2.3",
-    "ember-try": "~0.0.8"
+    "ember-try": "~0.0.8",
+    "ember-wormhole": "0.3.4"
   },
   "keywords": [
     "ember-addon",
