@@ -5,7 +5,6 @@ import layout from '../templates/components/er-open-button';
 const {
   assert,
   computed,
-  run: { scheduleOnce },
   Component
 } = Ember;
 
