@@ -393,8 +393,8 @@ By default, setting this option to true also sets `disableNativeClose` to `true`
 but `disableNativeClose` can be explicitly set back to `false` if you prefer.
 
 - `forService`: If `true`, the modal is registered with the `remodal`
-service in your application. You'll find more on using modals as a service
-[below][1].
+service in your application. You'll find more on using modals as a service in
+the [using ember-remodal as a service][1] section.
 
 ##### Content Options
 
@@ -464,4 +464,4 @@ please feel free to fix it and PR or open an issue.
 For more information on using ember-cli, visit [http://www.ember-cli.com/](http://www.ember-cli.com/).
 
 
-[1]: https://github.com/sethbrasile/ember-remodal#using-ember-remodal-as-a-service
+[1]: #using-ember-remodal-as-a-service
