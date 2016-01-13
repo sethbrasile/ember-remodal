@@ -59,92 +59,6 @@ modal. Example:
     {{/ember-remodal}}
   ```
 
-### Options Summary
-
-#### Remodal Options
-These [remodal options](https://github.com/VodkaBears/Remodal#options) are supported:
-
-- `closeOnOutsideClick` defaults to `true`
-- `closeOnEscape` defaults to `true`
-- `closeOnCancel` defaults to `true`
-- `closeOnConfirm` defaults to `true`
-- `modifier` defaults to an empty string
-- `hashTracking` defaults to `false` - You probably want to leave this one alone.
-It affects Ember's routes/browser-history. It's there if you want to mess.
-
-#### Options Specific to this addon:
-
-##### Button Options
-
-Providing `string` values to these will enable the corresponding button and set
-it's label value to the value provided. There are no default values. If a value
-is not provided, that button will not show up.
-
-- `openButton`: Shows up outside of the modal, allowing a user to click and open
-the modal.
-
-- `openLink`: Just like `openButton`, but rendered as an `a` tag instead of a
-`button`.
-
-- `confirmButton`: Shows up inside the modal, toward the bottom. With it's
-default setup, when a user clicks this button, the component will:
-
-  1. Fire it's `onConfirm` action.
-  2. Close the modal.
-  3. Fire it's `onClose` action.
-
-  `closeOnConfirm` can be set to `false` which will keep steps 2 and 3 from
-  taking place.
-
-- `cancelButton`: Exactly the same as `confirmButton`, but `onCancel` is fired
-instead of `onConfirm`. `closeOnCancel` can also be set to `false`.
-
-- `buttonClasses`: If provided, this string value is added to the `class`
-attribute on all `<button>` tags: `confirmButton`, `openLink`, `confirmButton`,
-and `cancelButton`.
-
-- `outerButtonClasses`: If provided, this string value is added to the `class`
-attribute on `openButton` and `openLink`.
-
-- `innerButtonClasses`: If provided, this string value is added to the `class`
-attribute on the `confirmButton` and the `cancelButton`.
-
-**Button Booleans**
-
-- `disableNativeClose`: If `true`, this keeps the little `x` button from
-appearing in the top left corner of the modal.
-
-*Note on close events:* `onClose` fires when a modal closes for any reason.
-`remodal` doesn't currently offer a hook to allow for `onNativeClose` or
-`onOverlayClose` actions.
-
-##### Functionality Options
-
-- `closeOnOutsideClick`: If `true` (which is the default), this allows the user
-to click the dark overlay outside the modal window to close the modal.
-
-- `closeOnEscape`: If `true` (which is the default), this allows the user to hit
-the `escape` key on their keyboard to close the modal.
-
-- `disableForeground`: If `true`, this causes the white box surrounding the modal
-content to be transparent, and switches the default text color from
-`black` to `white`. When combined with `closeOnOutsideClick: false` This allows
-one to use the modal as an un-exitable overlay, such as a `loading state`.
-By default, setting this option to true also sets `disableNativeClose` to `true`,
-but `disableNativeClose` can be explicitly set back to `false` if you prefer.
-
-- `forService`: If `true`, the modal is registered with the `remodal`
-service in your application. You'll find more on using modals as a service
-[below][1].
-
-##### Content Options
-
-- `title`: The (optional) title is displayed at the top of the modal as an `h2`.
-- `text`: The (optional) text is displayed just under the title as a `p`.
-- Content placed inside the component when used as a block-component will be
-rendered below the `title`/`text`, or by itself if no `title`/`text` are provided.
-
-
 ### Simplest Use-Case
 
 Apply the `remodal-bg` class to anything on your page that you would like blurred
@@ -403,6 +317,92 @@ export default Ember.Whatever.extend({
   }
 });
 ```
+
+### Options
+
+#### Remodal Options
+These [remodal options](https://github.com/VodkaBears/Remodal#options) are supported:
+
+- `closeOnOutsideClick` defaults to `true`
+- `closeOnEscape` defaults to `true`
+- `closeOnCancel` defaults to `true`
+- `closeOnConfirm` defaults to `true`
+- `modifier` defaults to an empty string
+- `hashTracking` defaults to `false` - You probably want to leave this one alone.
+It affects Ember's routes/browser-history. It's there if you want to mess.
+
+#### Options Specific to this addon:
+
+##### Button Options
+
+Providing `string` values to these will enable the corresponding button and set
+it's label value to the value provided. There are no default values. If a value
+is not provided, that button will not show up.
+
+- `openButton`: Shows up outside of the modal, allowing a user to click and open
+the modal.
+
+- `openLink`: Just like `openButton`, but rendered as an `a` tag instead of a
+`button`.
+
+- `confirmButton`: Shows up inside the modal, toward the bottom. With it's
+default setup, when a user clicks this button, the component will:
+
+  1. Fire it's `onConfirm` action.
+  2. Close the modal.
+  3. Fire it's `onClose` action.
+
+  `closeOnConfirm` can be set to `false` which will keep steps 2 and 3 from
+  taking place.
+
+- `cancelButton`: Exactly the same as `confirmButton`, but `onCancel` is fired
+instead of `onConfirm`. `closeOnCancel` can also be set to `false`.
+
+- `buttonClasses`: If provided, this string value is added to the `class`
+attribute on all `<button>` tags: `confirmButton`, `openLink`, `confirmButton`,
+and `cancelButton`.
+
+- `outerButtonClasses`: If provided, this string value is added to the `class`
+attribute on `openButton` and `openLink`.
+
+- `innerButtonClasses`: If provided, this string value is added to the `class`
+attribute on the `confirmButton` and the `cancelButton`.
+
+**Button Booleans**
+
+- `disableNativeClose`: If `true`, this keeps the little `x` button from
+appearing in the top left corner of the modal.
+
+*Note on close events:* `onClose` fires when a modal closes for any reason.
+`remodal` doesn't currently offer a hook to allow for `onNativeClose` or
+`onOverlayClose` actions.
+
+##### Functionality Options
+
+- `closeOnOutsideClick`: If `true` (which is the default), this allows the user
+to click the dark overlay outside the modal window to close the modal.
+
+- `closeOnEscape`: If `true` (which is the default), this allows the user to hit
+the `escape` key on their keyboard to close the modal.
+
+- `disableForeground`: If `true`, this causes the white box surrounding the modal
+content to be transparent, and switches the default text color from
+`black` to `white`. When combined with `closeOnOutsideClick: false` This allows
+one to use the modal as an un-exitable overlay, such as a `loading state`.
+By default, setting this option to true also sets `disableNativeClose` to `true`,
+but `disableNativeClose` can be explicitly set back to `false` if you prefer.
+
+- `forService`: If `true`, the modal is registered with the `remodal`
+service in your application. You'll find more on using modals as a service
+[below][1].
+
+##### Content Options
+
+- `title`: The (optional) title is displayed at the top of the modal as an `h2`.
+- `text`: The (optional) text is displayed just under the title as a `p`.
+- Content placed inside the component when used as a block-component will be
+rendered below the `title`/`text`, or by itself if no `title`/`text` are provided.
+
 
 ## Styling
 
