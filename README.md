@@ -390,8 +390,8 @@ but `disableNativeClose` can be explicitly set back to `false` if you prefer.
 
 - `disableAnimation`: If `true`, this disables remodal's opening/closing
 animations. This is useful for certain situations, such as when you are:
-- Using a modal as a loading state.
-- Facing a modal that needs to programmatically open then close quickly. You
+  - Using a modal as a loading state.
+  - Facing a modal that needs to programmatically open then close quickly. You
 should generally use the [promises that are returned](#promises) from `open` and
 `close` to avoid this, but sometimes promises are more complex to use than is
 preferable. An example of this could be a modal that opens on one route, then
