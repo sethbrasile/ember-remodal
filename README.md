@@ -373,6 +373,11 @@ appearing in the top left corner of the modal.
 `remodal` doesn't currently offer a hook to allow for `onNativeClose` or
 `onOverlayClose` actions.
 
+##### Style Options
+
+- `modalClasses`: If set, this string value will be added to the classes on the
+main modal window.
+
 ##### Functionality Options
 
 - `closeOnOutsideClick`: If `true` (which is the default), this allows the user
@@ -427,6 +432,8 @@ You can easily target every portion of the modal.
 - Buttons: `.ember-remodal.button`
 - Buttons inside the modal: `.ember-remodal.inner.button`
 - Button outside the modal: `.ember-remodal.outer.button`
+
+You can set additional classes on the main modal window via `modalClasses`.
 
 You can also set additional classes on any of the provided buttons via:
 
