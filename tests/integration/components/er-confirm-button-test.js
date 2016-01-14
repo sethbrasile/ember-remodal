@@ -6,19 +6,25 @@ moduleForComponent('er-confirm-button', 'Integration | Component | er confirm bu
 });
 
 test('it renders', function(assert) {
-  
+
   // Set any properties with this.set('myProperty', 'value');
   // Handle any actions with this.on('myAction', function(val) { ... });" + EOL + EOL +
 
-  this.render(hbs`{{er-confirm-button}}`);
+  this.render(hbs`
+    {{#ember-remodal}}
+      {{er-confirm-button}}
+    {{/ember-remodal}}
+  `);
 
   assert.equal(this.$().text().trim(), '');
 
   // Template block usage:" + EOL +
   this.render(hbs`
-    {{#er-confirm-button}}
-      template block text
-    {{/er-confirm-button}}
+    {{#ember-remodal}}
+      {{#er-confirm-button}}
+        template block text
+      {{/er-confirm-button}}
+    {{/ember-remodal}}
   `);
 
   assert.equal(this.$().text().trim(), 'template block text');

@@ -12,8 +12,7 @@ test('it renders', function(assert) {
 
   this.render(hbs`
     {{#ember-remodal}}
-      {{#er-open-button}}
-      {{/er-open-button}}
+      {{er-open-button}}
     {{/ember-remodal}}
   `);
 
