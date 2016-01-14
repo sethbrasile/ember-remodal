@@ -29,7 +29,6 @@ export default Component.extend({
   isApplicationModal: false,
   disableForeground: false,
   disableAnimation: false,
-  // TODO: add disableAnimation to readme
   disableNativeClose: oneWay('disableForeground'),
 
   erOpenButton: false,

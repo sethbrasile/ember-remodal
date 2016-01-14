@@ -292,8 +292,7 @@ export default Ember.Whatever.extend({
 
 A modal's `open` and `close` methods return promises. The promise resolves when
 remodal's [corresponding event](https://github.com/VodkaBears/Remodal#events)
-fires. I believe these events are fired *after* opening/closing animations are
-complete.
+fires.
 
 ```js
 export default Ember.Whatever.extend({
@@ -389,16 +388,25 @@ one to use the modal as an un-exitable overlay, such as a `loading state`.
 By default, setting this option to true also sets `disableNativeClose` to `true`,
 but `disableNativeClose` can be explicitly set back to `false` if you prefer.
 
+- `disableAnimation`: If `true`, this disables remodal's opening/closing
+animations. This is useful for certain situations, such as when you are:
+- Using a modal as a loading state.
+- Facing a modal that needs to programmatically open then close quickly. You
+should generally use the [promises that are returned](#promises) from `open` and
+`close` to avoid this, but sometimes promises are more complex to use than is
+preferable. An example of this could be a modal that opens on one route, then
+closes on another.
+
 - `forService`: If `true`, the modal is registered with the `remodal`
 service in your application. You'll find more on using modals as a service in
 the [using ember-remodal as a service][1] section.
 
 ##### Content Options
 
-- `title`: The (optional) title is displayed at the top of the modal as an `h2`.
-- `text`: The (optional) text is displayed just under the title as a `p`.
-- Content placed inside the component when used as a block-component will be
-rendered below the `title`/`text`, or by itself if no `title`/`text` are provided.
+- `title`: If provided, displayed at the top of the modal as an `h2`.
+- `text`: If provided, displayed under the title as a `p`.
+- Block Content: Content placed inside `ember-remodal`'s block will be rendered
+below the `title`/`text`, or by itself if no `title`/`text` are provided.
 
 
 ## Styling
