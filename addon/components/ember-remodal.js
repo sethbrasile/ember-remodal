@@ -10,9 +10,10 @@ const {
 } = Ember;
 
 export default Component.extend({
+  layout,
+
   remodal: inject.service(),
 
-  layout,
   tagName: 'span',
   name: 'modal',
   modifier: '',
@@ -27,6 +28,10 @@ export default Component.extend({
   isApplicationModal: false,
   disableForeground: false,
   disableNativeClose: oneWay('disableForeground'),
+
+  erOpenButton: false,
+  erCancelButton: false,
+  erConfirmButton: false,
 
   didInitAttrs() {
     const opts = this.get('options');
@@ -81,10 +86,6 @@ export default Component.extend({
 
       this.send('close');
     });
-  },
-
-  registerButton(button) {
-    this.set('customButton', button);
   },
 
   actions: {

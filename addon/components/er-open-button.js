@@ -1,37 +1,22 @@
 import Ember from 'ember';
-import EmberRemodal from './ember-remodal';
+import ButtonMixin from '../mixins/er-button';
 import layout from '../templates/components/er-open-button';
 
 const {
-  assert,
   computed,
-  run: { scheduleOnce },
   Component
 } = Ember;
 
-export default Component.extend({
+export default Component.extend(ButtonMixin, {
   layout,
+  name: 'er-open-button',
 
-  tagName: 'span',
-  modal: null,
-
-  didInitAttrs() {
-    scheduleOnce('afterRender', this, '_registerWithModal');
-  },
-
-  _registerWithModal() {
-    const modal = this.nearestOfType(EmberRemodal);
-    assert('An "er-open-button" MUST be declared inside an "ember-remodal" component block.', !!modal);
-    modal.registerButton(this);
-    this.set('modal', modal);
-  },
-
-  destination: computed('modal', {
+  destination: computed('modal.elementId', {
     get() {
       const modalId = this.get('modal.elementId');
 
       if (modalId) {
-        return `button-outlet-for-${modalId}`;
+        return `open-button-${modalId}`;
       }
     }
   })

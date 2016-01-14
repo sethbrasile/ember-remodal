@@ -1,5 +1,5 @@
-{{#if customButton}}
-  <span {{action 'open'}} id="button-outlet-for-{{elementId}}"></span>
+{{#if erOpenButton}}
+  <span {{action 'open'}} id="open-button-{{elementId}}"></span>
 {{else if linkButton}}
   <a {{action 'open'}} href="#" class="ember-remodal outer link text {{buttonClasses}} {{outerButtonClasses}}" data-test-id="linkButton">{{linkButton}}</a>
 {{else if openLink}}

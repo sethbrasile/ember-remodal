@@ -1,6 +1,8 @@
 .invisible.remodal.window {
   background-color: transparent;
   color: #fff;
+  padding: 0;
+  margin-bottom: 0;
 }
 
 .invisible.remodal.window .native.close {

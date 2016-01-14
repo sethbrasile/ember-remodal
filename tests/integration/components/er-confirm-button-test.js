@@ -1,7 +1,7 @@
 import { moduleForComponent, test } from 'ember-qunit';
 import hbs from 'htmlbars-inline-precompile';
 
-moduleForComponent('er-open-button', 'Integration | Component | er open button', {
+moduleForComponent('er-confirm-button', 'Integration | Component | er confirm button', {
   integration: true
 });
 
@@ -12,7 +12,7 @@ test('it renders', function(assert) {
 
   this.render(hbs`
     {{#ember-remodal}}
-      {{er-open-button}}
+      {{er-confirm-button}}
     {{/ember-remodal}}
   `);
 
@@ -21,9 +21,9 @@ test('it renders', function(assert) {
   // Template block usage:" + EOL +
   this.render(hbs`
     {{#ember-remodal}}
-      {{#er-open-button}}
+      {{#er-confirm-button}}
         template block text
-      {{/er-open-button}}
+      {{/er-confirm-button}}
     {{/ember-remodal}}
   `);
 
