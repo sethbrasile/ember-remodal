@@ -20,7 +20,7 @@
 
   {{ember-remodal isApplicationModal=true name='appModal3'}}
 
-  {{#ember-remodal openButton='Invisible Modal' disableForeground=true}}
+  {{#ember-remodal openButton='Transparent Modal' disableForeground=true}}
     This is white text over the "overlay" background.
     The normal white modal background is hidden.
   {{/ember-remodal}}
@@ -35,6 +35,10 @@
     {{#er-cancel-button}}
       <p>This text is a custom cancel button</p>
     {{/er-cancel-button}}
+
+    {{#er-confirm-button}}
+      <p>This text is a custom confirm button</p>
+    {{/er-confirm-button}}
   {{/ember-remodal}}
 
   {{#ember-remodal}}
@@ -47,5 +51,9 @@
     {{#er-cancel-button}}
       <button class='custom-button'>This is a custom cancel button!</button>
     {{/er-cancel-button}}
+
+    {{#er-confirm-button}}
+      <button class='custom-button'>This is a custom confirm button!</button>
+    {{/er-confirm-button}}
   {{/ember-remodal}}
 </div>
