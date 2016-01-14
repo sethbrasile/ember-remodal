@@ -25,9 +25,6 @@ ember-remodal is compatible with Ember 1.13.x and up.
 ## Installation
 `ember install ember-remodal`
 
-This will add [remodal](http://vodkabears.github.io/remodal/) to your `bower.json` and make the `{{ember-remodal}}`
-component available in your application.
-
 ## Usage
 
 *Remember to add the `remodal-bg` class to anything in your app that you want
