@@ -1,0 +1,56 @@
+{
+  "stats": {
+    "suites": 27,
+    "tests": 28,
+    "passes": 28,
+    "pending": 0,
+    "failures": 0,
+    "start": "2016-01-14T04:44:48.076Z",
+    "end": "2016-01-14T04:44:48.678Z"
+  },
+  "coverage": {
+    "total": {
+      "statementsTotal": 95,
+      "statementsCovered": 33,
+      "percentage": 34.74
+    },
+    "files": [
+      {
+        "name": "ember-remodal/components/ember-remodal",
+        "statementsTotal": 47,
+        "statementsCovered": 8,
+        "percentage": 17.02
+      },
+      {
+        "name": "ember-remodal/components/er-cancel-button",
+        "statementsTotal": 5,
+        "statementsCovered": 4,
+        "percentage": 80
+      },
+      {
+        "name": "ember-remodal/components/er-confirm-button",
+        "statementsTotal": 5,
+        "statementsCovered": 4,
+        "percentage": 80
+      },
+      {
+        "name": "ember-remodal/components/er-open-button",
+        "statementsTotal": 8,
+        "statementsCovered": 5,
+        "percentage": 62.5
+      },
+      {
+        "name": "ember-remodal/mixins/er-button",
+        "statementsTotal": 12,
+        "statementsCovered": 7,
+        "percentage": 58.33
+      },
+      {
+        "name": "ember-remodal/services/remodal",
+        "statementsTotal": 18,
+        "statementsCovered": 5,
+        "percentage": 27.78
+      }
+    ]
+  }
+}

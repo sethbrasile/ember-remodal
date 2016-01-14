@@ -15,6 +15,7 @@
     "remodal": "~1.0.6"
   },
   "devDependencies": {
-    "remodal": "~1.0.6"
+    "remodal": "~1.0.6",
+    "blanket": "~1.1.5"
   }
 }
