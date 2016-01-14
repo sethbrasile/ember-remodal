@@ -4,6 +4,7 @@ import layout from '../templates/components/ember-remodal';
 const {
   observer,
   inject,
+  computed,
   computed: { oneWay },
   RSVP: { Promise },
   Component
@@ -27,6 +28,8 @@ export default Component.extend({
   forService: false,
   isApplicationModal: false,
   disableForeground: false,
+  disableAnimation: false,
+  // TODO: add disableAnimation to readme
   disableNativeClose: oneWay('disableForeground'),
 
   erOpenButton: false,
@@ -63,6 +66,16 @@ export default Component.extend({
       Ember.deprecate('ember-remodal\'s "linkButton" is deprecated and will be removed in ember-remodal 1.0.0. It was a stupid name. You should use "openLink" instead.');
     }
   },
+
+  animationState: computed('disableAnimation', {
+    get() {
+      if (this.get('disableAnimation')) {
+        return 'disable-animation';
+      } else {
+        return '';
+      }
+    }
+  }),
 
   open() {
     const modal = `[data-remodal-id=${this.get('elementId')}]`;
