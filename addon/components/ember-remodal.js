@@ -10,14 +10,14 @@ const {
 } = Ember;
 
 export default Component.extend({
+  layout,
+
   remodal: inject.service(),
 
-  layout,
   tagName: 'span',
   name: 'modal',
   modifier: '',
   modal: null,
-  customButton: false,
   options: null,
   closeOnEscape: true,
   closeOnCancel: true,
@@ -28,6 +28,10 @@ export default Component.extend({
   isApplicationModal: false,
   disableForeground: false,
   disableNativeClose: oneWay('disableForeground'),
+
+  erOpenButton: false,
+  erCancelButton: false,
+  erConfirmButton: false,
 
   didInitAttrs() {
     const opts = this.get('options');

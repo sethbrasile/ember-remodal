@@ -31,6 +31,10 @@
     {{/er-open-button}}
 
     <p>This is content placed inside an ember-remodal's block along with an "er-open-button"</p>
+
+    {{#er-cancel-button}}
+      <p>This text is a custom cancel button</p>
+    {{/er-cancel-button}}
   {{/ember-remodal}}
 
   {{#ember-remodal}}
@@ -39,5 +43,9 @@
     {{/er-open-button}}
 
     <p>This is content placed inside a 2nd ember-remodal's block along with an "er-open-button"</p>
+
+    {{#er-cancel-button}}
+      <button class='custom-button'>This is a custom cancel button!</button>
+    {{/er-cancel-button}}
   {{/ember-remodal}}
 </div>
