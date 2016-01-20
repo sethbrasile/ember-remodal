@@ -8,3 +8,13 @@
 .invisible.remodal.window .native.close {
   color: #fff;
 }
+
+.disable-animation.remodal.remodal-is-opening {
+  -webkit-animation: remodal-opening-keyframes 0;
+  animation: remodal-opening-keyframes 0;
+}
+
+.disable-animation.remodal.remodal-is-closing {
+  -webkit-animation: remodal-closing-keyframes 0;
+  animation: remodal-closing-keyframes 0;
+}

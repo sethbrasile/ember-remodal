@@ -22,7 +22,8 @@ export default Controller.extend({
     cancelButton: 'Cancel',
     title: 'Inline Form',
     linkButton: 'Show Modal 2',
-    text: 'Triggered by the included <a> tag'
+    text: "Triggered by the included <a> tag. This modal also has it's animations disabled.",
+    disableAnimation: true
   },
 
   actions: {

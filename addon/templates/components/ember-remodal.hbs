@@ -8,7 +8,7 @@
   <button {{action 'open'}} class="ember-remodal outer open button {{buttonClasses}} {{outerButtonClasses}}" data-test-id="openButton">{{openButton}}</button>
 {{/if}}
 
-<div data-remodal-id="{{elementId}}" class="ember-remodal {{name}} window {{if disableForeground 'invisible'}}" data-test-id="modalWindow">
+<div data-remodal-id="{{elementId}}" class="ember-remodal {{name}} {{animationState}} window {{if disableForeground 'invisible'}} {{modalClasses}}" data-test-id="modalWindow">
 
   {{#unless disableNativeClose}}
     <button {{action 'close'}} class="remodal-close ember-remodal inner native close" data-test-id="nativeClose"></button>

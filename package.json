@@ -1,7 +1,7 @@
 {
   "name": "ember-remodal",
-  "version": "0.0.0",
-  "description": "The default blueprint for ember-cli addons.",
+  "version": "0.0.17",
+  "description": "An intensely usable modal addon for Ember.js",
   "directories": {
     "doc": "doc",
     "test": "tests"

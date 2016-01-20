@@ -6,7 +6,7 @@ January 17th 2016.
 # ember-remodal
 [![Build Status](https://travis-ci.org/sethbrasile/ember-remodal.svg?branch=master)](https://travis-ci.org/sethbrasile/ember-remodal) [![npm version](https://badge.fury.io/js/ember-remodal.svg)](http://badge.fury.io/js/ember-remodal) [![Ember Observer Score](http://emberobserver.com/badges/ember-remodal.svg)](http://emberobserver.com/addons/ember-remodal)
 
-*This README is up-to-date and accurate as of ember-remodal v0.0.12*
+*This README is up-to-date and accurate as of ember-remodal v0.0.17*
 
 There are many modal addons for Ember, but most of them (in my experience) are
 only useful in a very specific situation. Often, when building large apps, you
@@ -24,9 +24,6 @@ ember-remodal is compatible with Ember 1.13.x and up.
 
 ## Installation
 `ember install ember-remodal`
-
-This will add [remodal](http://vodkabears.github.io/remodal/) to your `bower.json` and make the `{{ember-remodal}}`
-component available in your application.
 
 ## Usage
 
@@ -295,8 +292,7 @@ export default Ember.Whatever.extend({
 
 A modal's `open` and `close` methods return promises. The promise resolves when
 remodal's [corresponding event](https://github.com/VodkaBears/Remodal#events)
-fires. I believe these events are fired *after* opening/closing animations are
-complete.
+fires.
 
 ```js
 export default Ember.Whatever.extend({
@@ -377,6 +373,11 @@ appearing in the top left corner of the modal.
 `remodal` doesn't currently offer a hook to allow for `onNativeClose` or
 `onOverlayClose` actions.
 
+##### Style Options
+
+- `modalClasses`: If set, this string value will be added to the classes on the
+main modal window.
+
 ##### Functionality Options
 
 - `closeOnOutsideClick`: If `true` (which is the default), this allows the user
@@ -392,16 +393,25 @@ one to use the modal as an un-exitable overlay, such as a `loading state`.
 By default, setting this option to true also sets `disableNativeClose` to `true`,
 but `disableNativeClose` can be explicitly set back to `false` if you prefer.
 
+- `disableAnimation`: If `true`, this disables remodal's opening/closing
+animations. This is useful for certain situations, such as when you are:
+  - Using a modal as a loading state.
+  - Facing a modal that needs to programmatically open then close quickly. You
+should generally use the [promises that are returned](#promises) from `open` and
+`close` to avoid this, but sometimes promises are more complex to use than is
+preferable. An example of this could be a modal that opens on one route, then
+closes on another.
+
 - `forService`: If `true`, the modal is registered with the `remodal`
 service in your application. You'll find more on using modals as a service in
 the [using ember-remodal as a service][1] section.
 
 ##### Content Options
 
-- `title`: The (optional) title is displayed at the top of the modal as an `h2`.
-- `text`: The (optional) text is displayed just under the title as a `p`.
-- Content placed inside the component when used as a block-component will be
-rendered below the `title`/`text`, or by itself if no `title`/`text` are provided.
+- `title`: If provided, displayed at the top of the modal as an `h2`.
+- `text`: If provided, displayed under the title as a `p`.
+- Block Content: Content placed inside `ember-remodal`'s block will be rendered
+below the `title`/`text`, or by itself if no `title`/`text` are provided.
 
 
 ## Styling
@@ -422,6 +432,8 @@ You can easily target every portion of the modal.
 - Buttons: `.ember-remodal.button`
 - Buttons inside the modal: `.ember-remodal.inner.button`
 - Button outside the modal: `.ember-remodal.outer.button`
+
+You can set additional classes on the main modal window via `modalClasses`.
 
 You can also set additional classes on any of the provided buttons via:
 
