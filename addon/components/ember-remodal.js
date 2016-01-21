@@ -2,7 +2,6 @@ import Ember from 'ember';
 import layout from '../templates/components/ember-remodal';
 
 const {
-  observer,
   inject,
   computed,
   computed: { oneWay },
