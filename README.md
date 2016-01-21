@@ -4,7 +4,7 @@ even in point releases. I'm rapidly iterating and planning on hitting v1.0.0 by
 January 17th 2016.
 
 # ember-remodal
-[![Build Status](https://travis-ci.org/sethbrasile/ember-remodal.svg?branch=master)](https://travis-ci.org/sethbrasile/ember-remodal) [![npm version](https://badge.fury.io/js/ember-remodal.svg)](http://badge.fury.io/js/ember-remodal) [![Code Climate](https://codeclimate.com/github/sethbrasile/ember-remodal/badges/gpa.svg)](https://codeclimate.com/github/sethbrasile/ember-remodal) [![Issue Count](https://codeclimate.com/github/sethbrasile/ember-remodal/badges/issue_count.svg)](https://codeclimate.com/github/sethbrasile/ember-remodal) [![Ember Observer Score](http://emberobserver.com/badges/ember-remodal.svg)](http://emberobserver.com/addons/ember-remodal) 
+[![Build Status](https://travis-ci.org/sethbrasile/ember-remodal.svg?branch=master)](https://travis-ci.org/sethbrasile/ember-remodal) [![npm version](https://badge.fury.io/js/ember-remodal.svg)](http://badge.fury.io/js/ember-remodal) [![Code Climate](https://codeclimate.com/github/sethbrasile/ember-remodal/badges/gpa.svg)](https://codeclimate.com/github/sethbrasile/ember-remodal) [![Issue Count](https://codeclimate.com/github/sethbrasile/ember-remodal/badges/issue_count.svg)](https://codeclimate.com/github/sethbrasile/ember-remodal) [![Test Coverage](https://codeclimate.com/github/sethbrasile/ember-remodal/badges/coverage.svg)](https://codeclimate.com/github/sethbrasile/ember-remodal/coverage) [![Ember Observer Score](http://emberobserver.com/badges/ember-remodal.svg)](http://emberobserver.com/addons/ember-remodal) 
 
 *This README is up-to-date and accurate as of ember-remodal v0.0.17*
 
