@@ -37,7 +37,6 @@ export default Component.extend({
   didInitAttrs() {
     const opts = this.get('options');
     const modal = `[data-remodal-id=${this.get('elementId')}]`;
-    const isApplicationModal = this.get('isApplicationModal');
 
     if (opts) {
       this.setProperties(opts);
@@ -51,18 +50,11 @@ export default Component.extend({
       this.sendAction('onOpen');
     });
 
-    if (this.get('forService') || isApplicationModal) {
-
-      if (isApplicationModal) {
-        Ember.deprecate('ember-remodal\'s "isApplicationModal" is deprecated and will be removed in ember-remodal 1.0.0. Use "forService" instead.');
-      }
-
+    if (this.get('forService') || this.get('isApplicationModal')) {
       this.get('remodal').set(this.get('name'), this);
     }
 
-    if (this.get('linkButton')) {
-      Ember.deprecate('ember-remodal\'s "linkButton" is deprecated and will be removed in ember-remodal 1.0.0. It was a stupid name. You should use "openLink" instead.');
-    }
+    this._checkForDeprecations();
   },
 
   animationState: computed('disableAnimation', {
@@ -97,6 +89,20 @@ export default Component.extend({
 
       this.send('close');
     });
+  },
+
+  _checkForDeprecations() {
+    Ember.deprecate(
+      'ember-remodal\'s "linkButton" is deprecated and will be removed in ember-remodal 1.0.0. It was a stupid name. You should use "openLink" instead.',
+      !this.get('linkButton'),
+      { id: 'ember-remodal.linkButton', until: '1.0.0' }
+    );
+
+    Ember.deprecate(
+      'ember-remodal\'s "isApplicationModal" is deprecated and will be removed in ember-remodal 1.0.0. Use "forService" instead.',
+      !this.get('isApplicationModal'),
+      { id: 'ember-remodal.isApplicationModal', until: '1.0.0' }
+    );
   },
 
   actions: {
