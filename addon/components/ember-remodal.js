@@ -14,8 +14,9 @@ export default Component.extend({
 
   remodal: inject.service(),
 
-  tagName: 'span',
+  attributeBindings: ['dataTestId:data-test-id'],
   classNames: ['remodal-component'],
+  tagName: 'span',
   name: 'modal',
   modifier: '',
   modal: null,
@@ -38,6 +39,11 @@ export default Component.extend({
   didInitAttrs() {
     const opts = this.get('options');
     const modal = `[data-remodal-id=${this.get('elementId')}]`;
+    const config = this.container.lookupFactory('config:environment');
+
+    if (config && config.environment === 'test') {
+      this.set('disableAnimation', true);
+    }
 
     if (opts) {
       this.setProperties(opts);
