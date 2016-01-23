@@ -16,6 +16,7 @@ export default Component.extend({
   remodal: inject.service(),
 
   tagName: 'span',
+  classNames: ['remodal-component'],
   name: 'modal',
   modifier: '',
   modal: null,
