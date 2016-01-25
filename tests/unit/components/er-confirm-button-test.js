@@ -1,22 +1,27 @@
 import Ember from 'ember';
 import { moduleForComponent, test } from 'ember-qunit';
 
+const {
+  run,
+  Component
+} = Ember;
+
 moduleForComponent('er-confirm-button', 'Unit | Component | er confirm button', {
   unit: true
 });
 
 test('it renders', function(assert) {
   let component = this.subject();
-  component.set('_getModal', () => Ember.Object.create());
+  component.set('_getModal', () => Component.create());
 
   this.render();
   assert.equal(this.$().text().trim(), '');
 });
 
-test('it calls "cancel" on "modal" from "click()"', function(assert) {
+test('it calls "confirm" on "modal" from "click()"', function(assert) {
   let component = this.subject();
   component.set('_getModal', () => {
-    return Ember.Component.extend({
+    return Component.extend({
       confirmCalled: false,
       actions: {
         confirm() {
@@ -26,9 +31,9 @@ test('it calls "cancel" on "modal" from "click()"', function(assert) {
     }).create();
   });
 
-  Ember.run(() => this.render());
+  run(() => this.render());
   assert.notOk(component.get('modal.confirmCalled'));
 
-  Ember.run(() => component.click());
+  run(() => component.click());
   assert.ok(component.get('modal.confirmCalled'));
 });

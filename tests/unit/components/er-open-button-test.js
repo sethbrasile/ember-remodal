@@ -1,14 +1,22 @@
 import Ember from 'ember';
 import { moduleForComponent, test } from 'ember-qunit';
 
+const {
+  run,
+  Component
+} = Ember;
+
 moduleForComponent('er-open-button', 'Unit | Component | er open button', {
-  needs: ['component:ember-wormhole'],
-  unit: true
+  unit: true,
+
+  beforeEach() {
+    this.register('component:ember-wormhole', Component.extend());
+  }
 });
 
 test('it renders', function(assert) {
   let component = this.subject();
-  component.set('_getModal', () => Ember.Object.create());
+  component.set('_getModal', () => Component.create());
 
   this.render();
   assert.equal(this.$().text().trim(), '');
@@ -16,11 +24,10 @@ test('it renders', function(assert) {
 
 test('it properly sets "destination"', function(assert) {
   let component = this.subject();
-  component.set('_getModal', () => Ember.Object.create({ elementId: 1 }));
+  component.set('_getModal', () => Component.create({ elementId: 1 }));
 
-  Ember.run(() => {
-    // This will throw a "not in dom" error from ember-wormhole
-    assert.throws(() => this.render());
+  run(() => {
+    this.render();
     assert.equal(component.get('destination'), 'open-button-1');
   });
 });
