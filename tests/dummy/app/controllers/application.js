@@ -14,7 +14,8 @@ export default Controller.extend({
     confirmButton: 'Confirm',
     openButton: 'Show Modal 1',
     cancelButton: 'Cancel',
-    title: 'Block Form'
+    title: 'Block Form',
+    dataTestId: 'simple-inline'
   },
 
   options2: {

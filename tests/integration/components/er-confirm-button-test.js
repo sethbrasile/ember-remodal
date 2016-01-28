@@ -6,9 +6,7 @@ moduleForComponent('er-confirm-button', 'Integration | Component | er confirm bu
 });
 
 test('it renders', function(assert) {
-
-  // Set any properties with this.set('myProperty', 'value');
-  // Handle any actions with this.on('myAction', function(val) { ... });" + EOL + EOL +
+  assert.expect(1);
 
   this.render(hbs`
     {{#ember-remodal}}
@@ -17,8 +15,27 @@ test('it renders', function(assert) {
   `);
 
   assert.equal(this.$().text().trim(), '');
+});
 
-  // Template block usage:" + EOL +
+test('it errors when not nested in an "ember-remodal"', function(assert) {
+  assert.expect(1);
+
+  this.set('_getModal', () => null);
+
+  const component = () => {
+    this.render(hbs`
+      {{#er-confirm-button _getModal=_getModal}}
+        template block text
+      {{/er-confirm-button}}
+    `);
+  };
+
+  assert.throws(component);
+});
+
+test('it does not error when nested in an "ember-remodal"', function(assert) {
+  assert.expect(1);
+
   this.render(hbs`
     {{#ember-remodal}}
       {{#er-confirm-button}}
