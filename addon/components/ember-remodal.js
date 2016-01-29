@@ -49,11 +49,11 @@ export default Component.extend({
       this.setProperties(opts);
     }
 
-    $(document).on('closed', modal, () => {
+    Ember.$(document).on('closed', modal, () => {
       this.sendAction('onClose');
     });
 
-    $(document).on('opened', modal, () => {
+    Ember.$(document).on('opened', modal, () => {
       this.sendAction('onOpen');
     });
 
@@ -78,7 +78,7 @@ export default Component.extend({
     const modal = `[data-remodal-id=${this.get('elementId')}]`;
 
     return new Promise((resolve) => {
-      $(document).on('opened', modal, () => {
+      Ember.$(document).on('opened', modal, () => {
         resolve();
       });
 
@@ -90,7 +90,7 @@ export default Component.extend({
     const modal = `[data-remodal-id=${this.get('elementId')}]`;
 
     return new Promise((resolve) => {
-      $(document).on('closed', modal, () => {
+      Ember.$(document).on('closed', modal, () => {
         resolve();
       });
 
@@ -130,7 +130,7 @@ export default Component.extend({
     },
 
     open() {
-      const modal = $(`[data-remodal-id=${this.get('elementId')}]`);
+      const modal = Ember.$(`[data-remodal-id=${this.get('elementId')}]`);
       const opts = {
         hashTracking: this.get('hashTracking'),
         closeOnOutsideClick: this.get('closeOnOutsideClick'),

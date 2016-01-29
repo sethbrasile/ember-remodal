@@ -22,7 +22,8 @@ export default Service.extend({
   hashTracking: alias('modal.hashTracking'),
   closeOnOutsideClick: alias('modal.closeOnOutsideClick'),
 
-  open(name='modal', opts) {
+  open(suppliedName, opts) {
+    const name = suppliedName || 'modal';
     const modal = this.get(name);
 
     if (modal) {
@@ -36,7 +37,8 @@ export default Service.extend({
     }
   },
 
-  close(name='modal') {
+  close(suppliedName) {
+    const name = suppliedName || 'modal';
     const modal = this.get(name);
 
     if (modal) {
