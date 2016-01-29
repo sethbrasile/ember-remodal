@@ -8,8 +8,7 @@
     "ember-qunit-notifications": "0.1.0",
     "jquery": "1.11.3",
     "loader.js": "^3.5.0",
-    "qunit": "~1.20.0",
-    "remodal": "~1.0.6"
+    "remodal": "^1.0.6"
   },
   "resolutions": {
     "ember": "2.3.0"
