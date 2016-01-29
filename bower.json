@@ -1,7 +1,7 @@
 {
   "name": "ember-remodal",
   "dependencies": {
-    "ember": "2.2.0",
+    "ember": "2.3.0",
     "ember-cli-shims": "0.1.0",
     "ember-cli-test-loader": "0.2.2",
     "ember-load-initializers": "0.1.7",
@@ -12,7 +12,7 @@
     "remodal": "~1.0.6"
   },
   "resolutions": {
-    "ember": "2.2.0"
+    "ember": "2.3.0"
   },
   "devDependencies": {
     "blanket": "~1.1.5"
