@@ -2,6 +2,7 @@ import Ember from 'ember';
 import layout from '../templates/components/ember-remodal';
 
 const {
+  deprecate,
   inject,
   computed,
   computed: { oneWay },
@@ -99,13 +100,13 @@ export default Component.extend({
   },
 
   _checkForDeprecations() {
-    Ember.deprecate(
+    deprecate(
       'ember-remodal\'s "linkButton" is deprecated and will be removed in ember-remodal 1.0.0. It was a stupid name. You should use "openLink" instead.',
       !this.get('linkButton'),
       { id: 'ember-remodal.linkButton', until: '1.0.0' }
     );
 
-    Ember.deprecate(
+    deprecate(
       'ember-remodal\'s "isApplicationModal" is deprecated and will be removed in ember-remodal 1.0.0. Use "forService" instead.',
       !this.get('isApplicationModal'),
       { id: 'ember-remodal.isApplicationModal', until: '1.0.0' }
