@@ -1,55 +1,55 @@
 {
   "stats": {
-    "suites": 27,
-    "tests": 28,
-    "passes": 28,
+    "suites": 36,
+    "tests": 53,
+    "passes": 53,
     "pending": 0,
     "failures": 0,
-    "start": "2016-01-14T04:44:48.076Z",
-    "end": "2016-01-14T04:44:48.678Z"
+    "start": "2016-01-29T00:36:23.159Z",
+    "end": "2016-01-29T00:36:25.389Z"
   },
   "coverage": {
     "total": {
-      "statementsTotal": 95,
-      "statementsCovered": 33,
-      "percentage": 34.74
+      "statementsTotal": 99,
+      "statementsCovered": 66,
+      "percentage": 66.67
     },
     "files": [
       {
-        "name": "ember-remodal/components/ember-remodal",
-        "statementsTotal": 47,
-        "statementsCovered": 8,
-        "percentage": 17.02
-      },
-      {
-        "name": "ember-remodal/components/er-cancel-button",
-        "statementsTotal": 5,
-        "statementsCovered": 4,
-        "percentage": 80
-      },
-      {
-        "name": "ember-remodal/components/er-confirm-button",
-        "statementsTotal": 5,
-        "statementsCovered": 4,
-        "percentage": 80
-      },
-      {
-        "name": "ember-remodal/components/er-open-button",
-        "statementsTotal": 8,
-        "statementsCovered": 5,
-        "percentage": 62.5
-      },
-      {
         "name": "ember-remodal/mixins/er-button",
         "statementsTotal": 12,
-        "statementsCovered": 7,
-        "percentage": 58.33
+        "statementsCovered": 12,
+        "percentage": 100
+      },
+      {
+        "name": "ember-remodal/components/ember-remodal",
+        "statementsTotal": 51,
+        "statementsCovered": 31,
+        "percentage": 60.78
       },
       {
         "name": "ember-remodal/services/remodal",
         "statementsTotal": 18,
         "statementsCovered": 5,
         "percentage": 27.78
+      },
+      {
+        "name": "ember-remodal/components/er-open-button",
+        "statementsTotal": 8,
+        "statementsCovered": 8,
+        "percentage": 100
+      },
+      {
+        "name": "ember-remodal/components/er-cancel-button",
+        "statementsTotal": 5,
+        "statementsCovered": 5,
+        "percentage": 100
+      },
+      {
+        "name": "ember-remodal/components/er-confirm-button",
+        "statementsTotal": 5,
+        "statementsCovered": 5,
+        "percentage": 100
       }
     ]
   }
