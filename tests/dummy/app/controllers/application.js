@@ -15,7 +15,8 @@ export default Controller.extend({
     openButton: 'Show Modal 1',
     cancelButton: 'Cancel',
     title: 'Block Form',
-    dataTestId: 'simple-inline'
+    dataTestId: 'simple-inline',
+    disableAnimation: true
   },
 
   options2: {
@@ -23,8 +24,7 @@ export default Controller.extend({
     cancelButton: 'Cancel',
     title: 'Inline Form',
     linkButton: 'Show Modal 2',
-    text: "Triggered by the included <a> tag. This modal also has it's animations disabled.",
-    disableAnimation: true
+    text: 'Triggered by the included <a> tag.'
   },
 
   actions: {
