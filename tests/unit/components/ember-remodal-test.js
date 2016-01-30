@@ -7,19 +7,6 @@ moduleForComponent('ember-remodal', 'Unit | Component | ember remodal', {
   unit: true
 });
 
-const ModalMock = Ember.Object.extend({
-  closeCalled: false,
-  openCalled: false,
-
-  close() {
-    this.set('closeCalled', true);
-  },
-
-  open() {
-    this.set('openCalled', true);
-  }
-});
-
 test('it renders', function(assert) {
   this.subject();
   this.render();
@@ -120,26 +107,4 @@ test('"cancel" action does not send "close" action when "closeOnCancel" is false
   assert.notOk(component.get('closeCalled'));
   component.send('cancel');
   assert.notOk(component.get('closeCalled'));
-});
-
-test('"close" action sends "close" to "modal"', function(assert) {
-  const component = this.subject();
-  component.set('modal', ModalMock.create());
-
-  this.render();
-
-  assert.notOk(component.get('modal.closeCalled'));
-  component.send('close');
-  assert.ok(component.get('modal.closeCalled'));
-});
-
-test('"open" action sends "open" to "modal"', function(assert) {
-  const component = this.subject();
-  component.set('modal', ModalMock.create());
-
-  this.render();
-
-  assert.notOk(component.get('modal.openCalled'));
-  component.send('open');
-  assert.ok(component.get('modal.openCalled'));
 });

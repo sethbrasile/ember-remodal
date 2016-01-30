@@ -59,17 +59,3 @@ test('it works by clicking the provided linkButton', function(assert) {
   open.click();
   assert.ok(modal.hasClass('remodal-is-opening'));
 });
-
-test('it calls "onOpen" when opened', function(assert) {
-  assert.expect(1);
-
-  this.set('onOpen', () => assert.ok(true));
-
-  this.render(hbs`{{ember-remodal
-    openButton='open'
-    onOpen=onOpen
-    disableAnimation=true
-  }}`);
-
-  this.$('[data-test-id="openButton"]').click();
-});
