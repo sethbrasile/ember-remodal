@@ -75,7 +75,7 @@ export default Component.extend({
 
     return new Promise((resolve) => {
       Ember.$(document).on('opened', modal, () => {
-        resolve();
+        resolve(this);
       });
 
       this.send('open');
@@ -87,7 +87,7 @@ export default Component.extend({
 
     return new Promise((resolve) => {
       Ember.$(document).on('closed', modal, () => {
-        resolve();
+        resolve(this);
       });
 
       this.send('close');
