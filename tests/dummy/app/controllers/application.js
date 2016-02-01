@@ -70,7 +70,7 @@ export default Controller.extend({
           modal.close().then(() => {
             console.log('Closing a modal can happen programmatically. It can also return a promise!');
           });
-        }, 1000);
+        }, 500);
       });
     }
   }
