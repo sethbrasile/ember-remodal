@@ -66,6 +66,44 @@ test('if "modal" exists, "open" action calls "open()" on "modal"', function(asse
   });
 });
 
+test('if "modal" does not exist, "open" action calls "_createInstanceAndOpen"', function(assert) {
+  assert.expect(1);
+
+  run(() => {
+    const component = this.subject({
+      methodCalled: false,
+
+      _createInstanceAndOpen() {
+        this.set('methodCalled', true);
+      }
+    });
+
+    this.render();
+
+    run(() => component.send('open'));
+    run(() => assert.ok(component.get('methodCalled')));
+  });
+});
+
+test('if "modal" does not exist, "open" action calls "_createInstanceAndOpen"', function(assert) {
+  assert.expect(1);
+
+  run(() => {
+    const component = this.subject({
+      methodCalled: false,
+
+      _createInstanceAndOpen() {
+        this.set('methodCalled', true);
+      }
+    });
+
+    this.render();
+
+    run(() => component.send('open'));
+    run(() => assert.ok(component.get('methodCalled')));
+  });
+});
+
 test('"confirm" action sends "onConfirm" action', function(assert) {
   assert.expect(2);
 
