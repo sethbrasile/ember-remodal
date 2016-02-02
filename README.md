@@ -15,7 +15,11 @@ This addon aims to be usable in a variety of situations. Also, there weren't any
 write one :D
 
 ## Compatibility
-ember-remodal is compatible with Ember 1.13.x and up.
+ember-remodal is compatible with Ember 1.13.x and up and is tested against:
+- 1.13.x
+- release (2.3.0 as of v0.0.19)
+- beta
+- canary
 
 ## Installation
 `ember install ember-remodal`
