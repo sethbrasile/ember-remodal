@@ -12,6 +12,19 @@ moduleForComponent('ember-remodal', 'Unit | Component | ember remodal', {
   unit: true
 });
 
+const ModalMock = Ember.Object.extend({
+  openCalled: false,
+  closeCalled: false,
+
+  open() {
+    this.set('openCalled', true);
+  },
+
+  close() {
+    this.set('closeCalled', true);
+  }
+});
+
 test('it renders', function(assert) {
   assert.expect(1);
 
@@ -49,15 +62,7 @@ test('if "modal" exists, "open" action calls "open()" on "modal"', function(asse
   assert.expect(1);
 
   run(() => {
-    const component = this.subject({
-      modal: Ember.Object.create({
-        openCalled: false,
-
-        open() {
-          this.set('openCalled', true);
-        }
-      })
-    });
+    const component = this.subject({ modal: ModalMock.create() });
 
     this.render();
 
@@ -108,14 +113,12 @@ test('"confirm" action sends "onConfirm" action', function(assert) {
   assert.expect(2);
 
   run(() => {
-    const component = this.subject();
+    const component = this.subject({ modal: ModalMock.create() });
     component.set('onConfirmCalled', false);
 
     component.set('onConfirm', () => {
       component.set('onConfirmCalled', true);
     });
-
-    component.set('actions.close', () => { /* no-op */ });
 
     this.render();
 
@@ -129,18 +132,13 @@ test('"confirm" action sends "close" action', function(assert) {
   assert.expect(2);
 
   run(() => {
-    const component = this.subject();
-    component.set('closeCalled', false);
-
-    component.set('actions.close', () => {
-      component.set('closeCalled', true);
-    });
+    const component = this.subject({ modal: ModalMock.create() });
 
     this.render();
 
-    assert.notOk(component.get('closeCalled'));
+    assert.notOk(component.get('modal.closeCalled'));
     component.send('confirm');
-    assert.ok(component.get('closeCalled'));
+    assert.ok(component.get('modal.closeCalled'));
   });
 });
 
@@ -148,19 +146,14 @@ test('"confirm" action does not send "close" action when "closeOnConfirm" is fal
   assert.expect(2);
 
   run(() => {
-    const component = this.subject();
-    component.set('closeCalled', false);
+    const component = this.subject({ modal: ModalMock.create() });
     component.set('closeOnConfirm', false);
-
-    component.set('actions.close', () => {
-      component.set('closeCalled', true);
-    });
 
     this.render();
 
-    assert.notOk(component.get('closeCalled'));
+    assert.notOk(component.get('modal.closeCalled'));
     component.send('confirm');
-    assert.notOk(component.get('closeCalled'));
+    assert.notOk(component.get('modal.closeCalled'));
   });
 });
 
@@ -168,18 +161,13 @@ test('"cancel" action sends "close" action', function(assert) {
   assert.expect(2);
 
   run(() => {
-    const component = this.subject();
-    component.set('closeCalled', false);
-
-    component.set('actions.close', () => {
-      component.set('closeCalled', true);
-    });
+    const component = this.subject({ modal: ModalMock.create() });
 
     this.render();
 
-    assert.notOk(component.get('closeCalled'));
+    assert.notOk(component.get('modal.closeCalled'));
     component.send('cancel');
-    assert.ok(component.get('closeCalled'));
+    assert.ok(component.get('modal.closeCalled'));
   });
 });
 
@@ -187,18 +175,13 @@ test('"cancel" action does not send "close" action when "closeOnCancel" is false
   assert.expect(2);
 
   run(() => {
-    const component = this.subject();
-    component.set('closeCalled', false);
+    const component = this.subject({ modal: ModalMock.create() });
     component.set('closeOnCancel', false);
-
-    component.set('actions.close', () => {
-      component.set('closeCalled', true);
-    });
 
     this.render();
 
-    assert.notOk(component.get('closeCalled'));
+    assert.notOk(component.get('modal.closeCalled'));
     component.send('cancel');
-    assert.notOk(component.get('closeCalled'));
+    assert.notOk(component.get('modal.closeCalled'));
   });
 });
