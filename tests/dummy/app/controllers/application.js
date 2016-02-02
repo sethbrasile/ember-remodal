@@ -49,28 +49,26 @@ export default Controller.extend({
     },
 
     showApplicationModal2() {
-      const modal = this.get('remodal');
-
-      modal.open('appModal2').then(() => {
+      this.get('remodal').open('appModal2').then((modal) => {
         console.log('opening a modal can return a promise!');
+        console.log(`${modal.get('name')} was opened!`);
       });
     },
 
     showApplicationModal3() {
-      const modal = this.get('remodal.appModal3');
-
-      modal.setProperties({
+      this.get('remodal').open('appModal3', {
         title: 'Named Modal triggered with the "remodal" service',
         text: 'This modal is triggered by adding a named "application modal" to the "application" template and calling this.get("remodal").open("name")',
         confirmButton: 'OK!'
-      });
+      })
 
-      modal.open().then(() => {
-        Ember.run.later(() => {
-          modal.close().then(() => {
-            console.log('Closing a modal can happen programmatically. It can also return a promise!');
-          });
-        }, 500);
+      .then((modal) => {
+        console.log(`${modal.get('name')} was opened!`);
+        return modal.close();
+      })
+
+      .then((modal) => {
+        console.log(`${modal.get('name')} was closed!`);
       });
     }
   }
