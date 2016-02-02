@@ -508,7 +508,8 @@ fix is highly dependent on your application code and **will not always work**.
 
 - Use `disableAnimation=true` in the modal's options. This will cause a modal
 to open/close *near* instantaneously, but again, is highly dependent on your
-application code and will also, **not always work**.
+application code (and potentially the end-user's device) and will also,
+**not always work**.
 
 
 # Collaborating
