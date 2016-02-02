@@ -2,18 +2,20 @@ import Ember from 'ember';
 import layout from '../templates/components/ember-remodal';
 
 const {
+  deprecate,
   inject,
   computed,
   computed: { oneWay },
+  on,
   RSVP: { Promise },
+  run: { scheduleOnce },
+  sendEvent,
   Component
 } = Ember;
 
 export default Component.extend({
   layout,
-
   remodal: inject.service(),
-
   attributeBindings: ['dataTestId:data-test-id'],
   classNames: ['remodal-component'],
   tagName: 'span',
@@ -31,38 +33,34 @@ export default Component.extend({
   disableForeground: false,
   disableAnimation: false,
   disableNativeClose: oneWay('disableForeground'),
-
   erOpenButton: false,
   erCancelButton: false,
   erConfirmButton: false,
 
   didInitAttrs() {
     const opts = this.get('options');
-    const modal = `[data-remodal-id=${this.get('elementId')}]`;
-    const config = this.container.lookupFactory('config:environment');
-
-    if (config && config.environment === 'test') {
-      this.set('disableAnimation', true);
-    }
 
     if (opts) {
       this.setProperties(opts);
     }
 
-    $(document).on('closed', modal, () => {
-      this.sendAction('onClose');
-    });
-
-    $(document).on('opened', modal, () => {
-      this.sendAction('onOpen');
-    });
-
     if (this.get('forService') || this.get('isApplicationModal')) {
       this.get('remodal').set(this.get('name'), this);
     }
 
-    this._checkForDeprecations();
+    scheduleOnce('afterRender', this, '_registerObservers');
+    scheduleOnce('afterRender', this, '_checkForDeprecations');
   },
+
+  willDestroy() {
+    scheduleOnce('afterRender', this, '_deregisterObservers');
+  },
+
+  modalId: computed('elementId', {
+    get() {
+      return `[data-remodal-id=${this.get('elementId')}]`;
+    }
+  }),
 
   animationState: computed('disableAnimation', {
     get() {
@@ -75,11 +73,11 @@ export default Component.extend({
   }),
 
   open() {
-    const modal = `[data-remodal-id=${this.get('elementId')}]`;
+    const modal = this.get('modalId');
 
     return new Promise((resolve) => {
-      $(document).on('opened', modal, () => {
-        resolve();
+      Ember.$(document).one('opened', modal, () => {
+        resolve(this);
       });
 
       this.send('open');
@@ -87,25 +85,57 @@ export default Component.extend({
   },
 
   close() {
-    const modal = `[data-remodal-id=${this.get('elementId')}]`;
+    const modal = this.get('modalId');
 
     return new Promise((resolve) => {
-      $(document).on('closed', modal, () => {
-        resolve();
+      Ember.$(document).one('closed', modal, () => {
+        resolve(this);
       });
 
       this.send('close');
     });
   },
 
+  _createInstanceAndOpen() {
+    const modal = Ember.$(this.get('modalId')).remodal({
+      hashTracking: this.get('hashTracking'),
+      closeOnOutsideClick: this.get('closeOnOutsideClick'),
+      closeOnEscape: this.get('closeOnEscape'),
+      modifier: this.get('modifier')
+    });
+
+    this.set('modal', modal);
+    modal.open();
+  },
+
+  _registerObservers() {
+    const modal = this.get('modalId');
+    Ember.$(document).on('opened', modal, () => sendEvent(this, 'opened'));
+    Ember.$(document).on('closed', modal, () => sendEvent(this, 'closed'));
+  },
+
+  _deregisterObservers() {
+    const modal = this.get('modalId');
+    Ember.$(document).off('opened', modal);
+    Ember.$(document).off('closed', modal);
+  },
+
+  openDidFire: on('opened', function() {
+    this.sendAction('onOpen');
+  }),
+
+  closeDidFire: on('closed', function() {
+    this.sendAction('onClose');
+  }),
+
   _checkForDeprecations() {
-    Ember.deprecate(
+    deprecate(
       'ember-remodal\'s "linkButton" is deprecated and will be removed in ember-remodal 1.0.0. It was a stupid name. You should use "openLink" instead.',
       !this.get('linkButton'),
       { id: 'ember-remodal.linkButton', until: '1.0.0' }
     );
 
-    Ember.deprecate(
+    deprecate(
       'ember-remodal\'s "isApplicationModal" is deprecated and will be removed in ember-remodal 1.0.0. Use "forService" instead.',
       !this.get('isApplicationModal'),
       { id: 'ember-remodal.isApplicationModal', until: '1.0.0' }
@@ -130,16 +160,13 @@ export default Component.extend({
     },
 
     open() {
-      const modal = $(`[data-remodal-id=${this.get('elementId')}]`);
-      const opts = {
-        hashTracking: this.get('hashTracking'),
-        closeOnOutsideClick: this.get('closeOnOutsideClick'),
-        closeOnEscape: this.get('closeOnEscape'),
-        modifier: this.get('modifier')
-      };
+      const modal = this.get('modal');
 
-      this.set('modal', modal.remodal(opts));
-      this.get('modal').open();
+      if (modal) {
+        modal.open();
+      } else {
+        scheduleOnce('afterRender', this, '_createInstanceAndOpen');
+      }
     },
 
     close() {
