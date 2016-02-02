@@ -45,6 +45,27 @@ test('"close()" returns a promise', function(assert) {
   });
 });
 
+test('if "modal" exists, "open" action calls "open()" on "modal"', function(assert) {
+  assert.expect(1);
+
+  run(() => {
+    const component = this.subject({
+      modal: Ember.Object.create({
+        openCalled: false,
+
+        open() {
+          this.set('openCalled', true);
+        }
+      })
+    });
+
+    this.render();
+
+    component.send('open');
+    assert.ok(component.get('modal.openCalled'));
+  });
+});
+
 test('"confirm" action sends "onConfirm" action', function(assert) {
   assert.expect(2);
 

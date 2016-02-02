@@ -1,18 +1,18 @@
 {
   "stats": {
     "suites": 65,
-    "tests": 102,
-    "passes": 102,
+    "tests": 103,
+    "passes": 103,
     "pending": 0,
     "failures": 0,
-    "start": "2016-02-02T00:09:21.584Z",
-    "end": "2016-02-02T00:09:24.353Z"
+    "start": "2016-02-02T00:18:12.327Z",
+    "end": "2016-02-02T00:18:15.082Z"
   },
   "coverage": {
     "total": {
       "statementsTotal": 113,
-      "statementsCovered": 112,
-      "percentage": 99.12
+      "statementsCovered": 113,
+      "percentage": 100
     },
     "files": [
       {
@@ -24,8 +24,8 @@
       {
         "name": "ember-remodal/components/ember-remodal",
         "statementsTotal": 63,
-        "statementsCovered": 62,
-        "percentage": 98.41
+        "statementsCovered": 63,
+        "percentage": 100
       },
       {
         "name": "ember-remodal/services/remodal",
