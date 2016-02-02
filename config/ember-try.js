@@ -6,7 +6,7 @@ module.exports = {
       dependencies: { }
     },
     {
-      name: 'ember 1.13.x series',
+      name: 'ember-1-13',
       dependencies: {
         'ember': '1.13.x'
       }
