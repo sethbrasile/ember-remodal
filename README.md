@@ -412,10 +412,11 @@ key on their keyboard to close the modal.
 
 - `disableForeground`: If `true`, this causes the white box surrounding the modal
 content to be transparent, and switches the default text color from
-`black` to `white`. When combined with `closeOnOutsideClick: false` This allows
-one to use the modal as an un-exitable overlay, such as a `loading state`.
-By default, setting this option to true also sets `disableNativeClose` to `true`,
-but `disableNativeClose` can be explicitly set back to `false` if you prefer.
+`black` to `white`. When combined with `closeOnOutsideClick: false` and
+`closeOnEscape: false`, this allows one to use the modal as an un-exitable
+overlay, such as a `loading state`. By default, setting this option to true
+also sets `disableNativeClose` to `true`, but `disableNativeClose` can be
+explicitly set back to `false` if you prefer.
 
 - `disableAnimation`: If `true`, this disables remodal's opening/closing
 animations. This is useful for certain situations, such as when you are:
