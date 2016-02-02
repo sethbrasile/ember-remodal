@@ -105,7 +105,7 @@ export default Component.extend({
     });
 
     this.set('modal', modal);
-    modal.open();
+    this.send('open');
   },
 
   _registerObservers() {
@@ -142,6 +142,14 @@ export default Component.extend({
     );
   },
 
+  _openModal() {
+    this.get('modal').open();
+  },
+
+  _closeModal() {
+    this.get('modal').close();
+  },
+
   actions: {
     confirm() {
       this.sendAction('onConfirm');
@@ -160,17 +168,15 @@ export default Component.extend({
     },
 
     open() {
-      const modal = this.get('modal');
-
-      if (modal) {
-        modal.open();
+      if (this.get('modal')) {
+        scheduleOnce('afterRender', this, '_openModal');
       } else {
         scheduleOnce('afterRender', this, '_createInstanceAndOpen');
       }
     },
 
     close() {
-      this.get('modal').close();
+      scheduleOnce('afterRender', this, '_closeModal');
     }
   }
 });
