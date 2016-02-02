@@ -1,7 +1,10 @@
 import Ember from 'ember';
 import { moduleFor, test } from 'ember-qunit';
 
-const { run } = Ember;
+const {
+  RSVP: { Promise },
+  run
+} = Ember;
 
 moduleFor('service:remodal', 'Unit | Service | remodal', {
   // Specify the other units that are required for this test.
@@ -14,6 +17,7 @@ const ModalMock = Ember.Object.extend({
 
   open() {
     this.set('openCalled', true);
+    return new Promise((resolve) => resolve(this));
   },
 
   close() {
@@ -54,29 +58,45 @@ test('"_modalNotSetError" throws an error', function(assert) {
 test("open() sets a random prop from 2nd param POJO onto 'modal'", function(assert) {
   const service = this.subject({ modal: ModalMock.create() });
   assert.notOk(service.get('modal.randomProp'));
-  run(() => service.open('', { randomProp: true }));
-  assert.ok(service.get('modal.randomProp'));
+
+  return run(() => {
+    return service.open('modal', { randomProp: true }).then(() => {
+      assert.ok(service.get('modal.randomProp'));
+    });
+  });
 });
 
 test('open() sets a random prop from 2nd param POJO onto named modal', function(assert) {
   const service = this.subject({ test: ModalMock.create() });
   assert.notOk(service.get('test.randomProp'));
-  run(() => service.open('test', { randomProp: true }));
-  assert.ok(service.get('test.randomProp'));
+
+  return run(() => {
+    return service.open('test', { randomProp: true }).then(() => {
+      assert.ok(service.get('test.randomProp'));
+    });
+  });
 });
 
 test("open() sets a supported prop from 2nd param POJO onto 'modal'", function(assert) {
   const service = this.subject({ modal: ModalMock.create() });
   assert.notOk(service.get('modal.disableForeground'));
-  run(() => service.open('', { disableForeground: true }));
-  assert.ok(service.get('modal.disableForeground'));
+
+  return run(() => {
+    return service.open('modal', { disableForeground: true }).then(() => {
+      assert.ok(service.get('modal.disableForeground'));
+    });
+  });
 });
 
 test('open() sets a supported prop from 2nd param POJO onto named modal', function(assert) {
   const service = this.subject({ test: ModalMock.create() });
   assert.notOk(service.get('test.disableForeground'));
-  run(() => service.open('test', { disableForeground: true }));
-  assert.ok(service.get('test.disableForeground'));
+
+  return run(() => {
+    return service.open('test', { disableForeground: true }).then(() => {
+      assert.ok(service.get('test.disableForeground'));
+    });
+  });
 });
 
 test("open() sends 'open' to 'modal'", function(assert) {

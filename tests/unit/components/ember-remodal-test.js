@@ -1,6 +1,11 @@
 import Ember from 'ember';
 import { moduleForComponent, test } from 'ember-qunit';
 
+const {
+  RSVP: { Promise },
+  run
+} = Ember;
+
 moduleForComponent('ember-remodal', 'Unit | Component | ember remodal', {
   // Specify the other units that are required for this test
   // needs: ['component:foo', 'helper:bar'],
@@ -8,103 +13,133 @@ moduleForComponent('ember-remodal', 'Unit | Component | ember remodal', {
 });
 
 test('it renders', function(assert) {
-  this.subject();
-  this.render();
-  assert.equal(this.$().text().trim(), '');
+  assert.expect(1);
+
+  run(() => {
+    this.subject();
+    this.render();
+    assert.equal(this.$().text().trim(), '');
+  });
 });
 
 test('"open()" returns a promise', function(assert) {
-  const component = this.subject({ disableAnimation: true });
-  this.render();
-  const modal = component.open();
-  assert.ok(modal instanceof Ember.RSVP.Promise);
-  modal.then(() => component.close());
+  assert.expect(1);
+
+  run(() => {
+    const component = this.subject({ disableAnimation: true });
+    this.render();
+    assert.ok(component.open() instanceof Promise);
+  });
 });
 
 test('"close()" returns a promise', function(assert) {
-  const component = this.subject({ disableAnimation: true });
-  this.render();
-  component.open().then((modal) => {
-    modal.close();
+  assert.expect(1);
+
+  return run(() => {
+    const component = this.subject({ disableAnimation: true });
+    this.render();
+
+    return component.open().then((modal) => {
+      assert.ok(modal.close() instanceof Promise);
+    });
   });
-  assert.ok(component.close() instanceof Ember.RSVP.Promise);
 });
 
 test('"confirm" action sends "onConfirm" action', function(assert) {
-  const component = this.subject();
-  component.set('onConfirmCalled', false);
+  assert.expect(2);
 
-  component.set('onConfirm', () => {
-    component.set('onConfirmCalled', true);
+  run(() => {
+    const component = this.subject();
+    component.set('onConfirmCalled', false);
+
+    component.set('onConfirm', () => {
+      component.set('onConfirmCalled', true);
+    });
+
+    component.set('actions.close', () => { /* no-op */ });
+
+    this.render();
+
+    assert.notOk(component.get('onConfirmCalled'));
+    component.send('confirm');
+    assert.ok(component.get('onConfirmCalled'));
   });
-
-  component.set('actions.close', () => { /* no-op */ });
-
-  this.render();
-
-  assert.notOk(component.get('onConfirmCalled'));
-  component.send('confirm');
-  assert.ok(component.get('onConfirmCalled'));
 });
 
 test('"confirm" action sends "close" action', function(assert) {
-  const component = this.subject();
-  component.set('closeCalled', false);
+  assert.expect(2);
 
-  component.set('actions.close', () => {
-    component.set('closeCalled', true);
+  run(() => {
+    const component = this.subject();
+    component.set('closeCalled', false);
+
+    component.set('actions.close', () => {
+      component.set('closeCalled', true);
+    });
+
+    this.render();
+
+    assert.notOk(component.get('closeCalled'));
+    component.send('confirm');
+    assert.ok(component.get('closeCalled'));
   });
-
-  this.render();
-
-  assert.notOk(component.get('closeCalled'));
-  component.send('confirm');
-  assert.ok(component.get('closeCalled'));
 });
 
 test('"confirm" action does not send "close" action when "closeOnConfirm" is false', function(assert) {
-  const component = this.subject();
-  component.set('closeCalled', false);
-  component.set('closeOnConfirm', false);
+  assert.expect(2);
 
-  component.set('actions.close', () => {
-    component.set('closeCalled', true);
+  run(() => {
+    const component = this.subject();
+    component.set('closeCalled', false);
+    component.set('closeOnConfirm', false);
+
+    component.set('actions.close', () => {
+      component.set('closeCalled', true);
+    });
+
+    this.render();
+
+    assert.notOk(component.get('closeCalled'));
+    component.send('confirm');
+    assert.notOk(component.get('closeCalled'));
   });
-
-  this.render();
-
-  assert.notOk(component.get('closeCalled'));
-  component.send('confirm');
-  assert.notOk(component.get('closeCalled'));
 });
 
 test('"cancel" action sends "close" action', function(assert) {
-  const component = this.subject();
-  component.set('closeCalled', false);
+  assert.expect(2);
 
-  component.set('actions.close', () => {
-    component.set('closeCalled', true);
+  run(() => {
+    const component = this.subject();
+    component.set('closeCalled', false);
+
+    component.set('actions.close', () => {
+      component.set('closeCalled', true);
+    });
+
+    this.render();
+
+    assert.notOk(component.get('closeCalled'));
+    component.send('cancel');
+    assert.ok(component.get('closeCalled'));
   });
-
-  this.render();
-
-  assert.notOk(component.get('closeCalled'));
-  component.send('cancel');
-  assert.ok(component.get('closeCalled'));
 });
 
 test('"cancel" action does not send "close" action when "closeOnCancel" is false', function(assert) {
-  const component = this.subject();
-  component.set('closeCalled', false);
-  component.set('closeOnCancel', false);
+  assert.expect(2);
 
-  component.set('actions.close', () => {
-    component.set('closeCalled', true);
+  run(() => {
+    const component = this.subject();
+    component.set('closeCalled', false);
+    component.set('closeOnCancel', false);
+
+    component.set('actions.close', () => {
+      component.set('closeCalled', true);
+    });
+
+    this.render();
+
+    assert.notOk(component.get('closeCalled'));
+    component.send('cancel');
+    assert.notOk(component.get('closeCalled'));
   });
-
-  this.render();
-
-  assert.notOk(component.get('closeCalled'));
-  component.send('cancel');
-  assert.notOk(component.get('closeCalled'));
 });
