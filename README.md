@@ -1,12 +1,7 @@
-# Beta!
-I'll try not to break things, but until v1.0.0 expect possibly breaking changes
-even in point releases. I'm rapidly iterating and planning on hitting v1.0.0 by
-January 25th 2016.
-
 # ember-remodal
 [![Build Status](https://travis-ci.org/sethbrasile/ember-remodal.svg?branch=master)](https://travis-ci.org/sethbrasile/ember-remodal) [![npm version](https://badge.fury.io/js/ember-remodal.svg)](http://badge.fury.io/js/ember-remodal) [![Code Climate](https://codeclimate.com/github/sethbrasile/ember-remodal/badges/gpa.svg)](https://codeclimate.com/github/sethbrasile/ember-remodal) [![Dependencies](https://david-dm.org/sethbrasile/ember-remodal.svg)](https://david-dm.org/sethbrasile/ember-remodal) [![Test Coverage](https://codeclimate.com/github/sethbrasile/ember-remodal/badges/coverage.svg)](https://codeclimate.com/github/sethbrasile/ember-remodal/coverage) [![Ember Observer Score](http://emberobserver.com/badges/ember-remodal.svg)](http://emberobserver.com/addons/ember-remodal)
 
-*This README is up-to-date and accurate as of ember-remodal v0.0.18*
+*This README is up-to-date and accurate as of ember-remodal v0.0.19*
 
 There are many modal addons for Ember, but most of them (in my experience) are
 only useful in a very specific situation. Often, when building large apps, you
@@ -27,9 +22,6 @@ ember-remodal is compatible with Ember 1.13.x and up.
 
 ## Usage
 
-*Remember to add the `remodal-bg` class to anything in your app that you want
-blurred while a modal is open!*
-
 ### Included Components
 - `ember-remodal`: This is the base component for ember-remodal. This
 component renders and controls a modal in your application. Example:
@@ -40,21 +32,47 @@ component renders and controls a modal in your application. Example:
 
 - `er-open-button`: Placed in the block of an `ember-remodal`, this optional
 component allows you to specify your own html to act as the "open button" for a
-modal. Example:
+modal.
 
-  ```hbs
-    {{#ember-remodal}}
-      <p>This will show up inside the modal</p>
+- `er-cancel-button`: Placed in the block of an `ember-remodal`, this optional
+component allows you to specify your own html to act as the "cancel button" for
+a modal.
 
-      {{#er-open-button}}
-        <!-- You can put anything you want in here
-        and it will render outside the modal, opening
-        the modal when clicked -->
-      {{/er-open-button}}
+- `er-confirm-button`: Placed in the block of an `ember-remodal`, this optional
+component allows you to specify your own html to act as the "confirm button" for
+a modal.
 
-      <p>This will also show up inside the modal</p>
-    {{/ember-remodal}}
-  ```
+Example:
+
+```hbs
+  {{#ember-remodal}}
+    <p>This text will show up inside the modal</p>
+
+    {{#er-open-button}}
+      <!-- You can put anything you want in here
+      and it will render OUTSIDE the modal, opening
+      the modal when clicked and fire 'onOpen' -->
+    {{/er-open-button}}
+
+    <p>This text will also show up inside the modal</p>
+
+    {{#er-cancel-button}}
+      <!-- You can put anything you want in here
+      and it will render inside the modal, closing
+      the modal when clicked and fire 'onCancel' -->
+
+      <button>Click to cancel!</button>
+    {{/er-cancel-button}}
+
+    {{#er-confirm-button}}
+      <!-- You can put anything you want in here
+      and it will render inside the modal, closing
+      the modal when clicked and fire 'onConfirm' -->
+
+      <button>Click to confirm!</button>
+    {{/er-confirm-button}}
+  {{/ember-remodal}}
+```
 
 ### Simplest Use-Case
 
@@ -157,9 +175,7 @@ itself with the application-wide `remodal` service.
 ```
 
 *You can place a service modal anywhere in your application, but keep in mind
-that it must currently be rendered in order for your service to use it. For this
-reason, a common convention would be to place `{{ember-remodal forService=true}}`
-in the application template, so that it is always accessible.*
+that it must currently be rendered in order for your service to use it.*
 
 You can then access the modal via the `remodal` service throughout your
 application:
@@ -258,7 +274,7 @@ export default Ember.Whatever.extend({
 
 `close` works just like `open`, except that the only argument that it accepts is
 the name of a named service modal. To close an un-named service modal, call
-`close` with no arguments.
+`close` with no arguments, or with the name `modal`.
 
 ##### Un-named:
 
@@ -292,7 +308,8 @@ export default Ember.Whatever.extend({
 
 A modal's `open` and `close` methods return promises. The promise resolves when
 remodal's [corresponding event](https://github.com/VodkaBears/Remodal#events)
-fires.
+fires. If `disableAnimation` is `true`, this happens instantly, otherwise the
+promise will resolve after css animations for the given action are complete.
 
 ```js
 export default Ember.Whatever.extend({
@@ -317,7 +334,8 @@ export default Ember.Whatever.extend({
 ### Options
 
 #### Remodal Options
-These [remodal options](https://github.com/VodkaBears/Remodal#options) are supported:
+These [remodal options](https://github.com/VodkaBears/Remodal#options) are
+supported:
 
 - `closeOnOutsideClick` defaults to `true`
 - `closeOnEscape` defaults to `true`
@@ -355,23 +373,23 @@ default setup, when a user clicks this button, the component will:
 instead of `onConfirm`. `closeOnCancel` can also be set to `false`.
 
 - `buttonClasses`: If provided, this string value is added to the `class`
-attribute on all `<button>` tags: `confirmButton`, `openLink`, `confirmButton`,
+attribute on all built-in buttons: `confirmButton`, `openLink`, `confirmButton`,
 and `cancelButton`.
 
 - `outerButtonClasses`: If provided, this string value is added to the `class`
-attribute on `openButton` and `openLink`.
+attribute on the built-in `openButton` and `openLink`.
 
 - `innerButtonClasses`: If provided, this string value is added to the `class`
-attribute on the `confirmButton` and the `cancelButton`.
+attribute on the built-in `confirmButton` and the `cancelButton`.
 
 **Button Booleans**
 
 - `disableNativeClose`: If `true`, this keeps the little `x` button from
 appearing in the top left corner of the modal.
 
-*Note on close events:* `onClose` fires when a modal closes for any reason.
-`remodal` doesn't currently offer a hook to allow for `onNativeClose` or
-`onOverlayClose` actions.
+*Note on close events*: `remodal` doesn't currently offer a hook to allow for
+`onNativeClose` or `onOverlayClose` actions, but `onClose` is available and
+fires when a modal closes for any reason.
 
 ##### Style Options
 
@@ -380,11 +398,11 @@ main modal window.
 
 ##### Functionality Options
 
-- `closeOnOutsideClick`: If `true` (which is the default), this allows the user
-to click the dark overlay outside the modal window to close the modal.
+- `closeOnOutsideClick`: Default is `true`, which allows the user to click the
+dark overlay outside the modal window to close the modal.
 
-- `closeOnEscape`: If `true` (which is the default), this allows the user to hit
-the `escape` key on their keyboard to close the modal.
+- `closeOnEscape`: Default is `true`, which allows the user to hit the `escape`
+key on their keyboard to close the modal.
 
 - `disableForeground`: If `true`, this causes the white box surrounding the modal
 content to be transparent, and switches the default text color from
@@ -398,9 +416,8 @@ animations. This is useful for certain situations, such as when you are:
   - Using a modal as a loading state.
   - Facing a modal that needs to programmatically open then close quickly. You
 should generally use the [promises that are returned](#promises) from `open` and
-`close` to avoid this, but sometimes promises are more complex to use than is
-preferable. An example of this could be a modal that opens on one route, then
-closes on another.
+`close`, but sometimes promises are more complex to use than is preferable. An
+example of this could be a modal that opens on one route, then closes on another.
 
 - `forService`: If `true`, the modal is registered with the `remodal`
 service in your application. You'll find more on using modals as a service in
@@ -412,7 +429,6 @@ the [using ember-remodal as a service][1] section.
 - `text`: If provided, displayed under the title as a `p`.
 - Block Content: Content placed inside `ember-remodal`'s block will be rendered
 below the `title`/`text`, or by itself if no `title`/`text` are provided.
-
 
 ## Styling
 
