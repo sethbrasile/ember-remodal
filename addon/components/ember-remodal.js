@@ -8,7 +8,7 @@ const {
   computed: { oneWay },
   on,
   RSVP: { Promise },
-  run: { scheduleOnce },
+  run: { next, scheduleOnce },
   sendEvent,
   Component
 } = Ember;
@@ -176,7 +176,7 @@ export default Component.extend({
     },
 
     close() {
-      scheduleOnce('afterRender', this, '_closeModal');
+      next(this, '_closeModal');
     }
   }
 });
