@@ -502,7 +502,7 @@ this.get('remodal').open('some-modal')
 
 #### Other options to consider to solve "race conditions"
 
-- Place the call that should be called second into an `Ember.run.next` block.
+- Place the call that should be called 2nd into an `Ember.run.next` block.
 This has the potential to force your 2nd call into the next "run loop", but this
 fix is highly dependent on your application code and **will not always work**.
 
