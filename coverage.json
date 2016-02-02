@@ -5,51 +5,51 @@
     "passes": 108,
     "pending": 0,
     "failures": 0,
-    "start": "2016-02-02T21:08:11.785Z",
-    "end": "2016-02-02T21:08:14.944Z"
+    "start": "2016-02-02T22:12:40.634Z",
+    "end": "2016-02-02T22:12:43.880Z"
   },
   "coverage": {
     "total": {
       "statementsTotal": 116,
-      "statementsCovered": 116,
-      "percentage": 100
+      "statementsCovered": 40,
+      "percentage": 34.48
     },
     "files": [
       {
-        "name": "ember-remodal/mixins/er-button",
-        "statementsTotal": 12,
-        "statementsCovered": 12,
-        "percentage": 100
-      },
-      {
         "name": "ember-remodal/components/ember-remodal",
         "statementsTotal": 66,
-        "statementsCovered": 66,
-        "percentage": 100
-      },
-      {
-        "name": "ember-remodal/services/remodal",
-        "statementsTotal": 20,
-        "statementsCovered": 20,
-        "percentage": 100
-      },
-      {
-        "name": "ember-remodal/components/er-open-button",
-        "statementsTotal": 8,
-        "statementsCovered": 8,
-        "percentage": 100
+        "statementsCovered": 14,
+        "percentage": 21.21
       },
       {
         "name": "ember-remodal/components/er-cancel-button",
         "statementsTotal": 5,
-        "statementsCovered": 5,
-        "percentage": 100
+        "statementsCovered": 4,
+        "percentage": 80
       },
       {
         "name": "ember-remodal/components/er-confirm-button",
         "statementsTotal": 5,
+        "statementsCovered": 4,
+        "percentage": 80
+      },
+      {
+        "name": "ember-remodal/components/er-open-button",
+        "statementsTotal": 8,
         "statementsCovered": 5,
-        "percentage": 100
+        "percentage": 62.5
+      },
+      {
+        "name": "ember-remodal/mixins/er-button",
+        "statementsTotal": 12,
+        "statementsCovered": 7,
+        "percentage": 58.33
+      },
+      {
+        "name": "ember-remodal/services/remodal",
+        "statementsTotal": 20,
+        "statementsCovered": 6,
+        "percentage": 30
       }
     ]
   }
