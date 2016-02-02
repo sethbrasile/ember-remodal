@@ -36,7 +36,9 @@ component renders and controls a modal in your application. Example:
 
 - `er-open-button`: Placed in the block of an `ember-remodal`, this optional
 component allows you to specify your own html to act as the "open button" for a
-modal.
+modal. **Important Note:** `er-open-button` requires [ember-wormhole][2]. It is
+not installed automatically, so you should `ember install ember-wormhole` before
+you use this component.
 
 - `er-cancel-button`: Placed in the block of an `ember-remodal`, this optional
 component allows you to specify your own html to act as the "cancel button" for
@@ -498,3 +500,4 @@ For more information on using ember-cli, visit [http://www.ember-cli.com/](http:
 
 
 [1]: #using-ember-remodal-as-a-service
+[2]: https://github.com/yapplabs/ember-wormhole
