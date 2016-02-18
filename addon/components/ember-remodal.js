@@ -29,7 +29,6 @@ export default Component.extend({
   hashTracking: false,
   closeOnOutsideClick: true,
   forService: false,
-  isApplicationModal: false,
   disableForeground: false,
   disableAnimation: false,
   disableNativeClose: oneWay('disableForeground'),
@@ -44,7 +43,7 @@ export default Component.extend({
       this.setProperties(opts);
     }
 
-    if (this.get('forService') || this.get('isApplicationModal')) {
+    if (this.get('forService')) {
       this.get('remodal').set(this.get('name'), this);
     }
 
@@ -133,12 +132,6 @@ export default Component.extend({
       'ember-remodal\'s "linkButton" is deprecated and will be removed in ember-remodal 1.0.0. It was a stupid name. You should use "openLink" instead.',
       !this.get('linkButton'),
       { id: 'ember-remodal.linkButton', until: '1.0.0' }
-    );
-
-    deprecate(
-      'ember-remodal\'s "isApplicationModal" is deprecated and will be removed in ember-remodal 1.0.0. Use "forService" instead.',
-      !this.get('isApplicationModal'),
-      { id: 'ember-remodal.isApplicationModal', until: '1.0.0' }
     );
   },
 
