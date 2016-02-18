@@ -314,7 +314,7 @@ export default Ember.Whatever.extend({
 
 A modal's `open` and `close` methods return promises. The promise resolves when
 remodal's [corresponding event](https://github.com/VodkaBears/Remodal#events)
-fires. If `disableAnimation` is `true`, this happens instantly, otherwise the
+fires. If `disableAnimation` is `true`, this happens *near* instantly, otherwise the
 promise will resolve after css animations for the given action are complete.
 
 ```js
@@ -323,14 +323,16 @@ export default Ember.Whatever.extend({
 
   actions: {
     openModal() {
-      this.get('remodal').open('some-modal').then(() => {
-        console.log('some-modal was opened!');
+      this.get('remodal').open('some-modal').then((modal) => {
+        // "modal" here is the 'some-modal' instance
+        // which is just an Ember.Object
+        console.log(`${modal.get('name')} was opened!`);
       });
     },
 
     closeModal() {
-      this.get('remodal').close('some-modal').then(() => {
-        console.log('some-modal was closed!');
+      this.get('remodal').close('some-modal').then((modal) => {
+        console.log(`${modal.get('name')} was closed!`);
       });
     },
   }
@@ -412,10 +414,11 @@ key on their keyboard to close the modal.
 
 - `disableForeground`: If `true`, this causes the white box surrounding the modal
 content to be transparent, and switches the default text color from
-`black` to `white`. When combined with `closeOnOutsideClick: false` This allows
-one to use the modal as an un-exitable overlay, such as a `loading state`.
-By default, setting this option to true also sets `disableNativeClose` to `true`,
-but `disableNativeClose` can be explicitly set back to `false` if you prefer.
+`black` to `white`. When combined with `closeOnOutsideClick: false` and
+`closeOnEscape: false`, this allows one to use the modal as an un-exitable
+overlay, such as a `loading state`. By default, setting this option to true
+also sets `disableNativeClose` to `true`, but `disableNativeClose` can be
+explicitly set back to `false` if you prefer.
 
 - `disableAnimation`: If `true`, this disables remodal's opening/closing
 animations. This is useful for certain situations, such as when you are:
@@ -470,6 +473,46 @@ applied, so just do:
 ```hbs
 {{ember-remodal buttonClasses='ui' openButton='Open' confirmButton='Ok!'}}
 ```
+
+# Troubleshooting
+
+### "Race Conditions"
+
+If you are programmatically opening/closing a modal in quick succession, you may
+run into this problem, because a modal, once opened or closed, is in `opening`
+or `closing` state (respectively) and can't be modified again until it's CSS
+animations are complete.
+
+#### Solving "race conditions" with promises
+
+The best way to handle this is to use the [promises that are returned](#promises)
+from `open`/`close`:
+
+```js
+this.get('remodal').open('some-modal')
+
+.then((modal) => {
+  // "modal" here is the instance of 'some-modal'
+  console.log(`${modal.get('name')} was opened!`);
+  return modal.close();
+})
+
+.then((modal) => {
+  console.log(`${modal.get('name')} was closed!`);
+});
+```
+
+#### Other options to consider to solve "race conditions"
+
+- Place the call that should be called 2nd into an `Ember.run.next` block.
+This has the potential to force your 2nd call into the next "run loop", but this
+fix is highly dependent on your application code and **will not always work**.
+
+- Use `disableAnimation=true` in the modal's options. This will cause a modal
+to open/close *near* instantaneously, but again, is highly dependent on your
+application code (and potentially the end-user's device) and will also,
+**not always work**.
+
 
 # Collaborating
 
