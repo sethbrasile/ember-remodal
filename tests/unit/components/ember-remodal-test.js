@@ -40,7 +40,7 @@ test('"open()" returns a promise', function(assert) {
   assert.expect(1);
 
   run(() => {
-    const component = this.subject({ disableAnimation: true });
+    let component = this.subject({ disableAnimation: true });
     this.render();
     assert.ok(component.open() instanceof Promise);
   });
@@ -50,7 +50,7 @@ test('"close()" returns a promise', function(assert) {
   assert.expect(1);
 
   return run(() => {
-    const component = this.subject({ disableAnimation: true });
+    let component = this.subject({ disableAnimation: true });
     this.render();
 
     return component.open().then((modal) => {
@@ -63,7 +63,7 @@ test('if "modal" exists, "open" action calls "open()" on "modal"', function(asse
   assert.expect(2);
 
   run(() => {
-    const component = this.subject({ modal: ModalMock.create() });
+    let component = this.subject({ modal: ModalMock.create() });
 
     this.render();
 
@@ -77,7 +77,7 @@ test('if "modal" exists, "open" action calls "_openModal"', function(assert) {
   assert.expect(2);
 
   run(() => {
-    const component = this.subject({
+    let component = this.subject({
       _openModalCalled: false,
       modal: ModalMock.create(),
 
@@ -98,7 +98,7 @@ test('if "modal" does not exist, "open" action calls "_createInstanceAndOpen"', 
   assert.expect(2);
 
   run(() => {
-    const component = this.subject({
+    let component = this.subject({
       methodCalled: false,
 
       _createInstanceAndOpen() {
@@ -118,7 +118,7 @@ test('if "modal" does not exist, "open" action calls "_createInstanceAndOpen"', 
   assert.expect(2);
 
   run(() => {
-    const component = this.subject({
+    let component = this.subject({
       methodCalled: false,
 
       _createInstanceAndOpen() {
@@ -138,7 +138,7 @@ test('_openModal calls "open" on "modal"', function(assert) {
   assert.expect(2);
 
   run(() => {
-    const component = this.subject({ modal: ModalMock.create() });
+    let component = this.subject({ modal: ModalMock.create() });
 
     this.render();
 
@@ -152,7 +152,7 @@ test('_closeModal calls "close" on "modal"', function(assert) {
   assert.expect(2);
 
   run(() => {
-    const component = this.subject({ modal: ModalMock.create() });
+    let component = this.subject({ modal: ModalMock.create() });
 
     this.render();
 
@@ -166,7 +166,7 @@ test('"confirm" action sends "onConfirm" action', function(assert) {
   assert.expect(2);
 
   run(() => {
-    const component = this.subject({ modal: ModalMock.create() });
+    let component = this.subject({ modal: ModalMock.create() });
     component.set('onConfirmCalled', false);
 
     component.set('onConfirm', () => {
@@ -185,7 +185,7 @@ test('"confirm" action sends "_closeModal" action', function(assert) {
   assert.expect(2);
 
   run(() => {
-    const component = this.subject({
+    let component = this.subject({
       closeModalCalled: false,
 
       _closeModal() {
@@ -205,7 +205,7 @@ test('"confirm" action does not send "close" action when "closeOnConfirm" is fal
   assert.expect(2);
 
   run(() => {
-    const component = this.subject({
+    let component = this.subject({
       closeOnConfirm: false,
       closeModalCalled: false,
 
@@ -227,7 +227,7 @@ test('"cancel" action sends "close" action', function(assert) {
   assert.expect(2);
 
   run(() => {
-    const component = this.subject({
+    let component = this.subject({
       closeModalCalled: false,
 
       _closeModal() {
@@ -247,7 +247,7 @@ test('"cancel" action does not send "close" action when "closeOnCancel" is false
   assert.expect(2);
 
   run(() => {
-    const component = this.subject({
+    let component = this.subject({
       closeOnCancel: false,
       closeModalCalled: false,
 

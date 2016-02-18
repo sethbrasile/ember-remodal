@@ -15,7 +15,7 @@ test('it opens', function(assert) {
   assert.expect(1);
 
   andThen(function() {
-    const length = this.$('[data-test-id="modalWindow"].remodal-is-opened').length || this.$('[data-test-id="modalWindow"].remodal-is-opening').length;
+    let length = this.$('[data-test-id="modalWindow"].remodal-is-opened').length || this.$('[data-test-id="modalWindow"].remodal-is-opening').length;
     assert.equal(length, 1);
   });
 
@@ -28,7 +28,7 @@ test('it has a cancel button', function(assert) {
   assert.expect(1);
 
   andThen(function() {
-    const length = this.$('[data-test-id="modalWindow"].remodal-is-opened [data-test-id="cancelButton"]').length || this.$('[data-test-id="modalWindow"].remodal-is-opening [data-test-id="cancelButton"]').length;
+    let length = this.$('[data-test-id="modalWindow"].remodal-is-opened [data-test-id="cancelButton"]').length || this.$('[data-test-id="modalWindow"].remodal-is-opening [data-test-id="cancelButton"]').length;
     assert.equal(length, 1);
   });
 
@@ -41,7 +41,7 @@ test('it has a confirm button', function(assert) {
   assert.expect(1);
 
   andThen(function() {
-    const length = this.$('[data-test-id="modalWindow"].remodal-is-opened [data-test-id="confirmButton"]').length || this.$('[data-test-id="modalWindow"].remodal-is-opening [data-test-id="confirmButton"]').length;
+    let length = this.$('[data-test-id="modalWindow"].remodal-is-opened [data-test-id="confirmButton"]').length || this.$('[data-test-id="modalWindow"].remodal-is-opening [data-test-id="confirmButton"]').length;
     assert.equal(length, 1);
   });
 
@@ -54,7 +54,7 @@ test('it has a native close button', function(assert) {
   assert.expect(1);
 
   andThen(function() {
-    const length = this.$('[data-test-id="modalWindow"].remodal-is-opened [data-test-id="nativeClose"]').length || this.$('[data-test-id="modalWindow"].remodal-is-opening [data-test-id="nativeClose"]').length;
+    let length = this.$('[data-test-id="modalWindow"].remodal-is-opened [data-test-id="nativeClose"]').length || this.$('[data-test-id="modalWindow"].remodal-is-opening [data-test-id="nativeClose"]').length;
     assert.equal(length, 1);
   });
 

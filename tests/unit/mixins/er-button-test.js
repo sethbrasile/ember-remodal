@@ -16,7 +16,7 @@ test('it works', function(assert) {
 });
 
 test('it calls "_registerWithModal" on didRender', function(assert) {
-  const thing = ErButtonObject.create();
+  let thing = ErButtonObject.create();
   thing.set('registerCalled', false);
   thing.set('_registerWithModal', () => thing.set('registerCalled', true));
 
@@ -25,7 +25,7 @@ test('it calls "_registerWithModal" on didRender', function(assert) {
 });
 
 test('"_registerWithModal" calls "_getModal"', function(assert) {
-  const mixin = ErButtonObject.create();
+  let mixin = ErButtonObject.create();
   mixin.set('getModalCalled', false);
   mixin.set('_getModal', () => {
     mixin.set('getModalCalled', true);
@@ -40,7 +40,7 @@ test('"_registerWithModal" calls "_getModal"', function(assert) {
 });
 
 test('"_registerWithModal" properly sets the button\'s name on the modal', function(assert) {
-  const mixin = ErButtonObject.create();
+  let mixin = ErButtonObject.create();
 
   mixin.set('_getModal', () => Ember.Object.create());
 
@@ -52,7 +52,7 @@ test('"_registerWithModal" properly sets the button\'s name on the modal', funct
 });
 
 test('"_registerWithModal" throws an error when modal is not set', function(assert) {
-  const mixin = ErButtonObject.create();
+  let mixin = ErButtonObject.create();
   mixin.set('getModalCalled', false);
   mixin.set('_getModal', () => {
     mixin.set('getModalCalled', true);

@@ -24,7 +24,7 @@ export default Service.extend({
   closeOnOutsideClick: alias('modal.closeOnOutsideClick'),
 
   open(name='modal', opts=null) {
-    const modal = this.get(name);
+    let modal = this.get(name);
 
     if (modal) {
       if (opts) {
@@ -38,7 +38,7 @@ export default Service.extend({
   },
 
   close(name='modal') {
-    const modal = this.get(name);
+    let modal = this.get(name);
 
     if (modal) {
       return modal.close();

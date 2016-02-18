@@ -26,12 +26,12 @@ const ModalMock = Ember.Object.extend({
 });
 
 test('it exists', function(assert) {
-  const service = this.subject();
+  let service = this.subject();
   assert.ok(service);
 });
 
 test('if modal is not registered, open() calls "_modalNotSetError"', function(assert) {
-  const service = this.subject();
+  let service = this.subject();
   service.set('modalNotSetCalled', false);
   service.set('_modalNotSetError', () => service.set('modalNotSetCalled', true));
 
@@ -41,7 +41,7 @@ test('if modal is not registered, open() calls "_modalNotSetError"', function(as
 });
 
 test('if modal is not registered, close() calls "_modalNotSetError"', function(assert) {
-  const service = this.subject();
+  let service = this.subject();
   service.set('modalNotSetCalled', false);
   service.set('_modalNotSetError', () => service.set('modalNotSetCalled', true));
 
@@ -51,12 +51,12 @@ test('if modal is not registered, close() calls "_modalNotSetError"', function(a
 });
 
 test('"_modalNotSetError" throws an error', function(assert) {
-  const service = this.subject();
+  let service = this.subject();
   assert.throws(() => service._modalNotSetError('test'));
 });
 
 test("open() sets a random prop from 2nd param POJO onto 'modal'", function(assert) {
-  const service = this.subject({ modal: ModalMock.create() });
+  let service = this.subject({ modal: ModalMock.create() });
   assert.notOk(service.get('modal.randomProp'));
 
   return run(() => {
@@ -67,7 +67,7 @@ test("open() sets a random prop from 2nd param POJO onto 'modal'", function(asse
 });
 
 test('open() sets a random prop from 2nd param POJO onto named modal', function(assert) {
-  const service = this.subject({ test: ModalMock.create() });
+  let service = this.subject({ test: ModalMock.create() });
   assert.notOk(service.get('test.randomProp'));
 
   return run(() => {
@@ -78,7 +78,7 @@ test('open() sets a random prop from 2nd param POJO onto named modal', function(
 });
 
 test("open() sets a supported prop from 2nd param POJO onto 'modal'", function(assert) {
-  const service = this.subject({ modal: ModalMock.create() });
+  let service = this.subject({ modal: ModalMock.create() });
   assert.notOk(service.get('modal.disableForeground'));
 
   return run(() => {
@@ -89,7 +89,7 @@ test("open() sets a supported prop from 2nd param POJO onto 'modal'", function(a
 });
 
 test('open() sets a supported prop from 2nd param POJO onto named modal', function(assert) {
-  const service = this.subject({ test: ModalMock.create() });
+  let service = this.subject({ test: ModalMock.create() });
   assert.notOk(service.get('test.disableForeground'));
 
   return run(() => {
@@ -100,28 +100,28 @@ test('open() sets a supported prop from 2nd param POJO onto named modal', functi
 });
 
 test("open() sends 'open' to 'modal'", function(assert) {
-  const service = this.subject({ modal: ModalMock.create() });
+  let service = this.subject({ modal: ModalMock.create() });
   assert.notOk(service.get('modal.openCalled'));
   run(() => service.open());
   assert.ok(service.get('modal.openCalled'));
 });
 
 test("open() sends 'open' to named modal", function(assert) {
-  const service = this.subject({ test: ModalMock.create() });
+  let service = this.subject({ test: ModalMock.create() });
   assert.notOk(service.get('test.openCalled'));
   run(() => service.open('test'));
   assert.ok(service.get('test.openCalled'));
 });
 
 test("close() sends 'close' to 'modal'", function(assert) {
-  const service = this.subject({ modal: ModalMock.create() });
+  let service = this.subject({ modal: ModalMock.create() });
   assert.notOk(service.get('modal.closeCalled'));
   run(() => service.close());
   assert.ok(service.get('modal.closeCalled'));
 });
 
 test("close() sends 'close' to named modal", function(assert) {
-  const service = this.subject({ test: ModalMock.create() });
+  let service = this.subject({ test: ModalMock.create() });
   assert.notOk(service.get('test.closeCalled'));
   run(() => service.close('test'));
   assert.ok(service.get('test.closeCalled'));

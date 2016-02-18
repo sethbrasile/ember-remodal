@@ -36,7 +36,7 @@ export default Component.extend({
   erConfirmButton: false,
 
   didInitAttrs() {
-    const opts = this.get('options');
+    let opts = this.get('options');
 
     if (opts) {
       this.setProperties(opts);
@@ -71,7 +71,7 @@ export default Component.extend({
   }),
 
   open() {
-    const modal = this.get('modalId');
+    let modal = this.get('modalId');
 
     return new Promise((resolve) => {
       Ember.$(document).one('opened', modal, () => {
@@ -83,7 +83,7 @@ export default Component.extend({
   },
 
   close() {
-    const modal = this.get('modalId');
+    let modal = this.get('modalId');
 
     return new Promise((resolve) => {
       Ember.$(document).one('closed', modal, () => {
@@ -95,7 +95,7 @@ export default Component.extend({
   },
 
   _createInstanceAndOpen() {
-    const modal = Ember.$(this.get('modalId')).remodal({
+    let modal = Ember.$(this.get('modalId')).remodal({
       hashTracking: this.get('hashTracking'),
       closeOnOutsideClick: this.get('closeOnOutsideClick'),
       closeOnEscape: this.get('closeOnEscape'),
@@ -107,13 +107,13 @@ export default Component.extend({
   },
 
   _registerObservers() {
-    const modal = this.get('modalId');
+    let modal = this.get('modalId');
     Ember.$(document).on('opened', modal, () => sendEvent(this, 'opened'));
     Ember.$(document).on('closed', modal, () => sendEvent(this, 'closed'));
   },
 
   _deregisterObservers() {
-    const modal = this.get('modalId');
+    let modal = this.get('modalId');
     Ember.$(document).off('opened', modal);
     Ember.$(document).off('closed', modal);
   },

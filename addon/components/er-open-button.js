@@ -13,7 +13,7 @@ export default Component.extend(ButtonMixin, {
 
   destination: computed('modal.elementId', {
     get() {
-      const modalId = this.get('modal.elementId');
+      let modalId = this.get('modal.elementId');
 
       if (modalId) {
         return `open-button-${modalId}`;

@@ -37,7 +37,7 @@ export default Controller.extend({
     },
 
     showApplicationModal1() {
-      const modal = this.get('remodal');
+      let modal = this.get('remodal');
 
       modal.setProperties({
         title: 'Modal triggered with the "remodal" service',

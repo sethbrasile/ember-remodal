@@ -22,7 +22,7 @@ test('it errors when not nested in an "ember-remodal"', function(assert) {
 
   this.set('_getModal', () => null);
 
-  const component = () => {
+  let component = () => {
     this.render(hbs`
       {{#er-cancel-button _getModal=_getModal}}
         template block text
