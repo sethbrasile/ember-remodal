@@ -23,7 +23,7 @@ export default Controller.extend({
     confirmButton: 'Confirm',
     cancelButton: 'Cancel',
     title: 'Inline Form',
-    linkButton: 'Show Modal 2',
+    openLink: 'Show Modal 2',
     text: 'Triggered by the included <a> tag.'
   },
 

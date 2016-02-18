@@ -47,15 +47,3 @@ test('it works by clicking the provided link', function(assert) {
   open.click();
   assert.ok(modal.hasClass('remodal-is-opening'));
 });
-
-test('it works by clicking the provided linkButton', function(assert) {
-  assert.expect(1);
-
-  this.render(hbs`{{ember-remodal linkButton='open'}}`);
-
-  const modal = this.$('[data-test-id="modalWindow"]');
-  const open = this.$('[data-test-id="linkButton"]');
-
-  open.click();
-  assert.ok(modal.hasClass('remodal-is-opening'));
-});
