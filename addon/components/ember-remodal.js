@@ -71,26 +71,20 @@ export default Component.extend({
   }),
 
   open() {
-    let modal = this.get('modalId');
-
-    return new Promise((resolve) => {
-      Ember.$(document).one('opened', modal, () => {
-        resolve(this);
-      });
-
-      this.send('open');
-    });
+    return this._promiseAction('open');
   },
 
   close() {
+    return this._promiseAction('close');
+  },
+
+  _promiseAction(action) {
     let modal = this.get('modalId');
 
-    return new Promise((resolve) => {
-      Ember.$(document).one('closed', modal, () => {
-        resolve(this);
-      });
+    this.send(action);
 
-      this.send('close');
+    return new Promise((resolve) => {
+      Ember.$(document).one(`${action}ed`, modal, () => resolve(this));
     });
   },
 
@@ -138,21 +132,21 @@ export default Component.extend({
     this.get('modal').close();
   },
 
+  _closeOnCondition(condition) {
+    this.sendAction(`on${condition}`);
+
+    if (this.get(`closeOn${condition}`)) {
+      this.send('close');
+    }
+  },
+
   actions: {
     confirm() {
-      this.sendAction('onConfirm');
-
-      if (this.get('closeOnConfirm')) {
-        this.send('close');
-      }
+      this._closeOnCondition('Confirm');
     },
 
     cancel() {
-      this.sendAction('onCancel');
-
-      if (this.get('closeOnCancel')) {
-        this.send('close');
-      }
+      this._closeOnCondition('Cancel');
     },
 
     open() {
