@@ -298,3 +298,14 @@ test('"_closeOnCondition" only sends close when "onCondition" is true', function
     next(() => assert.ok(component.get('_closeModalCalled')));
   });
 });
+
+test('"_pastTense" works', function(assert) {
+  assert.expect(2);
+
+  run(() => {
+    let component = this.subject();
+    this.render();
+    assert.equal(component._pastTense('close'), 'closed');
+    assert.equal(component._pastTense('open'), 'opened');
+  });
+});
