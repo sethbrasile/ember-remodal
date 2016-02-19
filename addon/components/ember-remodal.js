@@ -70,6 +70,14 @@ export default Component.extend({
     }
   }),
 
+  openDidFire: on('opened', function() {
+    this.sendAction('onOpen');
+  }),
+
+  closeDidFire: on('closed', function() {
+    this.sendAction('onClose');
+  }),
+
   open() {
     return this._promiseAction('open');
   },
@@ -88,18 +96,6 @@ export default Component.extend({
     });
   },
 
-  _createInstanceAndOpen() {
-    let modal = Ember.$(this.get('modalId')).remodal({
-      hashTracking: this.get('hashTracking'),
-      closeOnOutsideClick: this.get('closeOnOutsideClick'),
-      closeOnEscape: this.get('closeOnEscape'),
-      modifier: this.get('modifier')
-    });
-
-    this.set('modal', modal);
-    this.send('open');
-  },
-
   _registerObservers() {
     let modal = this.get('modalId');
     Ember.$(document).on('opened', modal, () => sendEvent(this, 'opened'));
@@ -112,13 +108,17 @@ export default Component.extend({
     Ember.$(document).off('closed', modal);
   },
 
-  openDidFire: on('opened', function() {
-    this.sendAction('onOpen');
-  }),
+  _createInstanceAndOpen() {
+    let modal = Ember.$(this.get('modalId')).remodal({
+      hashTracking: this.get('hashTracking'),
+      closeOnOutsideClick: this.get('closeOnOutsideClick'),
+      closeOnEscape: this.get('closeOnEscape'),
+      modifier: this.get('modifier')
+    });
 
-  closeDidFire: on('closed', function() {
-    this.sendAction('onClose');
-  }),
+    this.set('modal', modal);
+    this.send('open');
+  },
 
   _checkForDeprecations() {
     // Deprecations go here
