@@ -88,12 +88,21 @@ export default Component.extend({
 
   _promiseAction(action) {
     let modal = this.get('modalId');
+    let actionName = this._pastTense(action);
 
     this.send(action);
 
     return new Promise((resolve) => {
-      Ember.$(document).one(`${action}ed`, modal, () => resolve(this));
+      Ember.$(document).one(actionName, modal, () => resolve(this));
     });
+  },
+
+  _pastTense(action) {
+    if (action[action.length - 1] === 'e') {
+      return `${action}d`;
+    } else {
+      return `${action}ed`;
+    }
   },
 
   _registerObservers() {
