@@ -4,7 +4,7 @@ import layout from '../templates/components/ember-remodal';
 const {
   inject,
   computed,
-  computed: { oneWay },
+  computed: { reads },
   on,
   RSVP: { Promise },
   run: { next, scheduleOnce },
@@ -30,7 +30,7 @@ export default Component.extend({
   forService: false,
   disableForeground: false,
   disableAnimation: false,
-  disableNativeClose: oneWay('disableForeground'),
+  disableNativeClose: reads('disableForeground'),
   erOpenButton: false,
   erCancelButton: false,
   erConfirmButton: false,
