@@ -59,6 +59,16 @@ test('"close()" returns a promise', function(assert) {
   });
 });
 
+test('"_promiseAction()" returns a promise', function(assert) {
+  assert.expect(1);
+
+  run(() => {
+    let component = this.subject({ disableAnimation: true });
+    this.render();
+    assert.ok(component._promiseAction('open') instanceof Promise);
+  });
+});
+
 test('if "modal" exists, "open" action calls "open()" on "modal"', function(assert) {
   assert.expect(2);
 
@@ -261,5 +271,30 @@ test('"cancel" action does not send "close" action when "closeOnCancel" is false
     assert.notOk(component.get('_closeModalCalled'));
     run(() => component.send('cancel'));
     next(() => assert.notOk(component.get('_closeModalCalled')));
+  });
+});
+
+test('"_closeOnCondition" only sends close when "onCondition" is true', function(assert) {
+  assert.expect(2);
+
+  run(() => {
+    let component = this.subject({
+      _closeModalCalled: false,
+      closeOnConfirm: false,
+
+      _closeModal() {
+        this.set('_closeModalCalled', true);
+      }
+    });
+
+    this.render();
+
+    run(() => component._closeOnCondition('Confirm'));
+    next(() => assert.notOk(component.get('_closeModalCalled')));
+    run(() => {
+      component.set('closeOnConfirm', true);
+      component._closeOnCondition('Confirm');
+    });
+    next(() => assert.ok(component.get('_closeModalCalled')));
   });
 });
