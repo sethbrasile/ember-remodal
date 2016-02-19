@@ -6,9 +6,5 @@ const { Component } = Ember;
 
 export default Component.extend(ButtonMixin, {
   layout,
-  name: 'er-cancel-button',
-
-  click() {
-    this.get('modal').send('cancel');
-  }
+  buttonType: 'cancel'
 });
