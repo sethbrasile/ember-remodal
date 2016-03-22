@@ -7,7 +7,7 @@
     "ember-qunit-notifications": "0.1.0"
   },
   "devDependencies": {
-    "blanket": "~1.1.5",
+    "blanket": "5e94fc30f2e694bb5c3718ddcbf60d467f4b4d26",
     "remodal": "^1.0.6"
   }
 }
