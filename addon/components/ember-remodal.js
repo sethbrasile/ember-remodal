@@ -19,7 +19,7 @@ export default Component.extend({
   attributeBindings: ['dataTestId:data-test-id'],
   classNames: ['remodal-component'],
   tagName: 'span',
-  name: 'modal',
+  name: 'ember-remodal',
   modifier: '',
   modal: null,
   options: null,

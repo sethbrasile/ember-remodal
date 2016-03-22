@@ -99,11 +99,13 @@ test('open() sets a supported prop from 2nd param POJO onto named modal', functi
   });
 });
 
-test("open() sends 'open' to 'modal'", function(assert) {
-  let service = this.subject({ modal: ModalMock.create() });
-  assert.notOk(service.get('modal.openCalled'));
+test("open() sends 'open' to 'ember-remodal'", function(assert) {
+  let service = this.subject();
+  service.set('ember-remodal', ModalMock.create());
+
+  assert.notOk(service.get('ember-remodal.openCalled'));
   run(() => service.open());
-  assert.ok(service.get('modal.openCalled'));
+  assert.ok(service.get('ember-remodal.openCalled'));
 });
 
 test("open() sends 'open' to named modal", function(assert) {
@@ -113,11 +115,13 @@ test("open() sends 'open' to named modal", function(assert) {
   assert.ok(service.get('test.openCalled'));
 });
 
-test("close() sends 'close' to 'modal'", function(assert) {
-  let service = this.subject({ modal: ModalMock.create() });
-  assert.notOk(service.get('modal.closeCalled'));
+test("close() sends 'close' to 'ember-remodal'", function(assert) {
+  let service = this.subject();
+  service.set('ember-remodal', ModalMock.create());
+
+  assert.notOk(service.get('ember-remodal.closeCalled'));
   run(() => service.close());
-  assert.ok(service.get('modal.closeCalled'));
+  assert.ok(service.get('ember-remodal.closeCalled'));
 });
 
 test("close() sends 'close' to named modal", function(assert) {
