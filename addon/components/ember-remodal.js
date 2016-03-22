@@ -9,6 +9,7 @@ const {
   RSVP: { Promise },
   run: { next, scheduleOnce },
   sendEvent,
+  warn,
   Component
 } = Ember;
 
@@ -83,7 +84,15 @@ export default Component.extend({
   },
 
   close() {
-    return this._promiseAction('close');
+    if (this.get('modal')) {
+      return this._promiseAction('close');
+    } else {
+      warn(
+        'ember-remodal: You called "close" on a modal that has not yet been opened. This is not a big deal, but I thought you should know. The returned promise will immediately resolve.', false,
+        { id: 'ember-remodal.close-called-on-unitialized-modal' }
+      );
+      return new Promise((resolve) => resolve(this));
+    }
   },
 
   _promiseAction(action) {
