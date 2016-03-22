@@ -8,22 +8,22 @@ const {
 
 export default Service.extend({
   modal: null,
-  title: alias('modal.title'),
-  text: alias('modal.text'),
-  confirmButton: alias('modal.confirmButton'),
-  cancelButton: alias('modal.cancelButton'),
-  disableNativeClose: alias('modal.disableNativeClose'),
-  disableForeground: alias('modal.disableForeground'),
-  disableAnimation: alias('modal.disableAnimation'),
-  buttonClasses: alias('modal.buttonClasses'),
-  modifier: alias('modal.modifier'),
-  closeOnEscape: alias('modal.closeOnEscape'),
-  closeOnCancel: alias('modal.closeOnCancel'),
-  closeOnConfirm: alias('modal.closeOnConfirm'),
-  hashTracking: alias('modal.hashTracking'),
-  closeOnOutsideClick: alias('modal.closeOnOutsideClick'),
+  title: alias('ember-remodal.title'),
+  text: alias('ember-remodal.text'),
+  confirmButton: alias('ember-remodal.confirmButton'),
+  cancelButton: alias('ember-remodal.cancelButton'),
+  disableNativeClose: alias('ember-remodal.disableNativeClose'),
+  disableForeground: alias('ember-remodal.disableForeground'),
+  disableAnimation: alias('ember-remodal.disableAnimation'),
+  buttonClasses: alias('ember-remodal.buttonClasses'),
+  modifier: alias('ember-remodal.modifier'),
+  closeOnEscape: alias('ember-remodal.closeOnEscape'),
+  closeOnCancel: alias('ember-remodal.closeOnCancel'),
+  closeOnConfirm: alias('ember-remodal.closeOnConfirm'),
+  hashTracking: alias('ember-remodal.hashTracking'),
+  closeOnOutsideClick: alias('ember-remodal.closeOnOutsideClick'),
 
-  open(name='modal', opts=null) {
+  open(name='ember-remodal', opts=null) {
     let modal = this.get(name);
 
     if (modal) {
@@ -37,7 +37,7 @@ export default Service.extend({
     }
   },
 
-  close(name='modal') {
+  close(name='ember-remodal') {
     let modal = this.get(name);
 
     if (modal) {
