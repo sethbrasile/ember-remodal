@@ -1,60 +1,38 @@
-<div class="remodal-bg">
-  <h2 id="title">Ember Remodal</h2>
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
 
-  {{#ember-remodal options=options1}}
-    <p>And triggered with included button</p>
-    <p>This modal also has it's animations disabled.</p>
-  {{/ember-remodal}}
+      {{#link-to 'index' class="navbar-brand"}}
+        <img src="ember-logo.png" alt="Ember Logo">
+        <span>remodal</span>
+      {{/link-to}}
+    </div>
 
-  {{ember-remodal options=options2}}
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        
+      </ul>
 
-  <button {{action 'showApplicationModal1'}}>Show Service Modal</button>
-  <button {{action 'showApplicationModal2'}}>Show Service Modal 2</button>
-  <button {{action 'showApplicationModal3'}}>Show Service Modal 3</button>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="docs">Documentation</a></li>
+        <li>
+          <a href="https://github.com/sethbrasile/ember-remodal">
+            {{fa-icon 'github'}}
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
 
-  {{ember-remodal forService=true onOpen='onOpenWasFired' onClose='onCloseWasFired'}}
 
-  {{#ember-remodal forService=true name='appModal2' title='Named Modal triggered with the "remodal" service'}}
-    <p>This modal is triggered by adding a named "application modal" to the "application" template and calling "this.get("remodal").open("name")"</p>
-    <p>This example is in block form and this text is provided by adding it to this modal's "block"</p>
-  {{/ember-remodal}}
 
-  {{ember-remodal forService=true name='appModal3'}}
-
-  {{#ember-remodal openButton='Transparent Modal' disableForeground=true}}
-    This is white text over the "overlay" background.
-    The normal white modal background is hidden.
-  {{/ember-remodal}}
-
-  {{#ember-remodal}}
-    {{#er-open-button}}
-      <button class='custom-button'>OPEN A MODAL!</button>
-    {{/er-open-button}}
-
-    <p>This is content placed inside an ember-remodal's block along with an "er-open-button"</p>
-
-    {{#er-cancel-button}}
-      <p>This text is a custom cancel button</p>
-    {{/er-cancel-button}}
-
-    {{#er-confirm-button}}
-      <p>This text is a custom confirm button</p>
-    {{/er-confirm-button}}
-  {{/ember-remodal}}
-
-  {{#ember-remodal}}
-    {{#er-open-button}}
-      <button class='custom-button'>OPEN A 2nd MODAL!</button>
-    {{/er-open-button}}
-
-    <p>This is content placed inside a 2nd ember-remodal's block along with an "er-open-button"</p>
-
-    {{#er-cancel-button}}
-      <button class='custom-button'>This is a custom cancel button!</button>
-    {{/er-cancel-button}}
-
-    {{#er-confirm-button}}
-      <button class='custom-button'>This is a custom confirm button!</button>
-    {{/er-confirm-button}}
-  {{/ember-remodal}}
+<div class="main remodal-bg">
+  {{outlet}}
 </div>
