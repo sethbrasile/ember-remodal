@@ -1,15 +1,15 @@
 {{#if erOpenButton}}
   <span {{action 'open'}} id="open-button-{{elementId}}"></span>
 {{else if openLink}}
-  <a {{action 'open'}} href="#" class="ember-remodal outer link text {{buttonClasses}} {{outerButtonClasses}}" data-test-id="openLink">{{openLink}}</a>
+  <a {{action 'open'}} href="#" class="ember-remodal outer link text {{buttonClasses}} {{outerButtonClasses}} {{openLinkClasses}}" data-test-id="openLink">{{openLink}}</a>
 {{else if openButton}}
-  <button {{action 'open'}} class="ember-remodal outer open button {{buttonClasses}} {{outerButtonClasses}}" data-test-id="openButton">{{openButton}}</button>
+  <button {{action 'open'}} class="ember-remodal outer open button {{buttonClasses}} {{outerButtonClasses}} {{openButtonClasses}}" data-test-id="openButton">{{openButton}}</button>
 {{/if}}
 
 <div data-remodal-id="{{elementId}}" class="ember-remodal {{name}} {{animationState}} window {{if disableForeground 'invisible'}} {{modalClasses}}" data-test-id="modalWindow">
 
   {{#unless disableNativeClose}}
-    <button {{action 'close'}} class="remodal-close ember-remodal inner native close" data-test-id="nativeClose"></button>
+    <button {{action 'close'}} class="remodal-close ember-remodal inner native close {{nativeCloseClasses}}" data-test-id="nativeClose"></button>
   {{/unless}}
 
   {{#if title}}
@@ -27,10 +27,10 @@
   {{/if}}
 
   {{#if cancelButton}}
-    <button {{action 'cancel'}} class="ember-remodal inner cancel button {{buttonClasses}} {{innerButtonClasses}}" data-test-id="cancelButton">{{cancelButton}}</button>
+    <button {{action 'cancel'}} class="ember-remodal inner cancel button {{buttonClasses}} {{innerButtonClasses}} {{cancelButtonClasses}}" data-test-id="cancelButton">{{cancelButton}}</button>
   {{/if}}
 
   {{#if confirmButton}}
-    <button {{action 'confirm'}} class="ember-remodal inner confirm button {{buttonClasses}} {{innerButtonClasses}}" data-test-id="confirmButton">{{confirmButton}}</button>
+    <button {{action 'confirm'}} class="ember-remodal inner confirm button {{buttonClasses}} {{innerButtonClasses}} {{confirmButtonClasses}}" data-test-id="confirmButton">{{confirmButton}}</button>
   {{/if}}
 </div>
