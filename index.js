@@ -1,6 +1,9 @@
 /* jshint node: true */
 'use strict';
 
+var VersionChecker = require('ember-cli-version-checker');
+var path = require('path');
+
 module.exports = {
   name: 'ember-remodal',
 
@@ -14,8 +17,6 @@ module.exports = {
   },
 
   hasContextualComponents: function() {
-    var VersionChecker = require('ember-cli-version-checker');
-
     var checker = new VersionChecker(this);
     var dep = checker.for('ember', 'bower');
 
@@ -27,7 +28,6 @@ module.exports = {
   },
 
   treeForAddonTemplates: function(tree) {
-    var path = require('path');
     var baseTemplatesPath = path.join(this.root, 'addon/templates');
 
     if (this.hasContextualComponents()) {
