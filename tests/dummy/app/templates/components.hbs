@@ -1,1 +1,107 @@
-{{outlet}}
+<h1>Included Components</h1>
+<p>
+  As Ember 2.3 introduced
+  <a href="http://emberjs.com/blog/2016/01/15/ember-2-3-released.html#toc_contextual-components">
+    contextual components
+  </a>
+  ember-remodal's API is slightly different depending on whether you're using
+  a version earlier than Ember 2.3 or not. ember-remodal v0.1.0 works with all
+  Ember versions 1.13.x and up, and will allow both API's to work simultaneously.
+</p>
+
+<p class="legacy-controls">
+  Documentation for:
+
+  <button class="btn btn-primary {{if legacy 'active'}}" {{action 'legacy'}}>Ember 2.2.x or earlier</button>
+  <button class="btn btn-primary {{unless legacy 'active'}}" {{action 'current'}}>Ember 2.3.x or later</button>
+</p>
+
+<h3>
+  Ember
+  {{#if legacy}}
+    2.2.x or earlier and ember-remodal less than 1.0.0
+  {{else}}
+    2.3.x or later and ember-remodal 0.1.0 or later
+  {{/if}}
+</h3>
+
+<div class="components">
+  <ul>
+    <li>
+      <h3>
+        {{#if legacy}}
+          er-open-button
+        {{else}}
+          open
+        {{/if}}
+      </h3>
+
+      <p>
+        Allows you to specify your own HTML to act as the
+        <code>open button</code> for a modal, firing the <code>onOpen</code>
+        action once the <code>open</code> animation is complete.
+      </p>
+
+      <p>
+        <strong>**Note**</strong> This component depends on
+        <a href="https://github.com/yapplabs/ember-wormhole">ember-wormhole</a>
+        which is <strong>not</strong> installed automatically. Install it by
+        running <code>ember install ember-wormhole</code>
+      </p>
+
+      {{#if legacy}}
+        {{code-snippet name='components_legacy_open.hbs'}}
+      {{else}}
+        {{code-snippet name='components_current_open.hbs'}}
+      {{/if}}
+
+    </li>
+    <li>
+      <h3>
+        {{#if legacy}}
+          er-confirm-button
+        {{else}}
+          confirm
+        {{/if}}
+      </h3>
+
+      <p>
+        Allows you to specify your own HTML to act as the
+        <code>confirm button</code>, closing a modal when clicked and firing
+        the <code>onConfirm</code> action once the <code>close</code>
+        animation is complete.
+      </p>
+
+      {{#if legacy}}
+        {{code-snippet name='components_legacy_confirm.hbs'}}
+      {{else}}
+        {{code-snippet name='components_current_confirm.hbs'}}
+      {{/if}}
+
+    </li>
+
+    <li>
+      <h3>
+        {{#if legacy}}
+          er-cancel-button
+        {{else}}
+          cancel
+        {{/if}}
+      </h3>
+
+      <p>
+        Allows you to specify your own HTML to act as the
+        <code>cancel button</code>, closing a modal when clicked and firing
+        the <code>onCancel</code> action once the <code>close</code>
+        animation is complete.
+      </p>
+
+      {{#if legacy}}
+        {{code-snippet name='components_legacy_cancel.hbs'}}
+      {{else}}
+        {{code-snippet name='components_current_cancel.hbs'}}
+      {{/if}}
+
+    </li>
+  </ul>
+</div>
