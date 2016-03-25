@@ -1,15 +1,15 @@
-{{#ember-remodal title='This is a Title'}}
-  {{#er-open-button}}
+{{#ember-remodal title='This is a Title' as |modal|}}
+  {{#modal.open}}
     <button class='btn btn-primary'>OPEN A MODAL</button>
-  {{/er-open-button}}
+  {{/modal.open}}
 
   <p>This is content placed inside an ember-remodal's block</p>
 
-  {{#er-cancel-button}}
+  {{#modal.cancel}}
     <button class='btn btn-primary'>Cancel</button>
-  {{/er-cancel-button}}
+  {{/modal.cancel}}
 
-  {{#er-confirm-button}}
+  {{#modal.confirm}}
     <button class='btn btn-success'>OK</button>
-  {{/er-confirm-button}}
+  {{/modal.confirm}}
 {{/ember-remodal}}
