@@ -12,7 +12,11 @@ Router.map(function() {
     this.route('with-actions');
   });
   this.route('block');
-  this.route('service');
+  this.route('service', function() {
+    this.route('simple', { path: '/' });
+    this.route('names');
+    this.route('properties');
+  });
   this.route('options');
   this.route('styling');
   this.route('components');
