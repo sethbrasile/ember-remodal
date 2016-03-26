@@ -1,1 +1,23 @@
-{{outlet}}
+<h1>Options</h1>
+
+<ul class="nav nav-tabs">
+  {{#link-to 'options.remodal' tagName='li' classNames='link'}}
+    <a>Remodal Options</a>
+  {{/link-to}}
+
+  {{#link-to 'options.content' tagName='li' classNames='link'}}
+    <a>Content</a>
+  {{/link-to}}
+
+  {{#link-to 'options.functionality' tagName='li' classNames='link'}}
+    <a>Functionality</a>
+  {{/link-to}}
+
+  {{#link-to 'options.button' tagName='li' classNames='link'}}
+    <a>Buttons</a>
+  {{/link-to}}
+
+  {{#link-to 'options.style' tagName='li' classNames='link'}}
+    <a>Styling</a>
+  {{/link-to}}
+</ul>{{outlet}}
