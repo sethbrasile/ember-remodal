@@ -6,7 +6,11 @@ const Router = Ember.Router.extend({
 });
 
 Router.map(function() {
-  this.route('inline');
+  this.route('inline', function() {
+    this.route('simple', { path: '/' });
+    this.route('with-styles');
+    this.route('with-actions');
+  });
   this.route('block');
   this.route('service');
   this.route('options');

@@ -1,0 +1,20 @@
+<div class="content">
+  <p>
+    <code>onCancel</code> and <code>onConfirm</code> fire immediately.
+    <code>onOpen</code> and <code>onClose</code> fire when the <code>open</code>
+    and <code>close</code> animations are complete.
+  </p>
+
+  {{ember-remodal
+    openButton='Open Modal With Actions'
+    confirmButton='OK'
+    cancelButton='Cancel'
+    onOpen='notifyOpened'
+    onConfirm='notifyConfirmed'
+    onCancel='notifyCanceled'
+    onClose='notifyClosed'
+  }}
+
+  {{code-snippet name='inline-with-actions.hbs'}}
+  {{code-snippet name='inline-with-actions.js'}}
+</div>

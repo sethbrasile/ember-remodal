@@ -1,4 +1,18 @@
 <h1>ember remodal</h1>
+<h3>An intensely usable modal component for Ember.js</h3>
+
+<hr />
+
+<p>
+  Many modal libraries require you to mix your modals up with application state.
+  Setting a "modal model" doesn't make any sense. Extending a modal component to
+  handle complex logic doesn't make any sense. A modal should be a simple
+  presentational technique and nothing more. Aside from providing simple actions
+  such as <code>onOpen</code>, <code>onCancel</code> etc... ember-remodal
+  encourages you to keep your logic and state in your components and
+  controllers.
+</p>
+
 <div class='content'>
   {{#ember-remodal as |m|}}
     {{#m.open}}

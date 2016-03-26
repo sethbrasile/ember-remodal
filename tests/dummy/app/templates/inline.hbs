@@ -1,37 +1,17 @@
 <h1>Inline Form</h1>
 
-<p>
-  When using ember-remodal in inline form, a single button is displayed (button
-  text specified via the <code>openButton</code> property). When this button is
-  clicked, a modal opens. The contents of this modal can be set using the
-  <code>title</code> and <code>text</code> properties.
-</p>
+<ul class="nav nav-tabs">
+  {{#link-to 'inline.simple' tagName='li' classNames='link'}}
+    <a>Simple Inline</a>
+  {{/link-to}}
 
-<div class="content">
-  {{ember-remodal
-    openButton='Open Modal'
-    confirmButton='OK'
-    cancelButton='Cancel'
-    title='A Title!'
-    text='lorem ipsum dolar sit amet'
-    dataTestId='simple-inline'
-  }}
+  {{#link-to 'inline.with-styles' tagName='li' classNames='link'}}
+    <a>With Button Styles</a>
+  {{/link-to}}
 
-  {{code-snippet name='simplest.hbs'}}
-</div>
+  {{#link-to 'inline.with-actions' tagName='li' classNames='link'}}
+    <a>With Actions</a>
+  {{/link-to}}
+</ul>
 
-<h1>With Button Classes</h1>
-
-<div class="content">
-  {{ember-remodal
-    openButton='Open Modal'
-    confirmButton='OK'
-    title='A Title!'
-    text='lorem ipsum dolar sit amet'
-    buttonClasses='btn'
-    openButtonClasses='btn-primary'
-    confirmButtonClasses='btn-success'
-  }}
-
-  {{code-snippet name='inline-with-styles.hbs'}}
-</div>
+{{outlet}}
