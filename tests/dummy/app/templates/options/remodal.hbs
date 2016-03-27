@@ -9,15 +9,31 @@
   </p>
 
   <ul>
-    <li><code>closeOnOutsideClick</code>: defaults to <code>true</code></li>
-    <li><code>closeOnEscape</code>: defaults to <code>true</code></li>
-    <li><code>closeOnCancel</code>: defaults to <code>true</code></li>
-    <li><code>closeOnConfirm</code>: defaults to an empty string</li>
-    <li><code>modifier</code>: defaults to <code>true</code></li>
     <li>
-      <code>hashTracking</code>: defaults to <code>false</code> -
-      You probably want to leave this one alone.
-      It affects Ember's routes/browser-history. It's there if you want to mess.
+      <code>closeOnOutsideClick</code>: defaults to <code>true</code>.
+      This is handled in ember-remodal and is not actually passed to Remodal.
+    </li>
+    <li>
+      <code>closeOnEscape</code>: defaults to <code>true</code>.
+      This is handled in ember-remodal and is not actually passed to Remodal.
+    </li>
+    <li>
+      <code>closeOnCancel</code>: defaults to <code>true</code>.
+      This is handled in ember-remodal and is not actually passed to Remodal.
+    </li>
+    <li>
+      <code>closeOnConfirm</code>: defaults to an empty string.
+      This is handled in ember-remodal and is not actually passed to Remodal.
+    </li>
+    <li>
+      <code>modifier</code>: defaults to <code>true</code>.
+      This is passed directly to remodal.
+    </li>
+    <li>
+      <code>hashTracking</code>: defaults to <code>false</code>.
+      This is passed directly to remodal. You probably want to leave this one
+      alone. It affects Ember's routes and browser-history. It's there if you
+      want to mess.
     </li>
   </ul>
 </div>
