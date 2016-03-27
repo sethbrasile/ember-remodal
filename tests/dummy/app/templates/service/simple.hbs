@@ -8,12 +8,21 @@
   <p>
     By setting <code>forService</code> to <code>true</code>, the modal is
     registered with the <code>remodal</code> service. Keep in mind that in order
-    for the <code>remodal</code> service to use a modal, it must currently be
-    rendered. A common pattern would be to place an instance of
-    <code>ember-remodal</code> in your application template. This pattern is
-    useful in situations such as when you have a modal with a specific purpose
-    that pops open and closed throughout your application, such as a "loading"
-    modal.
+    for the <code>remodal</code> service to use a modal, that modal must
+    currently be rendered.
+  </p>
+
+  <p>
+    Though you can put a modal in any template, a common pattern would be to
+    place an instance of <code>ember-remodal</code> in your application
+    template. This pattern is useful in situations such as when you have a modal
+    with a specific purpose that pops open and closed throughout your
+    application, such as a "loading" modal.
+  </p>
+
+  <p>
+    Remember to <code>inject</code> the service anywhere
+    you want to use it.
   </p>
 
   <div class="content">
@@ -26,6 +35,10 @@
 {{#code-block language='javascript'}}
   export default Ember.Whatever.extend({
     remodal: Ember.inject.service(),
+
+    closeModal() {
+      this.get('remodal').close();
+    },
 
     actions: {
       openModal() {

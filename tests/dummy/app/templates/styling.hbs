@@ -1,1 +1,44 @@
-{{outlet}}
+<div class="content">
+  <p>
+    You can easily target every portion of the modal.
+  </p>
+  <ul>
+    <li>Main modal window: <code>.ember-remodal.window</code></li>
+    <li>Named modal main window: <code>.ember-remodal.whatever-you-named-the-modal.window</code></li>
+    <li>Open button: <code>.ember-remodal.open.button</code></li>
+    <li>Open link: <code>.ember-remodal.link.text</code></li>
+    <li>Confirm button: <code>.ember-remodal.confirm.button</code></li>
+    <li>Cancel button: <code>.ember-remodal.cancel.button</code></li>
+    <li>Native close button: <code>.ember-remodal.native.close</code></li>
+    <li>Title: <code>.ember-remodal.title.text</code></li>
+    <li>Text: <code>.ember-remodal.paragraph.text</code></li>
+    <li>Content yielded with block form: <code>.ember-remodal.yielded.content</code></li>
+    <li>Overlay: <code>.remodal-overlay</code></li>
+    <li>Buttons: <code>.ember-remodal.button</code></li>
+    <li>Buttons inside the modal: <code>.ember-remodal.inner.button</code></li>
+    <li>Buttons outside the modal: <code>.ember-remodal.outer.button</code></li>
+  </ul>
+
+  <p>
+    You can set additional classes on the main modal window via <code>modalClasses</code>.
+
+  </p>
+  <p>
+    You can also set additional classes on any of the provided buttons via:
+  </p>
+
+  <li><code>buttonClasses</code></li>
+  <li><code>outerButtonClasses</code></li>
+  <li><code>innerButtonClasses</code></li>
+
+  <p>
+    For instance, if you were using [semantic ui](http://semantic-ui.com/), you may
+    want to add the <code>.ui</code> class to all of the included buttons. <code>.button</code> is already
+    applied, so just do:
+  </p>
+
+{{#code-block language='handlebars'}}
+  &#123;&#123;ember-remodal buttonClasses='ui' openButton='Open' confirmButton='Ok!'&#125;&#125;
+{{/code-block}}
+
+</div>
