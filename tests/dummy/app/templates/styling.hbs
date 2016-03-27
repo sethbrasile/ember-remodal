@@ -1,7 +1,15 @@
 <div class="content">
+  <h3>Styling</h3>
+
   <p>
-    You can easily target every portion of the modal.
+    Apply the <code>remodal-bg</code> class to anything you want blurred in the
+    background while a modal is open.
   </p>
+
+  <p>
+    For custom styling, you can easily target every portion of the modal.
+  </p>
+
   <ul>
     <li>Main modal window: <code>.ember-remodal.window</code></li>
     <li>Named modal main window: <code>.ember-remodal.whatever-you-named-the-modal.window</code></li>
@@ -23,18 +31,26 @@
     You can set additional classes on the main modal window via <code>modalClasses</code>.
 
   </p>
+
   <p>
-    You can also set additional classes on any of the provided buttons via:
+    You can also set additional classes on any of the built-in buttons via:
   </p>
 
-  <li><code>buttonClasses</code></li>
-  <li><code>outerButtonClasses</code></li>
-  <li><code>innerButtonClasses</code></li>
+  <ul>
+    <li><code>buttonClasses</code></li>
+    <li><code>outerButtonClasses</code></li>
+    <li><code>innerButtonClasses</code></li>
+    <li><code>openButtonClasses</code></li>
+    <li><code>openLinkClasses</code></li>
+    <li><code>confirmButtonClasses</code></li>
+    <li><code>cancelButtonClasses</code></li>
+  </ul>
 
   <p>
-    For instance, if you were using [semantic ui](http://semantic-ui.com/), you may
-    want to add the <code>.ui</code> class to all of the included buttons. <code>.button</code> is already
-    applied, so just do:
+    For instance, if you were using
+    <a href="http://semantic-ui.com">semantic ui</a>, you may want to add the
+    <code>.ui</code> class to all of the included buttons. <code>.button</code>
+    is already applied, so just do:
   </p>
 
 {{#code-block language='handlebars'}}
