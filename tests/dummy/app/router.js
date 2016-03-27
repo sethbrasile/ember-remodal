@@ -16,6 +16,7 @@ Router.map(function() {
     this.route('simple', { path: '/' });
     this.route('names');
     this.route('properties');
+    this.route('promises');
   });
   this.route('options', function() {
     this.route('general', { path: '/' });
