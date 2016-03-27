@@ -27,7 +27,10 @@ Router.map(function() {
     this.route('actions');
   });
   this.route('styling');
-  this.route('components');
+  this.route('components', function() {
+    this.route('contextual', { path: '/' });
+    this.route('legacy');
+  });
 });
 
 export default Router;
