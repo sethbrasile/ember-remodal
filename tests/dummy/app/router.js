@@ -24,6 +24,7 @@ Router.map(function() {
     this.route('button');
     this.route('style');
     this.route('functionality');
+    this.route('actions');
   });
   this.route('styling');
   this.route('components');
