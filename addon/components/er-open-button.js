@@ -9,7 +9,6 @@ const {
 
 export default Component.extend(ButtonMixin, {
   layout,
-  buttonType: 'open',
 
   destination: computed('modal.elementId', {
     get() {

@@ -5,6 +5,5 @@ import ButtonMixin from '../mixins/er-button';
 const { Component } = Ember;
 
 export default Component.extend(ButtonMixin, {
-  layout,
-  buttonType: 'cancel'
+  layout
 });
