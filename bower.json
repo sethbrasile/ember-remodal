@@ -10,6 +10,7 @@
     "prism": "^1.4.1"
   },
   "devDependencies": {
-    "remodal": "^1.0.6"
+    "remodal": "^1.0.6",
+    "blanket": "5e94fc30f2e694bb5c3718ddcbf60d467f4b4d26"
   }
 }
