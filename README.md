@@ -1,7 +1,10 @@
 # ember-remodal
+
+#### [Click Here for Interactive Demo/Documentation](http://sethbrasile.github.io/ember-remodal)
+
 [![Build Status](https://travis-ci.org/sethbrasile/ember-remodal.svg?branch=master)](https://travis-ci.org/sethbrasile/ember-remodal) [![npm version](https://badge.fury.io/js/ember-remodal.svg)](http://badge.fury.io/js/ember-remodal) [![Code Climate](https://codeclimate.com/github/sethbrasile/ember-remodal/badges/gpa.svg)](https://codeclimate.com/github/sethbrasile/ember-remodal) [![Dependencies](https://david-dm.org/sethbrasile/ember-remodal.svg)](https://david-dm.org/sethbrasile/ember-remodal) [![Test Coverage](https://codeclimate.com/github/sethbrasile/ember-remodal/badges/coverage.svg)](https://codeclimate.com/github/sethbrasile/ember-remodal/coverage) [![Ember Observer Score](http://emberobserver.com/badges/ember-remodal.svg)](http://emberobserver.com/addons/ember-remodal)
 
-*This README is up-to-date and accurate as of ember-remodal v0.0.19*
+*This README is up-to-date and accurate as of ember-remodal v0.0.20*
 
 There are many modal addons for Ember, but most of them (in my experience) are
 only useful in a very specific situation. Often, when building large apps, you
