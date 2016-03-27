@@ -28,8 +28,8 @@ test('it has a cancel button', function(assert) {
   assert.expect(1);
 
   andThen(function() {
-    const modal = this.$('[data-test-id="modalWindow"].remodal-is-opened [data-test-id="cancelButton"]') || this.$('[data-test-id="modalWindow"].remodal-is-opening [data-test-id="cancelButton"]');
-    assert.equal(modal.length, 1);
+    let length = this.$('[data-test-id="modalWindow"].remodal-is-opened [data-test-id="cancelButton"]').length || this.$('[data-test-id="modalWindow"].remodal-is-opening [data-test-id="cancelButton"]').length;
+    assert.equal(length, 1);
   });
 
   andThen(function() {
