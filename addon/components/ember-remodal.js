@@ -15,6 +15,7 @@ const {
 
 export default Component.extend({
   layout,
+  warn,
   remodal: inject.service(),
   attributeBindings: ['dataTestId:data-test-id'],
   classNames: ['remodal-component'],
@@ -87,7 +88,7 @@ export default Component.extend({
     if (this.get('modal')) {
       return this._promiseAction('close');
     } else {
-      warn(
+      this.get('warn')(
         'ember-remodal: You called "close" on a modal that has not yet been opened. This is not a big deal, but I thought you should know. The returned promise will immediately resolve.', false,
         { id: 'ember-remodal.close-called-on-unitialized-modal' }
       );

@@ -309,3 +309,47 @@ test('"_pastTense" works', function(assert) {
     assert.equal(component._pastTense('open'), 'opened');
   });
 });
+
+test('options are set from the options hash', function(assert) {
+  assert.expect(1);
+
+  run(() => {
+    let component = this.subject({
+      options: { testingTesting: 123 }
+    });
+
+    this.render();
+    assert.equal(component.get('testingTesting'), 123);
+  });
+});
+
+test('if "forService" is true, "this" is set as "name" on the remodal service', function(assert) {
+  assert.expect(1);
+  const remodal = Ember.Object.create();
+
+  run(() => {
+    let component = this.subject({ remodal, forService: true });
+
+    this.render();
+    assert.deepEqual(remodal.get('ember-remodal'), component);
+  });
+});
+
+test('"warn" is called if a modal is closed before opening', function(assert) {
+  assert.expect(2);
+
+  run(() => {
+    let component = this.subject({
+      warnCalled: false,
+      warn() {
+        component.set('warnCalled', true);
+      }
+    });
+
+    this.render();
+
+    assert.notOk(component.get('warnCalled'));
+    component.close();
+    assert.ok(component.get('warnCalled'));
+  });
+});
