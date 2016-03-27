@@ -4,60 +4,26 @@
 <hr />
 
 <p>
-  Many modal libraries require you to mix your modals up with application state.
-  Setting a "modal model" doesn't make any sense. Extending a modal component to
-  handle complex logic doesn't make any sense. A modal should be a simple
-  presentational technique and nothing more. Aside from providing simple actions
-  such as <code>onOpen</code>, <code>onCancel</code> etc... ember-remodal
-  encourages you to keep your logic and state in your components and
-  controllers.
+  Many modal libraries encourage you to mix your modals up with application
+  state/logic. A modal should be a simple presentational technique and nothing
+  more. Aside from providing simple actions such as <code>onOpen</code>,
+  <code>onCancel</code> etc... ember-remodal encourages you to keep state/logic
+  elsewhere.
 </p>
 
 <div class='content'>
-  {{#ember-remodal as |m|}}
-    {{#m.open}}
-      <button class='btn btn-primary'>OPEN A MODAL</button>
-    {{/m.open}}
-
-    <div class="content">
-      <p>
-        Anything placed inside a modal's block will be rendered inside
-        the modal.
-      </p>
-      <img src="http://loremflickr.com/320/240" alt="random image" />
-    </div>
-
-    <div class="actions">
-      {{#m.cancel}}
-        <button class='btn btn-primary'>Cancel</button>
-      {{/m.cancel}}
-
-      {{#m.confirm}}
-        <button class='btn btn-success'>OK</button>
-      {{/m.confirm}}
-    </div>
+  {{#ember-remodal openButton='Open A Modal'}}
+    <p>
+      Anything placed inside a modal's block will be rendered inside
+      the modal.
+    </p>
+    <img src="http://loremflickr.com/320/240" alt="random image" />
   {{/ember-remodal}}
 
 {{#code-block language='handlebars'}}
-  &#123;&#123;#ember-remodal as |m|&#125;&#125;
-    &#123;&#123;#m.open&#125;&#125;
-      &lt;button class='btn btn-primary'&gt;OPEN A MODAL&lt;/button&gt;
-    &#123;&#123;/m.open&#125;&#125;
-
-    &lt;div class="content"&gt;
-      &lt;p&gt;Anything placed inside a modal's block will be rendered inside the modal.&lt;/p&gt;
-      &lt;img src="http://loremflickr.com/320/240" alt="random image" /&gt;
-    &lt;/div&gt;
-
-    &lt;div class="actions"&gt;
-      &#123;&#123;#m.cancel&#125;&#125;
-        &lt;button class='btn btn-primary'&gt;Cancel&lt;/button&gt;
-      &#123;&#123;/m.cancel&#125;&#125;
-
-      &#123;&#123;#m.confirm&#125;&#125;
-        &lt;button class='btn btn-success'&gt;OK&lt;/button&gt;
-      &#123;&#123;/m.confirm&#125;&#125;
-    &lt;/div&gt;
+  &#123;&#123;#ember-remodal openButton='Open A Modal'&#125;&#125;
+    &lt;p&gt;Anything placed inside a modal's block will be rendered inside the modal.&lt;/p&gt;
+    &lt;img src="http://loremflickr.com/320/240" alt="random image" /&gt;
   &#123;&#123;/ember-remodal&#125;&#125;
 {{/code-block}}
 </div>
