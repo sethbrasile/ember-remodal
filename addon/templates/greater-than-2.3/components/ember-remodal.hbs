@@ -25,9 +25,9 @@
   {{#if hasBlock}}
     <div class="ember-remodal inner yielded content" data-test-id="yielded">
       {{yield (hash
-        open=(component 'er-open-button')
-        confirm=(component 'er-confirm-button')
-        cancel=(component 'er-cancel-button')
+        open=(component 'er-open-button' deprecateComponent=false)
+        confirm=(component 'er-confirm-button' deprecateComponent=false)
+        cancel=(component 'er-cancel-button' deprecateComponent=false)
       )}}
     </div>
   {{/if}}
