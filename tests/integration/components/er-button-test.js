@@ -22,3 +22,15 @@ test('it renders', function(assert) {
 
   assert.equal(this.$().text().trim(), 'template block text');
 });
+
+test('"click" sends "action" action', function(assert) {
+  this.set('myAction', () => assert.ok(true));
+
+  this.render(hbs`
+    {{#er-button action=(action myAction)}}
+      <button class="button"></button>
+    {{/er-button}}
+  `);
+
+  this.$('.button').click();
+});
