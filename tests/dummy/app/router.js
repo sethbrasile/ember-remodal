@@ -18,7 +18,8 @@ Router.map(function() {
     this.route('properties');
   });
   this.route('options', function() {
-    this.route('remodal', { path: '/' });
+    this.route('general', { path: '/' });
+    this.route('remodal');
     this.route('content');
     this.route('button');
     this.route('style');
