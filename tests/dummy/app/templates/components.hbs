@@ -1,0 +1,13 @@
+<h1>Included Components</h1>
+
+<ul class="nav nav-tabs">
+  {{#link-to 'components.contextual' tagName='li' classNames='link'}}
+    <a>Contextual Components</a>
+  {{/link-to}}
+
+  {{#link-to 'components.legacy' tagName='li' classNames='link'}}
+    <a>Legacy Components</a>
+  {{/link-to}}
+</ul>
+
+{{outlet}}

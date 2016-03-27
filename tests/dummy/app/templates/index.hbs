@@ -1,0 +1,28 @@
+<h1>ember remodal</h1>
+<h3>An intensely usable modal component for Ember.js</h3>
+
+<hr />
+
+<p>
+  Modal libraries often encourage you to mix your modals up with application
+  state/logic. A modal should be a simple presentational technique and nothing
+  more. ember-remodal encourages you to keep state/logic on your controllers,
+  components, and routes.
+</p>
+
+<div class='content'>
+  {{#ember-remodal openButton='Open A Modal'}}
+    <p>
+      Anything placed inside a modal's block will be rendered inside
+      the modal.
+    </p>
+    <img src="http://loremflickr.com/320/240" alt="random image" />
+  {{/ember-remodal}}
+
+{{#code-block language='handlebars'}}
+  &#123;&#123;#ember-remodal openButton='Open A Modal'&#125;&#125;
+    &lt;p&gt;Anything placed inside a modal's block will be rendered inside the modal.&lt;/p&gt;
+    &lt;img src="http://loremflickr.com/320/240" alt="random image" /&gt;
+  &#123;&#123;/ember-remodal&#125;&#125;
+{{/code-block}}
+</div>

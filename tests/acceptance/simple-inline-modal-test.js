@@ -3,7 +3,7 @@ import moduleForAcceptance from '../../tests/helpers/module-for-acceptance';
 
 moduleForAcceptance('Acceptance | simple inline modal', {
   beforeEach() {
-    visit('/');
+    visit('/inline');
 
     andThen(function() {
       click(this.$('[data-test-id="simple-inline"] [data-test-id="openButton"]'));

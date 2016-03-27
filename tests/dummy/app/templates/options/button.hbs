@@ -1,0 +1,69 @@
+<div class="content">
+  <h3>Button Options</h3>
+
+  <p>
+    Providing <code>string</code> values to these will enable the corresponding
+    button and set it's label value to the value provided. There are no default
+    values. If a value is not provided, that button will not show up.
+  </p>
+
+  <ul>
+    <li>
+      <code>openButton</code>: Shows up outside of the modal, allowing a user to
+      click and open the modal.
+    </li>
+
+    <li>
+      <code>openLink</code>: Just like <code>openButton</code>, but rendered as
+      an <code>a</code> tag instead of a <code>button</code>.
+    </li>
+
+    <li>
+      <code>confirmButton</code>: Shows up inside the modal, toward the bottom. With it's
+      default setup, when a user clicks this button, the component will:
+
+      <p>
+        <ol>
+          <li>Fire it's <code>onConfirm</code> action.</li>
+          <li>Close the modal.</li>
+          <li>Fire it's <code>onClose</code> action.</li>
+        </ol>
+      </p>
+
+      <p>
+        <code>closeOnConfirm</code> can be set to <code>false</code> which
+        will keep steps 2 and 3 from taking place.
+      </p>
+    </li>
+    <li>
+      <code>cancelButton</code>: Exactly the same as <code>confirmButton</code>,
+      but <code>onCancel</code> is fired instead of <code>onConfirm</code>.
+      <code>closeOnCancel</code> can also be set to <code>false</code>.
+    </li>
+    <li>
+      <code>buttonClasses</code>: If provided, this string value is added to the
+      <code>class</code> attribute on all built-in buttons:
+      <code>confirmButton</code>, <code>openLink</code>,
+      <code>confirmButton</code>, and <code>cancelButton</code>
+    </li>
+  </ul>
+
+  <h3>Booleans</h3>
+
+  <ul>
+    <li>
+      <code>disableNativeClose</code>: If <code>true</code>, this keeps the
+      little <code>x</code> button from appearing in the top left corner of the
+      modal.
+    </li>
+  </ul>
+
+  <p>
+    <strong>Note on close events</strong>: <code>remodal</code> doesn't
+    currently offer a hook to allow for <code>onNativeClose</code> or
+    <code>onOverlayClose</code> actions, but <code>onClose</code> is
+    available and fires when a modal closes for any reason.
+  </p>
+
+  {{link-to 'Examples Here' 'inline.with-styles'}}
+</div>

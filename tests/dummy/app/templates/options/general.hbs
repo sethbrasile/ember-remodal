@@ -1,0 +1,32 @@
+<div class="content">
+  <h3>Using Options</h3>
+
+  <p>
+    As you've probably seen by now. You can pass various options to a modal like
+    this:
+  </p>
+
+{{#code-block language='handlebars'}}
+  &#123;&#123;ember-remodal key='value'&#125;&#125;
+{{/code-block}}
+
+  <p>
+    You can also provide options via the <code>options</code> hash.
+  </p>
+
+{{#code-block language='javascript'}}
+  export default Ember.Whatever.extend({
+    modalOptions: {
+      openButton: 'Open Modal',
+      confirmButton: 'OK',
+      cancelButton: 'Cancel',
+      title: 'A Title!',
+      text: 'lorem ipsum dolar sit amet'
+    }
+  });
+{{/code-block}}
+
+{{#code-block language='handlebars'}}
+  &#123;&#123;ember-remodal options=modalOptions&#125;&#125;
+{{/code-block}}
+</div>
