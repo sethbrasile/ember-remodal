@@ -50,9 +50,21 @@
       </p>
 
       {{#if legacy}}
-        {{code-snippet name='components_legacy_open.hbs'}}
+{{#code-block language='handlebars'}}
+  &#123;&#123;#ember-remodal&#125;&#125;
+    &#123;&#123;#er-open-button&#125;&#125;
+      &#123;&#123;!-- Anything you put here will open the modal on click and fire the 'onOpen' action --&#125;&#125;
+    &#123;&#123;/er-open-button&#125;&#125;
+  &#123;&#123;/ember-remodal&#125;&#125;
+{{/code-block}}
       {{else}}
-        {{code-snippet name='components_current_open.hbs'}}
+{{#code-block language='handlebars'}}
+  &#123;&#123;#ember-remodal as |modal|&#125;&#125;
+    &#123;&#123;#modal.open&#125;&#125;
+      &#123;&#123;!-- Anything you put here will open the modal on click and fire the 'onOpen' action --&#125;&#125;
+    &#123;&#123;/modal.open&#125;&#125;
+  &#123;&#123;/ember-remodal&#125;&#125;
+{{/code-block}}
       {{/if}}
 
     </li>
@@ -73,9 +85,21 @@
       </p>
 
       {{#if legacy}}
-        {{code-snippet name='components_legacy_confirm.hbs'}}
+{{#code-block language='handlebars'}}
+  &#123;&#123;#ember-remodal&#125;&#125;
+    &#123;&#123;#er-confirm-button&#125;&#125;
+      &#123;&#123;!-- Anything you put here will close the modal on click and fire the 'onConfirm' action --&#125;&#125;
+    &#123;&#123;/er-confirm-button&#125;&#125;
+  &#123;&#123;/ember-remodal&#125;&#125;
+{{/code-block}}
       {{else}}
-        {{code-snippet name='components_current_confirm.hbs'}}
+{{#code-block language='handlebars'}}
+  &#123;&#123;#ember-remodal as |modal|&#125;&#125;
+    &#123;&#123;#modal.confirm&#125;&#125;
+      &#123;&#123;!-- Anything you put here will close the modal on click and fire the 'onConfirm' action --&#125;&#125;
+    &#123;&#123;/modal.confirm&#125;&#125;
+  &#123;&#123;/ember-remodal&#125;&#125;
+{{/code-block}}
       {{/if}}
 
     </li>
@@ -97,9 +121,21 @@
       </p>
 
       {{#if legacy}}
-        {{code-snippet name='components_legacy_cancel.hbs'}}
+{{#code-block language='handlebars'}}
+  &#123;&#123;#ember-remodal&#125;&#125;
+    &#123;&#123;#er-cancel-button&#125;&#125;
+      &#123;&#123;!-- Anything you put here will close the modal on click and fire the 'onCancel' action --&#125;&#125;
+    &#123;&#123;/er-cancel-button&#125;&#125;
+  &#123;&#123;/ember-remodal&#125;&#125;
+{{/code-block}}
       {{else}}
-        {{code-snippet name='components_current_cancel.hbs'}}
+{{#code-block language='handlebars'}}
+  &#123;&#123;#ember-remodal as |modal|&#125;&#125;
+    &#123;&#123;#modal.cancel&#125;&#125;
+      &#123;&#123;!-- Anything you put here will close the modal on click and fire the 'onCancel' action --&#125;&#125;
+    &#123;&#123;/modal.cancel&#125;&#125;
+  &#123;&#123;/ember-remodal&#125;&#125;
+{{/code-block}}
       {{/if}}
 
     </li>

@@ -9,5 +9,15 @@
     confirmButtonClasses='btn-success'
   }}
 
-  {{code-snippet name='inline-with-styles.hbs'}}
+  {{#code-block language='handlebars'}}
+  &#123;&#123;ember-remodal
+    openButton='Open Modal'
+    confirmButton='OK'
+    title='A Title!'
+    text='lorem ipsum dolar sit amet'
+    buttonClasses='btn'
+    openButtonClasses='btn-primary'
+    confirmButtonClasses='btn-success'
+  &#125;&#125;
+  {{/code-block}}
 </div>

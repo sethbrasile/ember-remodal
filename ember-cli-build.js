@@ -6,6 +6,11 @@ module.exports = function(defaults) {
   var app = new EmberAddon(defaults, {
     stylusOptions: {
       outputFile: 'dummy.css'
+    },
+
+    'ember-prism': {
+      theme: 'okaidia',
+      components: ['javascript', 'handlebars']
     }
   });
 

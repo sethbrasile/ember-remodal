@@ -17,7 +17,22 @@
   </p>
 
   <div class="content">
-    {{code-snippet name='service-1.hbs'}}
-    {{code-snippet name='service-1.js'}}
+{{#code-block language='handlebars'}}
+  &#123;&#123;ember-remodal forService=true&#125;&#125;
+
+  &lt;button &#123;&#123;action 'openModal'&#125;&#125;&gt;Open!&lt;/button&gt;
+{{/code-block}}
+
+{{#code-block language='javascript'}}
+  export default Ember.Whatever.extend({
+    remodal: Ember.inject.service(),
+
+    actions: {
+      openModal() {
+        this.get('remodal').open();
+      }
+    }
+  });
+{{/code-block}}
   </div>
 </div>

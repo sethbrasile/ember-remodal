@@ -38,5 +38,26 @@
     </div>
   {{/ember-remodal}}
 
-  {{code-snippet name="index.hbs"}}
+{{#code-block language='handlebars'}}
+  &#123;&#123;#ember-remodal as |m|&#125;&#125;
+    &#123;&#123;#m.open&#125;&#125;
+      &lt;button class='btn btn-primary'&gt;OPEN A MODAL&lt;/button&gt;
+    &#123;&#123;/m.open&#125;&#125;
+
+    &lt;div class="content"&gt;
+      &lt;p&gt;Anything placed inside a modal's block will be rendered inside the modal.&lt;/p&gt;
+      &lt;img src="http://loremflickr.com/320/240" alt="random image" /&gt;
+    &lt;/div&gt;
+
+    &lt;div class="actions"&gt;
+      &#123;&#123;#m.cancel&#125;&#125;
+        &lt;button class='btn btn-primary'&gt;Cancel&lt;/button&gt;
+      &#123;&#123;/m.cancel&#125;&#125;
+
+      &#123;&#123;#m.confirm&#125;&#125;
+        &lt;button class='btn btn-success'&gt;OK&lt;/button&gt;
+      &#123;&#123;/m.confirm&#125;&#125;
+    &lt;/div&gt;
+  &#123;&#123;/ember-remodal&#125;&#125;
+{{/code-block}}
 </div>
