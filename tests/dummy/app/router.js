@@ -33,6 +33,7 @@ Router.map(function() {
     this.route('legacy');
     this.route('example');
   });
+  this.route('upgrading');
 });
 
 export default Router;
