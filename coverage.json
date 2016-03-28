@@ -1,55 +1,43 @@
 {
   "stats": {
-    "suites": 65,
-    "tests": 108,
-    "passes": 108,
+    "suites": 101,
+    "tests": 145,
+    "passes": 145,
     "pending": 0,
     "failures": 0,
-    "start": "2016-02-02T22:12:40.634Z",
-    "end": "2016-02-02T22:12:43.880Z"
+    "start": "2016-03-28T04:18:17.982Z",
+    "end": "2016-03-28T04:18:22.097Z"
   },
   "coverage": {
     "total": {
-      "statementsTotal": 116,
-      "statementsCovered": 40,
-      "percentage": 34.48
+      "statementsTotal": 100,
+      "statementsCovered": 100,
+      "percentage": 100
     },
     "files": [
       {
         "name": "ember-remodal/components/ember-remodal",
-        "statementsTotal": 66,
-        "statementsCovered": 14,
-        "percentage": 21.21
+        "statementsTotal": 68,
+        "statementsCovered": 68,
+        "percentage": 100
       },
       {
-        "name": "ember-remodal/components/er-cancel-button",
-        "statementsTotal": 5,
-        "statementsCovered": 4,
-        "percentage": 80
+        "name": "ember-remodal/components/er-button",
+        "statementsTotal": 9,
+        "statementsCovered": 9,
+        "percentage": 100
       },
       {
-        "name": "ember-remodal/components/er-confirm-button",
-        "statementsTotal": 5,
-        "statementsCovered": 4,
-        "percentage": 80
-      },
-      {
-        "name": "ember-remodal/components/er-open-button",
-        "statementsTotal": 8,
-        "statementsCovered": 5,
-        "percentage": 62.5
-      },
-      {
-        "name": "ember-remodal/mixins/er-button",
-        "statementsTotal": 12,
-        "statementsCovered": 7,
-        "percentage": 58.33
+        "name": "dummy/components/ember-remodal/er-button",
+        "statementsTotal": 3,
+        "statementsCovered": 3,
+        "percentage": 100
       },
       {
         "name": "ember-remodal/services/remodal",
         "statementsTotal": 20,
-        "statementsCovered": 6,
-        "percentage": 30
+        "statementsCovered": 20,
+        "percentage": 100
       }
     ]
   }

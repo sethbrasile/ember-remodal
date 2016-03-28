@@ -1,0 +1,27 @@
+<div class="content">
+  <p>
+    When using ember-remodal in inline form, a single button is displayed (button
+    text specified via the <code>openButton</code> property). When this button is
+    clicked, a modal opens. The contents of this modal can be set using the
+    <code>title</code> and <code>text</code> properties.
+  </p>
+
+  {{ember-remodal
+    openButton='Open Modal'
+    confirmButton='OK'
+    cancelButton='Cancel'
+    title='A Title!'
+    text='lorem ipsum dolar sit amet'
+    dataTestId='simple-inline'
+  }}
+
+{{#code-block language='handlebars'}}
+  &#123;&#123;ember-remodal
+    openButton='Open Modal'
+    confirmButton='OK'
+    cancelButton='Cancel'
+    title='A Title!'
+    text='lorem ipsum dolar sit amet'
+  &#125;&#125;
+{{/code-block}}
+</div>

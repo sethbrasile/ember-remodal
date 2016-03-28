@@ -1,0 +1,47 @@
+<div class="content">
+  <h3>Functionality Options</h3>
+
+  <ul>
+    <li>
+      <code>closeOnOutsideClick</code>: Default is <code>true</code>, which
+      allows the user to click the dark overlay outside the modal window to
+      close the modal.
+    </li>
+    <li>
+      <code>closeOnEscape</code>: Default is <code>true</code>, which allows the
+      user to hit the <code>escape</code> key on their keyboard to close the
+      modal.
+    </li>
+    <li>
+      <code>disableForeground</code>: If <code>true</code>, this causes the
+      white box surrounding the modal content to be transparent, and switches
+      the default text color from <code>black</code> to <code>white</code>. When
+      combined with <code>closeOnOutsideClick: false</code> and
+      <code>closeOnEscape: false</code>, this allows one to use the modal as an
+      un-exitable overlay, such as a <code>loading state</code>. By default,
+      setting this option to true also sets <code>disableNativeClose</code> to
+      <code>true</code>, but <code>disableNativeClose</code> can be explicitly
+      set back to <code>false</code> if you prefer.
+    </li>
+    <li>
+      <code>disableAnimation</code>: If <code>true</code>, this disables a
+      modal's opening/closing animations. This is useful for certain situations,
+      such as when you are:
+      <ul>
+        <li>Using a modal as a loading state.</li>
+        <li>
+          Facing a modal that needs to programmatically open then close quickly.
+          You should generally use {{link-to 'the promises' 'service.promises'}}
+          that are returned from <code>open</code> and <code>close</code>, but
+          sometimes promises are more complex to use than is preferable.
+        </li>
+      </ul>
+  </li>
+    <li>
+      <code>forService</code>: If <code>true</code>, the modal is registered
+      with the <code>remodal</code> service in your application. You'll find
+      more on using modals as a service in
+      {{link-to 'using ember-remodal as a service' 'service'}}.
+    </li>
+  </ul>
+</div>

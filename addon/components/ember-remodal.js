@@ -2,24 +2,25 @@ import Ember from 'ember';
 import layout from '../templates/components/ember-remodal';
 
 const {
-  deprecate,
   inject,
   computed,
-  computed: { oneWay },
+  computed: { reads },
   on,
   RSVP: { Promise },
   run: { next, scheduleOnce },
   sendEvent,
+  warn,
   Component
 } = Ember;
 
 export default Component.extend({
   layout,
+  warn,
   remodal: inject.service(),
   attributeBindings: ['dataTestId:data-test-id'],
   classNames: ['remodal-component'],
   tagName: 'span',
-  name: 'modal',
+  name: 'ember-remodal',
   modifier: '',
   modal: null,
   options: null,
@@ -29,22 +30,21 @@ export default Component.extend({
   hashTracking: false,
   closeOnOutsideClick: true,
   forService: false,
-  isApplicationModal: false,
   disableForeground: false,
   disableAnimation: false,
-  disableNativeClose: oneWay('disableForeground'),
+  disableNativeClose: reads('disableForeground'),
   erOpenButton: false,
   erCancelButton: false,
   erConfirmButton: false,
 
   didInitAttrs() {
-    const opts = this.get('options');
+    let opts = this.get('options');
 
     if (opts) {
       this.setProperties(opts);
     }
 
-    if (this.get('forService') || this.get('isApplicationModal')) {
+    if (this.get('forService')) {
       this.get('remodal').set(this.get('name'), this);
     }
 
@@ -72,32 +72,63 @@ export default Component.extend({
     }
   }),
 
+  openDidFire: on('opened', function() {
+    this.sendAction('onOpen');
+  }),
+
+  closeDidFire: on('closed', function() {
+    this.sendAction('onClose');
+  }),
+
   open() {
-    const modal = this.get('modalId');
-
-    return new Promise((resolve) => {
-      Ember.$(document).one('opened', modal, () => {
-        resolve(this);
-      });
-
-      this.send('open');
-    });
+    return this._promiseAction('open');
   },
 
   close() {
-    const modal = this.get('modalId');
+    if (this.get('modal')) {
+      return this._promiseAction('close');
+    } else {
+      this.get('warn')(
+        'ember-remodal: You called "close" on a modal that has not yet been opened. This is not a big deal, but I thought you should know. The returned promise will immediately resolve.', false,
+        { id: 'ember-remodal.close-called-on-unitialized-modal' }
+      );
+      return new Promise((resolve) => resolve(this));
+    }
+  },
+
+  _promiseAction(action) {
+    let modal = this.get('modalId');
+    let actionName = this._pastTense(action);
+
+    this.send(action);
 
     return new Promise((resolve) => {
-      Ember.$(document).one('closed', modal, () => {
-        resolve(this);
-      });
-
-      this.send('close');
+      Ember.$(document).one(actionName, modal, () => resolve(this));
     });
   },
 
+  _pastTense(action) {
+    if (action[action.length - 1] === 'e') {
+      return `${action}d`;
+    } else {
+      return `${action}ed`;
+    }
+  },
+
+  _registerObservers() {
+    let modal = this.get('modalId');
+    Ember.$(document).on('opened', modal, () => sendEvent(this, 'opened'));
+    Ember.$(document).on('closed', modal, () => sendEvent(this, 'closed'));
+  },
+
+  _deregisterObservers() {
+    let modal = this.get('modalId');
+    Ember.$(document).off('opened', modal);
+    Ember.$(document).off('closed', modal);
+  },
+
   _createInstanceAndOpen() {
-    const modal = Ember.$(this.get('modalId')).remodal({
+    let modal = Ember.$(this.get('modalId')).remodal({
       hashTracking: this.get('hashTracking'),
       closeOnOutsideClick: this.get('closeOnOutsideClick'),
       closeOnEscape: this.get('closeOnEscape'),
@@ -108,38 +139,8 @@ export default Component.extend({
     this.send('open');
   },
 
-  _registerObservers() {
-    const modal = this.get('modalId');
-    Ember.$(document).on('opened', modal, () => sendEvent(this, 'opened'));
-    Ember.$(document).on('closed', modal, () => sendEvent(this, 'closed'));
-  },
-
-  _deregisterObservers() {
-    const modal = this.get('modalId');
-    Ember.$(document).off('opened', modal);
-    Ember.$(document).off('closed', modal);
-  },
-
-  openDidFire: on('opened', function() {
-    this.sendAction('onOpen');
-  }),
-
-  closeDidFire: on('closed', function() {
-    this.sendAction('onClose');
-  }),
-
   _checkForDeprecations() {
-    deprecate(
-      'ember-remodal\'s "linkButton" is deprecated and will be removed in ember-remodal 1.0.0. It was a stupid name. You should use "openLink" instead.',
-      !this.get('linkButton'),
-      { id: 'ember-remodal.linkButton', until: '1.0.0' }
-    );
-
-    deprecate(
-      'ember-remodal\'s "isApplicationModal" is deprecated and will be removed in ember-remodal 1.0.0. Use "forService" instead.',
-      !this.get('isApplicationModal'),
-      { id: 'ember-remodal.isApplicationModal', until: '1.0.0' }
-    );
+    // Deprecations go here
   },
 
   _openModal() {
@@ -150,21 +151,21 @@ export default Component.extend({
     this.get('modal').close();
   },
 
+  _closeOnCondition(condition) {
+    this.sendAction(`on${condition}`);
+
+    if (this.get(`closeOn${condition}`)) {
+      this.send('close');
+    }
+  },
+
   actions: {
     confirm() {
-      this.sendAction('onConfirm');
-
-      if (this.get('closeOnConfirm')) {
-        this.send('close');
-      }
+      this._closeOnCondition('Confirm');
     },
 
     cancel() {
-      this.sendAction('onCancel');
-
-      if (this.get('closeOnCancel')) {
-        this.send('close');
-      }
+      this._closeOnCondition('Cancel');
     },
 
     open() {

@@ -1,0 +1,48 @@
+<div class="content">
+  <h3>Named Modals</h3>
+
+  <p>
+    You can refer to a modal by it's name. A modal's default name is
+    <code>ember-remodal</code>.
+  </p>
+
+  <div class="content">
+{{#code-block language='javascript'}}
+  export default Ember.Whatever.extend({
+    remodal: Ember.inject.service(),
+
+    actions: {
+      openModal() {
+        this.get('remodal').open('ember-remodal');
+      }
+    }
+  });
+{{/code-block}}
+  </div>
+
+  <p>
+    You can name a modal. This allows multiple modals with different content to
+    exist at the same time. Keep in mind that in order to interact with a named
+    modal, you will always refer to it by name.
+  </p>
+
+  <div class="content">
+{{#code-block language='handlebars'}}
+  &#123;&#123;ember-remodal forService=true name='my-awesome-modal'&#125;&#125;
+  &lt;button &#123;&#123;action 'openMyAwesomeModal'&#125;&#125;&gt;Open!&lt;/button&gt;
+
+  &#123;&#123;ember-remodal forService=true name='my-second-modal'&#125;&#125;
+  &lt;button &#123;&#123;action 'openMySecondModal'&#125;&#125;&gt;Open!&lt;/button&gt;
+{{/code-block}}
+
+{{#code-block language='javascript'}}
+  openMyAwesomeModal() {
+    this.get('remodal').open('my-awesome-modal');
+  },
+
+  openMySecondModal() {
+    this.get('remodal').open('my-second-modal');
+  }
+{{/code-block}}
+  </div>
+</div>

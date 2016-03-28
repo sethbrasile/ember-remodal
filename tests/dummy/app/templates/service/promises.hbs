@@ -1,0 +1,59 @@
+<div class="content">
+  <h3>Promises</h3>
+
+  <p>
+    Due to the nature of the Remodal plugin, it is not possible to change a
+    modal's state while it is opening or closing. Remodal <em>does</em> however,
+    natively support opening a modal right over the top of an existing modal.
+  </p>
+
+  <p>
+    To mitigate issues that may arise when modals need to open/close in quick
+    succession, the <code>open</code> and <code>close</code> methods return
+    promises that resolve when their corresponding animations are complete.
+  </p>
+
+  <p>
+    It would be great to get rid of promises and still be able to go all
+    willy-nilly, opening and closing modals, possibly with
+    <a href="http://ember-concurrency.com/#/docs">
+      ember-concurrency,
+    </a> but that hasn't happened yet. If you've got a way to make this happen
+    please submit a PR,
+    <a href="https://github.com/sethbrasile/ember-remodal/issues/16">
+      leave a suggestion here,
+    </a>
+    or ping me on the Ember slack group!
+    (@sethbrasile)
+  </p>
+
+  <button {{action 'openThenImmediatelyClose'}}>Open, then immediately close</button>
+  <button {{action 'openFirstAndCloseThenOpenSecond'}}>Open first, then immediately close and open second</button>
+  <button {{action 'openFirstThenOpenSecondOnTopOfFirst'}}>Open first, then immediately open second on top of first</button>
+
+{{#code-block language='javascript'}}
+  openThenImmediatelyClose() {
+    this.get('remodal').open('some-modal').then((modal) => modal.close());
+  },
+
+  openFirstAndCloseThenOpenSecond() {
+    this.get('remodal').open('first-modal').then((first) => {
+      return first.close();
+    })
+
+    .then(() => this.get('remodal').open('second-modal'))
+    .then((second) => second.close());
+  },
+
+  openFirstThenOpenSecondOnTopOfFirst() {
+    this.get('remodal').open('first-modal')
+
+    .then(() => this.get('remodal').open('second-modal'))
+    .then((second) => second.close());
+  }
+{{/code-block}}
+</div>
+
+{{ember-remodal forService=true name='some-modal'}}
+{{ember-remodal forService=true name='first-modal'}}
+{{ember-remodal forService=true name='second-modal'}}

@@ -1,0 +1,37 @@
+<div class="content">
+  <h3>Properties</h3>
+
+  <p>
+    Generally, you will set properties on a modal when the modal is defined in a
+    template or via {{link-to 'the options hash' 'inline'}}. It is also possible
+    to set properties on a modal programmatically.
+  </p>
+
+  <div class="content">
+{{#code-block language='javascript'}}
+  openMyAwesomeModal() {
+    this.get('remodal').open('my-awesome-modal', {
+      title: 'A Modal',
+      text: 'Text in a modal'
+    });
+  },
+
+  openMySecondModal() {
+    const modal = this.get('remodal.my-second-modal');
+
+    modal.setProperties({
+      title: 'A Modal',
+      text: 'Text in a modal'
+    });
+
+    modal.set('text', 'Other text in a modal');
+
+    modal.open();
+  },
+
+  changeAwesomeModalText(text) {
+    this.set('remodal.my-awesome-modal.text', text);
+  }
+{{/code-block}}
+  </div>
+</div>

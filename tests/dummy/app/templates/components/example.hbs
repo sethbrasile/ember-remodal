@@ -1,0 +1,45 @@
+<div class="content">
+  {{#ember-remodal title='Words and an Image' dataTestId='modal' as |m|}}
+    {{#m.open}}
+      <button class="btn btn-primary" data-test-id="openButton">Open!</button>
+    {{/m.open}}
+
+    <div class="content">
+      <p>It's amazing how many photos on flickr are photos of cats.</p>
+      <img src="http://loremflickr.com/320/240" alt="random image" />
+    </div>
+
+    <div class="actions">
+      {{#m.cancel}}
+        <button class="btn btn-danger" data-test-id="cancelButton">Cancel!</button>
+      {{/m.cancel}}
+
+      {{#m.confirm}}
+        <button class="btn btn-success" data-test-id="confirmButton">Confirm!</button>
+      {{/m.confirm}}
+    </div>
+  {{/ember-remodal}}
+
+{{#code-block language='handlebars'}}
+  &#123;&#123;#ember-remodal title='Words and an Image' as |m|&#125;&#125;
+    &#123;&#123;#m.open&#125;&#125;
+      &lt;button class="btn btn-primary"&gt;Open!&lt;/button&gt;
+    &#123;&#123;/m.open&#125;&#125;
+
+    &lt;div class="content"&gt;
+      &lt;p&gt;It's amazing how many photos on flickr are photos of cats.&lt;/p&gt;
+      &lt;img src="http://loremflickr.com/320/240" alt="random image" /&gt;
+    &lt;/div&gt;
+
+    &lt;div class="actions"&gt;
+      &#123;&#123;#m.cancel&#125;&#125;
+        &lt;button class="btn btn-danger"&gt;Cancel!&lt;/button&gt;
+      &#123;&#123;/m.cancel&#125;&#125;
+
+      &#123;&#123;#m.confirm&#125;&#125;
+        &lt;button class="btn btn-success"&gt;Confirm!&lt;/button&gt;
+      &#123;&#123;/m.confirm&#125;&#125;
+    &lt;/div&gt;
+  &#123;&#123;/ember-remodal&#125;&#125;
+{{/code-block}}
+</div>

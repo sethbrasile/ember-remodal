@@ -1,0 +1,80 @@
+<h3>Contextual Components</h3>
+
+<p>
+  These were introduced in Ember 2.3 and are the way of the future!
+  {{link-to 'Legacy components' 'components.legacy'}} are available in ember-remodal versions &lt; 1.0.0, so use &lt; 1.0.0 if
+  you're stuck on an older version of Ember.
+</p>
+
+<div class="components">
+  <ul>
+    <li>
+      <h3>open</h3>
+
+      <p>
+        Allows you to specify your own HTML to act as the
+        <code>open button</code> for a modal, firing the <code>onOpen</code>
+        action once the <code>open</code> animation is complete.
+      </p>
+
+      <p>
+        <strong>**Note**</strong> This component depends on
+        <a href="https://github.com/yapplabs/ember-wormhole">ember-wormhole</a>
+        which is <strong>not</strong> installed automatically. Install it by
+        running <code>ember install ember-wormhole</code>. I would love to
+        remove the dependency on ember-wormhole. If you have a suggestion,
+        please let me know
+        <a href="https://github.com/sethbrasile/ember-remodal/issues/17">here</a>.
+      </p>
+
+
+{{#code-block language='handlebars'}}
+  &#123;&#123;#ember-remodal as |modal|&#125;&#125;
+    &#123;&#123;#modal.open&#125;&#125;
+      &#123;&#123;!-- Anything you put here will open the modal on click and fire the 'onOpen' action --&#125;&#125;
+    &#123;&#123;/modal.open&#125;&#125;
+  &#123;&#123;/ember-remodal&#125;&#125;
+{{/code-block}}
+
+    </li>
+    <li>
+      <h3>confirm</h3>
+
+      <p>
+        Allows you to specify your own HTML to act as the
+        <code>confirm button</code>, closing a modal when clicked and firing
+        the <code>onConfirm</code> action once the <code>close</code>
+        animation is complete.
+      </p>
+
+{{#code-block language='handlebars'}}
+  &#123;&#123;#ember-remodal as |modal|&#125;&#125;
+    &#123;&#123;#modal.confirm&#125;&#125;
+      &#123;&#123;!-- Anything you put here will close the modal on click and fire the 'onConfirm' action --&#125;&#125;
+    &#123;&#123;/modal.confirm&#125;&#125;
+  &#123;&#123;/ember-remodal&#125;&#125;
+{{/code-block}}
+
+    </li>
+
+    <li>
+      <h3>cancel</h3>
+
+      <p>
+        Allows you to specify your own HTML to act as the
+        <code>cancel button</code>, closing a modal when clicked and firing
+        the <code>onCancel</code> action once the <code>close</code>
+        animation is complete.
+      </p>
+
+{{#code-block language='handlebars'}}
+  &#123;&#123;#ember-remodal as |modal|&#125;&#125;
+    &#123;&#123;#modal.cancel&#125;&#125;
+      &#123;&#123;!-- Anything you put here will close the modal on click and fire the 'onCancel' action --&#125;&#125;
+    &#123;&#123;/modal.cancel&#125;&#125;
+  &#123;&#123;/ember-remodal&#125;&#125;
+{{/code-block}}
+
+    </li>
+  </ul>
+</div>
