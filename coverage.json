@@ -1,17 +1,17 @@
 {
   "stats": {
-    "suites": 96,
-    "tests": 135,
-    "passes": 135,
+    "suites": 101,
+    "tests": 145,
+    "passes": 145,
     "pending": 0,
     "failures": 0,
-    "start": "2016-03-27T23:58:53.305Z",
-    "end": "2016-03-27T23:58:56.157Z"
+    "start": "2016-03-28T04:18:17.982Z",
+    "end": "2016-03-28T04:18:22.097Z"
   },
   "coverage": {
     "total": {
-      "statementsTotal": 97,
-      "statementsCovered": 97,
+      "statementsTotal": 100,
+      "statementsCovered": 100,
       "percentage": 100
     },
     "files": [
@@ -25,6 +25,12 @@
         "name": "ember-remodal/components/er-button",
         "statementsTotal": 9,
         "statementsCovered": 9,
+        "percentage": 100
+      },
+      {
+        "name": "dummy/components/ember-remodal/er-button",
+        "statementsTotal": 3,
+        "statementsCovered": 3,
         "percentage": 100
       },
       {
