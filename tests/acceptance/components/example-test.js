@@ -1,14 +1,18 @@
 import { test } from 'qunit';
-import moduleForAcceptance from '../../tests/helpers/module-for-acceptance';
+import moduleForAcceptance from '../../../tests/helpers/module-for-acceptance';
 
-moduleForAcceptance('Acceptance | simple inline modal', {
+moduleForAcceptance('Acceptance | components/example', {
   beforeEach() {
-    visit('/inline');
+    visit('/components/example');
 
     andThen(function() {
-      click(this.$('[data-test-id="simple-inline"] [data-test-id="openButton"]'));
+      click(this.$('[data-test-id="modal"] [data-test-id="openButton"]'));
     });
   }
+});
+
+test('visiting /components/example', function(assert) {
+  assert.equal(currentURL(), '/components/example');
 });
 
 test('it opens', function(assert) {

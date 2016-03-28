@@ -1,7 +1,7 @@
 <div class="content">
-  {{#ember-remodal title='Words and an Image' as |m|}}
+  {{#ember-remodal title='Words and an Image' dataTestId='modal' as |m|}}
     {{#m.open}}
-      <button class="btn btn-primary">Open!</button>
+      <button class="btn btn-primary" data-test-id="openButton">Open!</button>
     {{/m.open}}
 
     <div class="content">
@@ -11,11 +11,11 @@
 
     <div class="actions">
       {{#m.cancel}}
-        <button class="btn btn-danger">Cancel!</button>
+        <button class="btn btn-danger" data-test-id="cancelButton">Cancel!</button>
       {{/m.cancel}}
 
       {{#m.confirm}}
-        <button class="btn btn-success">Confirm!</button>
+        <button class="btn btn-success" data-test-id="confirmButton">Confirm!</button>
       {{/m.confirm}}
     </div>
   {{/ember-remodal}}
