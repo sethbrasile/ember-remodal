@@ -31,6 +31,7 @@ Router.map(function() {
   this.route('components', function() {
     this.route('contextual', { path: '/' });
     this.route('legacy');
+    this.route('example');
   });
 });
 
