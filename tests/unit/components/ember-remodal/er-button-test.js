@@ -5,7 +5,7 @@ const {
   run
 } = Ember;
 
-moduleForComponent('er-button', 'Unit | Component | er button', {
+moduleForComponent('ember-remodal/er-button', 'Unit | Component | ember-remodal/er button', {
   // Specify the other units that are required for this test
   needs: ['component:ember-wormhole'],
   unit: true
