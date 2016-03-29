@@ -52,7 +52,7 @@ export default Component.extend({
     scheduleOnce('afterRender', this, '_checkForDeprecations');
   },
 
-  willDestroy() {
+  willDestroyElement() {
     scheduleOnce('destroy', this, '_destroyDomElements');
     scheduleOnce('destroy', this, '_deregisterObservers');
   },
