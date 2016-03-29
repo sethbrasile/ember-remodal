@@ -54,7 +54,7 @@ export default Component.extend({
 
   willDestroy() {
     scheduleOnce('destroy', this, '_destroyDomElements');
-    scheduleOnce('afterRender', this, '_deregisterObservers');
+    scheduleOnce('destroy', this, '_deregisterObservers');
   },
 
   modalId: computed('elementId', {
