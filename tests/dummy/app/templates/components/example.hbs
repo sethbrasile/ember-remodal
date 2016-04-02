@@ -21,10 +21,10 @@
   {{/ember-remodal}}
 
 {{#code-block language='handlebars'}}
-  &#123;&#123;#ember-remodal title='Words and an Image' as |m|&#125;&#125;
-    &#123;&#123;#m.open&#125;&#125;
+  \{{#ember-remodal title='Words and an Image' as |m|}}
+    \{{#m.open}}
       &lt;button class="btn btn-primary"&gt;Open!&lt;/button&gt;
-    &#123;&#123;/m.open&#125;&#125;
+    \{{/m.open}}
 
     &lt;div class="content"&gt;
       &lt;p&gt;It's amazing how many photos on flickr are photos of cats.&lt;/p&gt;
@@ -32,14 +32,14 @@
     &lt;/div&gt;
 
     &lt;div class="actions"&gt;
-      &#123;&#123;#m.cancel&#125;&#125;
+      \{{#m.cancel}}
         &lt;button class="btn btn-danger"&gt;Cancel!&lt;/button&gt;
-      &#123;&#123;/m.cancel&#125;&#125;
+      \{{/m.cancel}}
 
-      &#123;&#123;#m.confirm&#125;&#125;
+      \{{#m.confirm}}
         &lt;button class="btn btn-success"&gt;Confirm!&lt;/button&gt;
-      &#123;&#123;/m.confirm&#125;&#125;
+      \{{/m.confirm}}
     &lt;/div&gt;
-  &#123;&#123;/ember-remodal&#125;&#125;
+  \{{/ember-remodal}}
 {{/code-block}}
 </div>

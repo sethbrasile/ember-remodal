@@ -29,11 +29,11 @@
 
 
 {{#code-block language='handlebars'}}
-  &#123;&#123;#ember-remodal as |modal|&#125;&#125;
-    &#123;&#123;#modal.open&#125;&#125;
-      &#123;&#123;!-- Anything you put here will open the modal on click and fire the 'onOpen' action --&#125;&#125;
-    &#123;&#123;/modal.open&#125;&#125;
-  &#123;&#123;/ember-remodal&#125;&#125;
+  \{{#ember-remodal as |modal|}}
+    \{{#modal.open}}
+      \{{!-- Anything you put here will open the modal on click and fire the 'onOpen' action --}}
+    \{{/modal.open}}
+  \{{/ember-remodal}}
 {{/code-block}}
 
     </li>
@@ -48,11 +48,11 @@
       </p>
 
 {{#code-block language='handlebars'}}
-  &#123;&#123;#ember-remodal as |modal|&#125;&#125;
-    &#123;&#123;#modal.confirm&#125;&#125;
-      &#123;&#123;!-- Anything you put here will close the modal on click and fire the 'onConfirm' action --&#125;&#125;
-    &#123;&#123;/modal.confirm&#125;&#125;
-  &#123;&#123;/ember-remodal&#125;&#125;
+  \{{#ember-remodal as |modal|}}
+    \{{#modal.confirm}}
+      \{{!-- Anything you put here will close the modal on click and fire the 'onConfirm' action --}}
+    \{{/modal.confirm}}
+  \{{/ember-remodal}}
 {{/code-block}}
 
     </li>
@@ -68,11 +68,11 @@
       </p>
 
 {{#code-block language='handlebars'}}
-  &#123;&#123;#ember-remodal as |modal|&#125;&#125;
-    &#123;&#123;#modal.cancel&#125;&#125;
-      &#123;&#123;!-- Anything you put here will close the modal on click and fire the 'onCancel' action --&#125;&#125;
-    &#123;&#123;/modal.cancel&#125;&#125;
-  &#123;&#123;/ember-remodal&#125;&#125;
+  \{{#ember-remodal as |modal|}}
+    \{{#modal.cancel}}
+      \{{!-- Anything you put here will close the modal on click and fire the 'onCancel' action --}}
+    \{{/modal.cancel}}
+  \{{/ember-remodal}}
 {{/code-block}}
 
     </li>
