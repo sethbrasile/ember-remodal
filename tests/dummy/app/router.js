@@ -26,6 +26,7 @@ Router.map(function() {
     this.route('style');
     this.route('functionality');
     this.route('actions');
+    this.route('testing');
   });
   this.route('styling');
   this.route('components', function() {
