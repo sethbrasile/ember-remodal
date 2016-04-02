@@ -10,7 +10,12 @@ const options = {
     reporters: ['json', 'lcov'],
     autostart: true,
     lcovOptions: {
-      outputFile: 'lcov.dat'
+      outputFile: 'lcov.dat',
+
+      renamer: function(moduleName) {
+        var expression = /^ember-remodal/;
+        return moduleName.replace(expression, 'app') + '.js';
+      }
     }
   }
 };
