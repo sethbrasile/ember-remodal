@@ -36,3 +36,6 @@ install:
 
 script:
   - ember try $EMBER_TRY_SCENARIO test
+
+after_script:
+  - codeclimate-test-reporter < lcov.dat

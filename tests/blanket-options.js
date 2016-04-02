@@ -7,8 +7,11 @@ const options = {
   loaderExclusions: [],
   enableCoverage: true,
   cliOptions: {
-    reporters: ['json'],
-    autostart: true
+    reporters: ['json', 'lcov'],
+    autostart: true,
+    lcovOptions: {
+      outputFile: 'lcov.dat'
+    }
   }
 };
 if (typeof exports === 'undefined') {
