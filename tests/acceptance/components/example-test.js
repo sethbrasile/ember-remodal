@@ -22,10 +22,6 @@ test('it opens', function(assert) {
     let length = this.$('[data-test-id="modalWindow"].remodal-is-opened').length || this.$('[data-test-id="modalWindow"].remodal-is-opening').length;
     assert.equal(length, 1);
   });
-
-  andThen(function() {
-    click(this.$('.remodal-wrapper'));
-  });
 });
 
 test('it has a cancel button', function(assert) {
@@ -34,10 +30,6 @@ test('it has a cancel button', function(assert) {
   andThen(function() {
     let length = this.$('[data-test-id="modalWindow"].remodal-is-opened [data-test-id="cancelButton"]').length || this.$('[data-test-id="modalWindow"].remodal-is-opening [data-test-id="cancelButton"]').length;
     assert.equal(length, 1);
-  });
-
-  andThen(function() {
-    click(this.$('.remodal-wrapper'));
   });
 });
 
@@ -48,10 +40,6 @@ test('it has a confirm button', function(assert) {
     let length = this.$('[data-test-id="modalWindow"].remodal-is-opened [data-test-id="confirmButton"]').length || this.$('[data-test-id="modalWindow"].remodal-is-opening [data-test-id="confirmButton"]').length;
     assert.equal(length, 1);
   });
-
-  andThen(function() {
-    click(this.$('.remodal-wrapper'));
-  });
 });
 
 test('it has a native close button', function(assert) {
@@ -60,9 +48,5 @@ test('it has a native close button', function(assert) {
   andThen(function() {
     let length = this.$('[data-test-id="modalWindow"].remodal-is-opened [data-test-id="nativeClose"]').length || this.$('[data-test-id="modalWindow"].remodal-is-opening [data-test-id="nativeClose"]').length;
     assert.equal(length, 1);
-  });
-
-  andThen(function() {
-    click(this.$('.remodal-wrapper'));
   });
 });
