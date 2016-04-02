@@ -52,8 +52,9 @@ export default Component.extend({
     scheduleOnce('afterRender', this, '_checkForDeprecations');
   },
 
-  willDestroy() {
-    scheduleOnce('afterRender', this, '_deregisterObservers');
+  willDestroyElement() {
+    scheduleOnce('destroy', this, '_destroyDomElements');
+    scheduleOnce('destroy', this, '_deregisterObservers');
   },
 
   modalId: computed('elementId', {
@@ -125,6 +126,14 @@ export default Component.extend({
     let modal = this.get('modalId');
     Ember.$(document).off('opened', modal);
     Ember.$(document).off('closed', modal);
+  },
+
+  _destroyDomElements() {
+    const modal = this.get('modal');
+
+    if (modal) {
+      modal.destroy();
+    }
   },
 
   _createInstanceAndOpen() {
