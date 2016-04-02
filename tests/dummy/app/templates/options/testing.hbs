@@ -1,0 +1,60 @@
+<div class="content">
+  <h3>Testing</h3>
+
+  <p>
+    By adding the <code>dataTestId</code> option, you can easily target a
+    specific modal's <code>openButton</code> in your tests.
+  </p>
+
+{{#code-block language='javascript'}}
+  \{{ember-remodal openButton='Click Me' dataTestId='simple-inline-modal'}}
+{{/code-block}}
+
+<p>
+  Only one modal can be open at a time, so once the modal that you're targeting
+  has been opened, you can target the generic <code>data-test-id</code>
+  <code>modalWindow</code>.
+</p>
+
+{{#code-block language='javascript'}}
+  moduleForAcceptance('Acceptance | simple inline modal', {
+    beforeEach() {
+      visit('/inline');
+
+      andThen(function() {
+        click('[data-test-id="simple-inline-modal"] [data-test-id="openButton"]');
+      });
+    }
+  });
+
+  test('it opens', function(assert) {
+    assert.expect(1);
+
+    andThen(function() {
+      // We don't know for sure whether the modal is in "opening" or "opened" state.
+      // Both mean the same thing for our purposes, so we'll check for both.
+      let length = $('[data-test-id="modalWindow"].remodal-is-opened').length ||
+                   $('[data-test-id="modalWindow"].remodal-is-opening').length;
+
+      assert.equal(length, 1);
+    });
+  });
+{{/code-block}}
+
+<p>
+  Inside the <code>modalWindow</code>, all the included buttons have a
+  <code>data-test-id</code> that corresponds to their option name.
+</p>
+
+{{#code-block language='javascript'}}
+  test('it has a confirm button', function(assert) {
+    assert.expect(1);
+
+    andThen(function() {
+      let { length } = $('[data-test-id="modalWindow"] [data-test-id="confirmButton"]');
+
+      assert.equal(length, 1);
+    });
+  });
+{{/code-block}}
+</div>

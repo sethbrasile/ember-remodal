@@ -6,7 +6,7 @@ moduleForAcceptance('Acceptance | simple inline modal', {
     visit('/inline');
 
     andThen(function() {
-      click(this.$('[data-test-id="simple-inline"] [data-test-id="openButton"]'));
+      click('[data-test-id="simple-inline"] [data-test-id="openButton"]');
     });
   }
 });
@@ -19,12 +19,8 @@ test('it opens', function(assert) {
   assert.expect(1);
 
   andThen(function() {
-    let length = this.$('[data-test-id="modalWindow"].remodal-is-opened').length || this.$('[data-test-id="modalWindow"].remodal-is-opening').length;
+    let length = $('[data-test-id="modalWindow"].remodal-is-opened').length || this.$('[data-test-id="modalWindow"].remodal-is-opening').length;
     assert.equal(length, 1);
-  });
-
-  andThen(function() {
-    click(this.$('.remodal-wrapper'));
   });
 });
 
@@ -32,12 +28,8 @@ test('it has a cancel button', function(assert) {
   assert.expect(1);
 
   andThen(function() {
-    let length = this.$('[data-test-id="modalWindow"].remodal-is-opened [data-test-id="cancelButton"]').length || this.$('[data-test-id="modalWindow"].remodal-is-opening [data-test-id="cancelButton"]').length;
+    let { length } = $('[data-test-id="modalWindow"] [data-test-id="cancelButton"]');
     assert.equal(length, 1);
-  });
-
-  andThen(function() {
-    click(this.$('.remodal-wrapper'));
   });
 });
 
@@ -45,12 +37,8 @@ test('it has a confirm button', function(assert) {
   assert.expect(1);
 
   andThen(function() {
-    let length = this.$('[data-test-id="modalWindow"].remodal-is-opened [data-test-id="confirmButton"]').length || this.$('[data-test-id="modalWindow"].remodal-is-opening [data-test-id="confirmButton"]').length;
+    let { length } = $('[data-test-id="modalWindow"] [data-test-id="confirmButton"]');
     assert.equal(length, 1);
-  });
-
-  andThen(function() {
-    click(this.$('.remodal-wrapper'));
   });
 });
 
@@ -58,11 +46,7 @@ test('it has a native close button', function(assert) {
   assert.expect(1);
 
   andThen(function() {
-    let length = this.$('[data-test-id="modalWindow"].remodal-is-opened [data-test-id="nativeClose"]').length || this.$('[data-test-id="modalWindow"].remodal-is-opening [data-test-id="nativeClose"]').length;
+    let { length } = $('[data-test-id="modalWindow"] [data-test-id="nativeClose"]');
     assert.equal(length, 1);
-  });
-
-  andThen(function() {
-    click(this.$('.remodal-wrapper'));
   });
 });
