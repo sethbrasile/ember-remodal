@@ -353,3 +353,24 @@ test('"warn" is called if a modal is closed before opening', function(assert) {
     assert.ok(component.get('warnCalled'));
   });
 });
+
+test('"_destroyDomElements" calls "destroy" on "modal"', function(assert) {
+  assert.expect(2);
+
+  run(() => {
+    let component = this.subject({
+      modal: Ember.Object.create({
+        destroyCalled: false,
+        destroy() {
+          this.set('destroyCalled', true);
+        }
+      })
+    });
+
+    this.render();
+
+    assert.notOk(component.get('modal.destroyCalled'));
+    component._destroyDomElements();
+    assert.ok(component.get('modal.destroyCalled'));
+  });
+});
