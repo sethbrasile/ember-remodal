@@ -15,7 +15,7 @@ const options = {
 
       renamer: function(moduleName) {
         var app = /^ember-remodal/;
-        return moduleName.replace(app, 'app') + '.js';
+        return moduleName.replace(app, 'addon') + '.js';
       }
     }
   }
