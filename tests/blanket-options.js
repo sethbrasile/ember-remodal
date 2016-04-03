@@ -7,8 +7,17 @@ const options = {
   loaderExclusions: [],
   enableCoverage: true,
   cliOptions: {
-    reporters: ['json'],
-    autostart: true
+    reporters: ['json', 'lcov'],
+    autostart: true,
+    lcovOptions: {
+      outputFile: 'lcov.dat',
+      excludeMissingFiles: true,
+
+      renamer: function(moduleName) {
+        var app = /^ember-remodal/;
+        return moduleName.replace(app, 'app') + '.js';
+      }
+    }
   }
 };
 if (typeof exports === 'undefined') {
