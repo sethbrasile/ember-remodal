@@ -11,10 +11,11 @@ const options = {
     autostart: true,
     lcovOptions: {
       outputFile: 'lcov.dat',
+      excludeMissingFiles: true,
 
       renamer: function(moduleName) {
-        var expression = /^ember-remodal/;
-        return moduleName.replace(expression, 'app') + '.js';
+        var app = /^ember-remodal/;
+        return moduleName.replace(app, 'app') + '.js';
       }
     }
   }
