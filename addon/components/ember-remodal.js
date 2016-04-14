@@ -39,16 +39,7 @@ export default Component.extend({
   erConfirmButton: false,
 
   didInsertElement() {
-    let opts = this.get('options');
-
-    if (opts) {
-      this.setProperties(opts);
-    }
-
-    if (this.get('forService')) {
-      this.get('remodal').set(this.get('name'), this);
-    }
-
+    scheduleOnce('afterRender', this, '_setProperties');
     scheduleOnce('afterRender', this, '_registerObservers');
     scheduleOnce('afterRender', this, '_checkForDeprecations');
     scheduleOnce('afterRender', this, '_checkForTestingEnv');
@@ -115,6 +106,18 @@ export default Component.extend({
       return `${action}d`;
     } else {
       return `${action}ed`;
+    }
+  },
+
+  _setProperties() {
+    let opts = this.get('options');
+
+    if (opts) {
+      this.setProperties(opts);
+    }
+
+    if (this.get('forService')) {
+      this.get('remodal').set(this.get('name'), this);
     }
   },
 
