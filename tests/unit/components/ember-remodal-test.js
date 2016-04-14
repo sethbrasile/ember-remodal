@@ -399,7 +399,7 @@ test('"_checkForTestingEnv" sets "disableAnimation" to true when "disableAnimati
 
   component.set('_getConfig', () => {
     return {
-      environment: 'testing',
+      environment: 'test',
       'ember-remodal': {
         disableAnimationWhileTesting: true
       }
@@ -418,7 +418,7 @@ test('"_checkForTestingEnv" leaves "disableAnimation" alone when "disableAnimati
 
   component.set('_getConfig', () => {
     return {
-      environment: 'testing',
+      environment: 'test',
       'ember-remodal': {
         disableAnimationWhileTesting: false
       }
@@ -430,7 +430,7 @@ test('"_checkForTestingEnv" leaves "disableAnimation" alone when "disableAnimati
   assert.notOk(component.get('disableAnimation'));
 });
 
-test('"_checkForTestingEnv" leaves "disableAnimation" alone when environment is not "testing"', function(assert) {
+test('"_checkForTestingEnv" leaves "disableAnimation" alone when environment is not "test"', function(assert) {
   assert.expect(2);
 
   let component = this.subject();
@@ -449,7 +449,7 @@ test('"_checkForTestingEnv" leaves "disableAnimation" alone when environment is 
   assert.notOk(component.get('disableAnimation'));
 });
 
-test('"_checkForTestingEnv" leaves "disableAnimation" alone when environment is not "testing" and "disableAnimation" was manually set to "true"', function(assert) {
+test('"_checkForTestingEnv" leaves "disableAnimation" alone when environment is not "test" and "disableAnimation" was manually set to "true"', function(assert) {
   assert.expect(2);
 
   let component = this.subject({ disableAnimation: true });
