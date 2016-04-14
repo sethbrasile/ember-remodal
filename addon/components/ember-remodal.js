@@ -37,7 +37,7 @@ export default Component.extend({
   erCancelButton: false,
   erConfirmButton: false,
 
-  didInitAttrs() {
+  didInsertElement() {
     let opts = this.get('options');
 
     if (opts) {
