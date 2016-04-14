@@ -374,3 +374,96 @@ test('"_destroyDomElements" calls "destroy" on "modal"', function(assert) {
     assert.ok(component.get('modal.destroyCalled'));
   });
 });
+
+test('"_checkForTestingEnv" is called on "didInsertElement"', function(assert) {
+  assert.expect(2);
+
+  run(() => {
+    let component = this.subject({
+      checkForTestingCalled: false,
+      _checkForTestingEnv() {
+        this.set('checkForTestingCalled', true);
+      }
+    });
+
+    assert.notOk(component.get('checkForTestingCalled'));
+    this.render();
+    assert.ok(component.get('checkForTestingCalled'));
+  });
+});
+
+test('"_checkForTestingEnv" sets "disableAnimation" to true when "disableAnimationWhileTesting" is true in config', function(assert) {
+  assert.expect(2);
+
+  let component = this.subject();
+
+  component.set('_getConfig', () => {
+    return {
+      environment: 'test',
+      'ember-remodal': {
+        disableAnimationWhileTesting: true
+      }
+    };
+  });
+
+  assert.notOk(component.get('disableAnimation'));
+  component._checkForTestingEnv();
+  assert.ok(component.get('disableAnimation'));
+});
+
+test('"_checkForTestingEnv" leaves "disableAnimation" alone when "disableAnimationWhileTesting" is false/undefined in config', function(assert) {
+  assert.expect(2);
+
+  let component = this.subject();
+
+  component.set('_getConfig', () => {
+    return {
+      environment: 'test',
+      'ember-remodal': {
+        disableAnimationWhileTesting: false
+      }
+    };
+  });
+
+  assert.notOk(component.get('disableAnimation'));
+  component._checkForTestingEnv();
+  assert.notOk(component.get('disableAnimation'));
+});
+
+test('"_checkForTestingEnv" leaves "disableAnimation" alone when environment is not "test"', function(assert) {
+  assert.expect(2);
+
+  let component = this.subject();
+
+  component.set('_getConfig', () => {
+    return {
+      environment: 'development',
+      'ember-remodal': {
+        disableAnimationWhileTesting: true
+      }
+    };
+  });
+
+  assert.notOk(component.get('disableAnimation'));
+  component._checkForTestingEnv();
+  assert.notOk(component.get('disableAnimation'));
+});
+
+test('"_checkForTestingEnv" leaves "disableAnimation" alone when environment is not "test" and "disableAnimation" was manually set to "true"', function(assert) {
+  assert.expect(2);
+
+  let component = this.subject({ disableAnimation: true });
+
+  component.set('_getConfig', () => {
+    return {
+      environment: 'development',
+      'ember-remodal': {
+        disableAnimationWhileTesting: true
+      }
+    };
+  });
+
+  assert.ok(component.get('disableAnimation'));
+  component._checkForTestingEnv();
+  assert.ok(component.get('disableAnimation'));
+});

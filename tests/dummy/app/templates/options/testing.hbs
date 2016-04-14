@@ -1,20 +1,40 @@
 <div class="content">
-  <h3>Testing</h3>
+  <h2>Testing</h2>
 
-  <p>
-    By adding the <code>dataTestId</code> option, you can easily target a
-    specific modal's <code>openButton</code> in your tests.
-  </p>
+  <div class="content">
+    <h3>Globally Disabling Modal Animations While Testing</h3>
+    <br>
+    <p>
+      You may find it useful to globally disable all modal animations during
+      tests. To do so, set <code>disableAnimationWhileTesting</code> to
+      <code>true</code> in your <code>config/environment</code>:
+
+{{#code-block language='javascript'}}
+  'ember-remodal': {
+    disableAnimationWhileTesting: true
+  }
+{{/code-block}}
+
+    </p>
+  </div>
+
+  <div class="content">
+    <h3>Using the <code>data-test-id</code> selector pattern</h3>
+    <br>
+    <p>
+      By adding the <code>dataTestId</code> option, you can easily target a
+      specific modal's <code>openButton</code> in your tests.
+    </p>
 
 {{#code-block language='javascript'}}
   \{{ember-remodal openButton='Click Me' dataTestId='simple-inline-modal'}}
 {{/code-block}}
 
-<p>
-  Only one modal can be open at a time, so once the modal that you're targeting
-  has been opened, you can target the generic <code>data-test-id</code>
-  <code>modalWindow</code>.
-</p>
+  <p>
+    Only one modal can be open at a time, so once the modal that you're targeting
+    has been opened, you can target the generic <code>data-test-id</code>
+    <code>modalWindow</code>.
+  </p>
 
 {{#code-block language='javascript'}}
   moduleForAcceptance('Acceptance | simple inline modal', {
@@ -41,10 +61,10 @@
   });
 {{/code-block}}
 
-<p>
-  Inside the <code>modalWindow</code>, all the included buttons have a
-  <code>data-test-id</code> that corresponds to their option name.
-</p>
+  <p>
+    Inside the <code>modalWindow</code>, all the included buttons have a
+    <code>data-test-id</code> that corresponds to their option name.
+  </p>
 
 {{#code-block language='javascript'}}
   test('it has a confirm button', function(assert) {
@@ -57,4 +77,5 @@
     });
   });
 {{/code-block}}
+  </div>
 </div>

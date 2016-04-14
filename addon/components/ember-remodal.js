@@ -5,6 +5,7 @@ const {
   inject,
   computed,
   computed: { reads },
+  getOwner,
   on,
   RSVP: { Promise },
   run: { next, scheduleOnce },
@@ -37,19 +38,11 @@ export default Component.extend({
   erCancelButton: false,
   erConfirmButton: false,
 
-  didInitAttrs() {
-    let opts = this.get('options');
-
-    if (opts) {
-      this.setProperties(opts);
-    }
-
-    if (this.get('forService')) {
-      this.get('remodal').set(this.get('name'), this);
-    }
-
+  didInsertElement() {
+    scheduleOnce('afterRender', this, '_setProperties');
     scheduleOnce('afterRender', this, '_registerObservers');
     scheduleOnce('afterRender', this, '_checkForDeprecations');
+    scheduleOnce('afterRender', this, '_checkForTestingEnv');
   },
 
   willDestroyElement() {
@@ -116,6 +109,18 @@ export default Component.extend({
     }
   },
 
+  _setProperties() {
+    let opts = this.get('options');
+
+    if (opts) {
+      this.setProperties(opts);
+    }
+
+    if (this.get('forService')) {
+      this.get('remodal').set(this.get('name'), this);
+    }
+  },
+
   _registerObservers() {
     let modal = this.get('modalId');
     Ember.$(document).on('opened', modal, () => sendEvent(this, 'opened'));
@@ -150,6 +155,28 @@ export default Component.extend({
 
   _checkForDeprecations() {
     // Deprecations go here
+  },
+
+  _checkForTestingEnv() {
+    let config = this._getConfig();
+
+    if (config) {
+      let env = config.environment;
+      let remodalConfig = config['ember-remodal'];
+      let disableAnimation;
+
+      if (remodalConfig) {
+        disableAnimation = remodalConfig.disableAnimationWhileTesting;
+      }
+
+      if (disableAnimation && env === 'test') {
+        this.set('disableAnimation', true);
+      }
+    }
+  },
+
+  _getConfig() {
+    return getOwner(this).resolveRegistration('config:environment');
   },
 
   _openModal() {
