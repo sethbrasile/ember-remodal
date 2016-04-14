@@ -5,6 +5,7 @@ const {
   inject,
   computed,
   computed: { reads },
+  getOwner,
   on,
   RSVP: { Promise },
   run: { next, scheduleOnce },
@@ -50,6 +51,7 @@ export default Component.extend({
 
     scheduleOnce('afterRender', this, '_registerObservers');
     scheduleOnce('afterRender', this, '_checkForDeprecations');
+    scheduleOnce('afterRender', this, '_checkForTestingEnv');
   },
 
   willDestroyElement() {
@@ -150,6 +152,28 @@ export default Component.extend({
 
   _checkForDeprecations() {
     // Deprecations go here
+  },
+
+  _checkForTestingEnv() {
+    let config = this._getConfig();
+
+    if (config) {
+      let env = config.environment;
+      let remodalConfig = config['ember-remodal'];
+      let disableAnimation;
+
+      if (remodalConfig) {
+        disableAnimation = remodalConfig.disableAnimationWhileTesting;
+      }
+
+      if (disableAnimation && env === 'test') {
+        this.set('disableAnimation', true);
+      }
+    }
+  },
+
+  _getConfig() {
+    return getOwner(this).resolveRegistration('config:environment');
   },
 
   _openModal() {
