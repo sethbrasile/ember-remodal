@@ -66,6 +66,16 @@
     <code>data-test-id</code> that corresponds to their option name.
   </p>
 
+  <p>
+    Please note that we're purposefully using jQuery to select DOM elements
+    that exist inside the modal. This is because
+    <a href="http://vodkabears.github.io/remodal/">remodal</a>
+    creates the modal window outside of the context of the
+    ember-testing-container. Ember's built in
+    <a href="https://guides.emberjs.com/v2.5.0/testing/acceptance/#toc_test-helpers">test helpers</a>
+    won't find them.
+  </p>
+
 {{#code-block language='javascript'}}
   test('it has a confirm button', function(assert) {
     assert.expect(1);
