@@ -7,16 +7,13 @@
 Under the hood, ember-remodal uses a jQuery-based modal library called
 [remodal](http://vodkabears.github.io/remodal/).
 
-Due to it's dependence on jQuery, as of v1.1.0, ember-remodal is *not*
-compatible with fastboot. Steps are being taken (in fastboot) to correct this,
-but it hasn't happened yet.
-
 ## Compatibility
 
 | ember-remodal |     Ember    |
 | :-----------: | :----------: |
 | less than 1.0 | 1.13+        |
 | 1.0 or greater| 2.3+         |
+| 1.2 or greater| adds fastboot|
 
 ## Installation
 `ember install ember-remodal`
