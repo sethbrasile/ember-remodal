@@ -1,0 +1,42 @@
+<div class="content">
+  <button {{action 'openState1'}} class="btn" data-test-id="state-1">
+    Open with State 1
+  </button>
+
+  <button {{action 'openState2'}} class="btn" data-test-id="state-2">
+    Open with State 2
+  </button>
+
+  {{#ember-remodal forService=true name='state-modal'}}
+    <p data-test-id="state-text">{{stateFromController}}</p>
+  {{/ember-remodal}}
+
+{{#code-block language='handlebars'}}
+  &lt;button \{{action 'openState1'}}>Open with State 1&lt;/button>
+  &lt;button \{{action 'openState2'}}>Open with State 2&lt;/button>
+
+  \{{#ember-remodal forService=true name='state-modal'}}
+    &lt;p>\{{stateFromController}}&lt;/p>
+  \{{/ember-remodal}}
+{{/code-block}}
+
+{{#code-block language='javascript'}}
+  export default Ember.Controller.extend({
+    remodal: Ember.inject.service(),
+    stateFromController: null,
+
+    actions: {
+      openState1() {
+        this.set('stateFromController', 'state 1');
+        this.get('remodal').open('state-modal');
+      },
+
+      openState2() {
+        this.set('stateFromController', 'state 2');
+        this.get('remodal').open('state-modal');
+      }
+    }
+  });
+{{/code-block}}
+
+</div>
