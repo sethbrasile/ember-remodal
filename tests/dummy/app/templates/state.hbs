@@ -2,22 +2,37 @@
   <h1>Handling State</h1>
 
   <p>
-    Ember-remodal strives to keep itself out of your application state. The only
+    Ember-remodal keeps itself out of your application state. The only
     state that ember-remodal cares about, is whether a given modal is opened or
-    closed.
+    closed.**
+  </p>
+
+  <p class="subtext">
+    **This isn't completely true, as ember-remodal does allow <code>text</code>
+    and <code>title</code> to be set, but those options are purposely very
+    limiting to avoid the above mentioned problems, and only exist to facilitate
+    {{link-to 'very simple use-cases' 'inline'}}.
   </p>
 
   <p>
     It turns out that folks are not accustomed to this concept, and consistently
-    look for ways to push application concerns into their modals (probably
-    because past modal libraries trained them to think this way).
+    look for ways to push application concerns into their modals.
   </p>
 
   <p>
-    Think of ember-remodal's {{link-to 'block-form' 'block'}} as any other html
-    element (like a <code>div</code>, as far as state is concerned), and handle
-    your application state in a controller, component, or service.
+    Mixing application state with a view-level concept (such as a modal) is a
+    recipe for long-term maintenance pain, and should be avoided.
   </p>
+
+  <br />
+
+  <h4>
+    Think of ember-remodal's {{link-to 'block-form' 'block'}} as any other html
+    element (like a <code>div</code>), and handle your application state
+    elsewhere.
+  </h4>
+
+  <br />
 </div>
 
 <ul class="nav nav-tabs">

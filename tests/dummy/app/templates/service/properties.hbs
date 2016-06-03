@@ -7,6 +7,12 @@
     to set properties on a modal programmatically.
   </p>
 
+  <p>
+    You should not do this unless you have made a very conscious decision to do
+    so. While this pattern is possible, if you need {{link-to 'state' 'state'}}
+    in your modals, you should use a {{link-to 'block-form' 'block'}} modal.
+  </p>
+
   <div class="content">
 {{#code-block language='javascript'}}
   openMyAwesomeModal() {
