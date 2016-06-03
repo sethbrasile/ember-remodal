@@ -1,6 +1,6 @@
 <div class="content">
   {{#each model as |dog|}}
-    <button {{action 'openDogModal' dog}} class="btn">
+    <button {{action 'openDogModal' dog}} class="btn" data-test-id={{dog.name}}>
       See details for {{dog.name}}
     </button>
   {{/each}}
@@ -33,7 +33,7 @@
 {{/code-block}}
 
 {{#ember-remodal forService=true name='dog-modal'}}
-  <h2>{{selectedDog.name}}</h2>
+  <h2 data-test-id="dog-name">{{selectedDog.name}}</h2>
 
   <p>
     {{selectedDog.name}} is a {{selectedDog.sex}} {{selectedDog.breed}},
