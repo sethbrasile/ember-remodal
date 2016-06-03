@@ -35,6 +35,7 @@ Router.map(function() {
     this.route('example');
   });
   this.route('upgrading');
+  this.route('state');
 });
 
 export default Router;
