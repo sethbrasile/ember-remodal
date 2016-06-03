@@ -35,6 +35,10 @@ Router.map(function() {
     this.route('example');
   });
   this.route('upgrading');
+  this.route('state', function() {
+    this.route('simple', { path: '/' });
+    this.route('complex');
+  });
 });
 
 export default Router;
