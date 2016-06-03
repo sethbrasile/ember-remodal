@@ -6,14 +6,6 @@
   {{/each}}
 </div>
 
-<div class="content">
-  <p>
-    Here, we're using the {{link-to 'remodal service' 'service'}} and an external
-    (external to the modal) button/action, and we use the controller to swap out
-    <code>selectedDog</code>.
-  </p>
-</div>
-
 {{#code-block language='handlebars'}}
   \{{#each model as |dog|}}
     &lt;button \{{action 'openDogModal' dog}}>See details for \{{dog.name}}&lt;/button>

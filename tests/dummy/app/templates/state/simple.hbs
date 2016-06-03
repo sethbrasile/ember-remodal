@@ -15,6 +15,7 @@
   &lt;button \{{action 'openState1'}}>Open with State 1&lt;/button>
   &lt;button \{{action 'openState2'}}>Open with State 2&lt;/button>
 
+  \{{!-- As far "state" is concerned, this could be a &lt;div> --}}
   \{{#ember-remodal forService=true name='state-modal'}}
     &lt;p>\{{stateFromController}}&lt;/p>
   \{{/ember-remodal}}
