@@ -8,10 +8,10 @@
   </p>
 
   <p class="subtext">
-    **This isn't completely true, as ember-remodal does allow <code>text</code>
-    and <code>title</code> to be set, but those options are purposely very
-    limiting to avoid the above mentioned problems, and only exist to facilitate
-    {{link-to 'very simple use-cases' 'inline'}}.
+    **This might not seem completely true, as ember-remodal does allow <code>text</code>
+    and <code>title</code> to be set, but those options only exist to facilitate
+    {{link-to 'very simple use-cases' 'inline'}}. You should not use them to
+    manage the state of modal content.
   </p>
 
   <p>
@@ -21,10 +21,13 @@
 
   <p>
     Mixing application state with a view-level concept (such as a modal) is a
-    recipe for long-term maintenance pain, and should be avoided.
+    recipe for unnecessary coupling and long-term maintenance pain, and should be
+    avoided.
   </p>
 
   <br />
+
+  <h3>In Summary</h3>
 
   <h4>
     Think of ember-remodal's {{link-to 'block-form' 'block'}} as any other html

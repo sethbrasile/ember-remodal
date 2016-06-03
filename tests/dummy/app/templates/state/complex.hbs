@@ -1,1 +1,54 @@
-{{outlet}}
+<div class="content">
+  {{#each model as |dog|}}
+    <button {{action 'openDogModal' dog}} class="btn">
+      See details for {{dog.name}}
+    </button>
+  {{/each}}
+</div>
+
+<div class="content">
+  <p>
+    Here, we're using the {{link-to 'remodal service' 'service'}} and an external
+    (external to the modal) button/action, and we use the controller to swap out
+    <code>selectedDog</code>.
+  </p>
+</div>
+
+{{#code-block language='handlebars'}}
+  \{{#each model as |dog|}}
+    &lt;button \{{action 'openDogModal' dog}}>See details for \{{dog.name}}&lt;/button>
+  \{{/each}}
+
+  \{{#ember-remodal forService=true name='dog-modal'}}
+    &lt;h2>\{{selectedDog.name}}&lt;/h2>
+    &lt;p>\{{selectedDog.name}} is a \{{selectedDog.sex}} \{{selectedDog.breed}}, owned by \{{selectedDog.owner.name}}.&lt;/p>
+    &lt;p>\{{selectedDog.name}} is classified as a "\{{selectedDog.size}}" sized dog.&lt;/p>
+  \{{/ember-remodal}}
+{{/code-block}}
+
+{{#code-block language='javascript'}}
+  export default Ember.Controller.extend({
+    remodal: Ember.inject.service(),
+    selectedDog: null,
+
+    actions: {
+      openDogModal(dog) {
+        this.set('selectedDog', dog);
+        this.get('remodal').open('dog-modal');
+      }
+    }
+  });
+{{/code-block}}
+
+{{#ember-remodal forService=true name='dog-modal'}}
+  <h2>{{selectedDog.name}}</h2>
+
+  <p>
+    {{selectedDog.name}} is a {{selectedDog.sex}} {{selectedDog.breed}},
+    owned by {{selectedDog.owner.name}}.
+  </p>
+
+  <p>
+    {{selectedDog.name}} is classified as a "{{selectedDog.size}}" sized dog.
+  </p>
+{{/ember-remodal}}
