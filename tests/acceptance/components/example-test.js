@@ -19,8 +19,8 @@ test('it opens', function(assert) {
   assert.expect(1);
 
   andThen(function() {
-    let length = $('[data-test-id="modalWindow"].remodal-is-opened').length ||
-                 $('[data-test-id="modalWindow"].remodal-is-opening').length;
+    let length = find('[data-test-id="modalWindow"].remodal-is-opened').length ||
+                 find('[data-test-id="modalWindow"].remodal-is-opening').length;
 
     assert.equal(length, 1);
   });
@@ -28,27 +28,27 @@ test('it opens', function(assert) {
 
 test('it has a cancel button', function(assert) {
   assert.expect(1);
+  let { length } = find('[data-test-id="modalWindow"] [data-test-id="cancelButton"]');
 
   andThen(function() {
-    let { length } = $('[data-test-id="modalWindow"] [data-test-id="cancelButton"]');
     assert.equal(length, 1);
   });
 });
 
 test('it has a confirm button', function(assert) {
   assert.expect(1);
+  let { length } = find('[data-test-id="modalWindow"] [data-test-id="confirmButton"]');
 
   andThen(function() {
-    let { length } = $('[data-test-id="modalWindow"] [data-test-id="confirmButton"]');
     assert.equal(length, 1);
   });
 });
 
 test('it has a native close button', function(assert) {
   assert.expect(1);
+  let { length } = find('[data-test-id="modalWindow"] [data-test-id="nativeClose"]');
 
   andThen(function() {
-    let { length } = $('[data-test-id="modalWindow"] [data-test-id="nativeClose"]');
     assert.equal(length, 1);
   });
 });
