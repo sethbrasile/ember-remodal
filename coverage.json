@@ -1,36 +1,36 @@
 {
   "stats": {
-    "suites": 105,
-    "tests": 149,
-    "passes": 149,
+    "suites": 117,
+    "tests": 171,
+    "passes": 171,
     "pending": 0,
     "failures": 0,
-    "start": "2016-04-02T22:03:23.698Z",
-    "end": "2016-04-02T22:03:27.951Z"
+    "start": "2016-06-29T04:55:08.030Z",
+    "end": "2016-06-29T04:55:12.428Z"
   },
   "coverage": {
     "total": {
-      "statementsTotal": 104,
-      "statementsCovered": 104,
-      "percentage": 100
+      "statementsTotal": 119,
+      "statementsCovered": 117,
+      "percentage": 98.32
     },
     "files": [
       {
         "name": "ember-remodal/components/ember-remodal",
-        "statementsTotal": 72,
-        "statementsCovered": 72,
+        "statementsTotal": 87,
+        "statementsCovered": 85,
+        "percentage": 97.7
+      },
+      {
+        "name": "dummy/components/ember-remodal/er-button",
+        "statementsTotal": 3,
+        "statementsCovered": 3,
         "percentage": 100
       },
       {
         "name": "ember-remodal/components/er-button",
         "statementsTotal": 9,
         "statementsCovered": 9,
-        "percentage": 100
-      },
-      {
-        "name": "dummy/components/ember-remodal/er-button",
-        "statementsTotal": 3,
-        "statementsCovered": 3,
         "percentage": 100
       },
       {

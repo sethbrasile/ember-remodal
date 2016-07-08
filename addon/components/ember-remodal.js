@@ -142,7 +142,11 @@ export default Component.extend({
   },
 
   _createInstanceAndOpen() {
+    let config = this._getConfig();
+    let appendTo = (config && config.APP.rootElement) ? config.APP.rootElement : '.ember-application';
+
     let modal = Ember.$(this.get('modalId')).remodal({
+      appendTo,
       hashTracking: this.get('hashTracking'),
       closeOnOutsideClick: this.get('closeOnOutsideClick'),
       closeOnEscape: this.get('closeOnEscape'),
