@@ -53,8 +53,8 @@
     andThen(function() {
       // We don't know for sure whether the modal is in "opening" or "opened" state.
       // Both mean the same thing for our purposes, so we'll check for both.
-      let length = $('[data-test-id="modalWindow"].remodal-is-opened').length ||
-                   $('[data-test-id="modalWindow"].remodal-is-opening').length;
+      let length = find('[data-test-id="modalWindow"].remodal-is-opened').length ||
+                   find('[data-test-id="modalWindow"].remodal-is-opening').length;
 
       assert.equal(length, 1);
     });
@@ -66,26 +66,33 @@
     <code>data-test-id</code> that corresponds to their option name.
   </p>
 
-  <p>
-    Please note that we're purposefully using jQuery to select DOM elements
-    that exist inside the modal. This is because
-    <a href="http://vodkabears.github.io/remodal/">remodal</a>
-    creates the modal window outside of the context of the
-    ember-testing-container. Ember's built in
-    <a href="https://guides.emberjs.com/v2.5.0/testing/acceptance/#toc_test-helpers">test helpers</a>
-    won't find them.
-  </p>
-
 {{#code-block language='javascript'}}
   test('it has a confirm button', function(assert) {
     assert.expect(1);
 
     andThen(function() {
-      let { length } = $('[data-test-id="modalWindow"] [data-test-id="confirmButton"]');
+      let { length } = find('[data-test-id="modalWindow"] [data-test-id="confirmButton"]');
 
       assert.equal(length, 1);
     });
   });
 {{/code-block}}
+
+    <p>
+      If you're on ember-remodal &lt; 2.0 you should use jQuery to select DOM
+      elements, instead of Ember's native test helpers. This is because an older
+      version of <a href="http://vodkabears.github.io/remodal/">remodal</a>
+      created the modal window outside of the context of the
+      ember-testing-container. Ember's built in
+      <a href="https://guides.emberjs.com/v2.5.0/testing/acceptance/#toc_test-helpers">
+        test helpers
+      </a>
+      won't find them.
+    </p>
+
+    <p>
+      As of ember-remodal 2.0.0, this is no longer an issue, and you should be
+      able to use ember's native test helpers.
+    </p>
   </div>
 </div>
