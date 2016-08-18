@@ -14,6 +14,7 @@ Under the hood, ember-remodal uses a jQuery-based modal library called
 | less than 1.0 | 1.13+        |
 | 1.0 or greater| 2.3+         |
 | 1.2 or greater| adds fastboot|
+| 2.0 or greater| adds engines |
 
 ## Installation
 `ember install ember-remodal`
