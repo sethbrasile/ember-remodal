@@ -20,6 +20,8 @@
   "license": "MIT",
   "devDependencies": {
     "broccoli-asset-rev": "^2.4.2",
+    "broccoli-funnel": "^1.1.0",
+    "broccoli-merge-trees": "^1.2.1",
     "ember-ajax": "0.7.1",
     "ember-cli": "2.4.3",
     "ember-cli-app-version": "^1.0.0",
@@ -43,7 +45,8 @@
     "ember-suave": "2.0.1",
     "ember-try": "0.2.2",
     "ember-wormhole": "0.3.5",
-    "loader.js": "^4.0.1"
+    "loader.js": "^4.0.1",
+    "resolve": "^1.2.0"
   },
   "keywords": [
     "ember-addon",
