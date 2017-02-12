@@ -46,6 +46,7 @@
     "ember-try": "0.2.2",
     "ember-wormhole": "0.3.5",
     "loader.js": "^4.0.1",
+    "remodal": "^1.1.1",
     "resolve": "^1.2.0"
   },
   "keywords": [
