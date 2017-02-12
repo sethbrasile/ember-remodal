@@ -12,7 +12,7 @@ module.exports = {
     var remodalPath = path.dirname(resolve.sync('remodal'));
     var remodalTree = new Funnel(remodalPath, {
       files: [
-        'remodal.js',
+        'remodal.min.js',
         'remodal.css',
         'remodal-default-theme.css'
       ],
@@ -29,7 +29,7 @@ module.exports = {
     var importShim = typeof this.import !== 'undefined' ? this : app;
 
     if (!process.env.EMBER_CLI_FASTBOOT) {
-      importShim.import('vendor/remodal/dist/remodal.js');
+      importShim.import('vendor/remodal/dist/remodal.min.js');
     }
 
     importShim.import('vendor/remodal/dist/remodal.css');
