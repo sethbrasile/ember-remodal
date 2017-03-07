@@ -2,26 +2,11 @@ import Ember from 'ember';
 
 const {
   assert,
-  computed: { alias },
   Service
 } = Ember;
 
 export default Service.extend({
   modal: null,
-  title: alias('ember-remodal.title'),
-  text: alias('ember-remodal.text'),
-  confirmButton: alias('ember-remodal.confirmButton'),
-  cancelButton: alias('ember-remodal.cancelButton'),
-  disableNativeClose: alias('ember-remodal.disableNativeClose'),
-  disableForeground: alias('ember-remodal.disableForeground'),
-  disableAnimation: alias('ember-remodal.disableAnimation'),
-  buttonClasses: alias('ember-remodal.buttonClasses'),
-  modifier: alias('ember-remodal.modifier'),
-  closeOnEscape: alias('ember-remodal.closeOnEscape'),
-  closeOnCancel: alias('ember-remodal.closeOnCancel'),
-  closeOnConfirm: alias('ember-remodal.closeOnConfirm'),
-  hashTracking: alias('ember-remodal.hashTracking'),
-  closeOnOutsideClick: alias('ember-remodal.closeOnOutsideClick'),
 
   open(name='ember-remodal', opts=null) {
     let modal = this.get(name);
