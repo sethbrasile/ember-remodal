@@ -25,6 +25,8 @@ export default Component.extend({
   modifier: '',
   modal: null,
   options: null,
+  yieldedContentRendering: 'always',
+  isOpen: false,
   closeOnEscape: true,
   closeOnCancel: true,
   closeOnConfirm: true,
@@ -46,8 +48,8 @@ export default Component.extend({
   },
 
   willDestroyElement() {
-    scheduleOnce('destroy', this, '_destroyDomElements');
-    scheduleOnce('destroy', this, '_deregisterObservers');
+    this._destroyDomElements();
+    this._deregisterObservers();
   },
 
   modalId: computed('elementId', {
@@ -66,11 +68,29 @@ export default Component.extend({
     }
   }),
 
+  shouldRenderBlock: computed('yieldedContentRendering', 'isOpen', 'modal', function() {
+    let rendering = this.get('yieldedContentRendering');
+    switch (rendering) {
+      case 'always':
+        return true;
+
+      case 'lazy':
+        return !!this.get('modal');
+
+      case 'open':
+        return this.get('isOpen');
+
+      default:
+        throw new Error(`Invalid value of "yieldedContentRendering": ${rendering}`);
+    }
+  }),
+
   openDidFire: on('opened', function() {
     this.sendAction('onOpen');
   }),
 
   closeDidFire: on('closed', function() {
+    this.set('isOpen', false);
     this.sendAction('onClose');
   }),
 
@@ -209,6 +229,7 @@ export default Component.extend({
     },
 
     open() {
+      this.set('isOpen', true);
       if (this.get('modal')) {
         scheduleOnce('afterRender', this, '_openModal');
       } else {
