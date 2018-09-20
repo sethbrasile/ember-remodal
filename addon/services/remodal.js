@@ -1,10 +1,6 @@
-import Ember from 'ember';
-
-const {
-  assert,
-  computed: { alias },
-  Service
-} = Ember;
+import { assert } from '@ember/debug';
+import { alias } from '@ember/object/computed';
+import Service from '@ember/service';
 
 export default Service.extend({
   modal: null,

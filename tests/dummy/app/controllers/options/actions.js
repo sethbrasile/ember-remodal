@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import { inject as service } from '@ember/service';
+import Controller from '@ember/controller';
 
-export default Ember.Controller.extend({
-  notify: Ember.inject.service('notify'),
+export default Controller.extend({
+  notify: service('notify'),
 
   actions: {
     notifyOpened() {

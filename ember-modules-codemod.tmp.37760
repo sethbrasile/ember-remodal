@@ -1,0 +1,1 @@
+[2,"inject",5,"addon/components/ember-remodal.js","\nconst {\n  inject,\n  computed,\n  computed: { reads },"]

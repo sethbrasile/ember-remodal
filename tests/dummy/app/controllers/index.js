@@ -1,30 +1,31 @@
-import Ember from 'ember';
+/* eslint-disable no-console */
 
-const {
-  inject,
-  Controller
-} = Ember;
+import { inject as service } from '@ember/service';
+import Controller from '@ember/controller';
 
 export default Controller.extend({
-  remodal: inject.service(),
-
+  remodal: service(),
   showModal2: false,
 
-  options1: {
-    confirmButton: 'Confirm',
-    openButton: 'Show Modal 1',
-    cancelButton: 'Cancel',
-    title: 'Block Form',
-    dataTestId: 'simple-inline',
-    disableAnimation: true
-  },
-
-  options2: {
-    confirmButton: 'Confirm',
-    cancelButton: 'Cancel',
-    title: 'Inline Form',
-    openLink: 'Show Modal 2',
-    text: 'Triggered by the included <a> tag.'
+  init() {
+    this._super(...arguments);
+    this.setProperties({
+      options1: {
+        confirmButton: 'Confirm',
+        openButton: 'Show Modal 1',
+        cancelButton: 'Cancel',
+        title: 'Block Form',
+        dataTestId: 'simple-inline',
+        disableAnimation: true
+      },
+      options2: {
+        confirmButton: 'Confirm',
+        cancelButton: 'Cancel',
+        title: 'Inline Form',
+        openLink: 'Show Modal 2',
+        text: 'Triggered by the included <a> tag.'
+      }
+    });
   },
 
   actions: {
