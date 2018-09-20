@@ -10,7 +10,7 @@ module.exports = function(defaults) {
 
     'ember-prism': {
       theme: 'okaidia',
-      components: ['javascript', 'handlebars']
+      components: ['javascript', 'handlebars', 'markup-templating']
     }
   });
 

@@ -6,8 +6,5 @@ module.exports = {
   "launch_in_ci": [
     "PhantomJS"
   ],
-  "launch_in_dev": [
-    "PhantomJS",
-    "Chrome"
-  ]
+  "launch_in_dev": []
 };
