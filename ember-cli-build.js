@@ -7,6 +7,7 @@ module.exports = function(defaults) {
     'ember-cli-babel': {
       includePolyfill: true,
     },
+
     stylusOptions: {
       outputFile: 'dummy.css'
     },
@@ -14,11 +15,14 @@ module.exports = function(defaults) {
     'ember-prism': {
       theme: 'okaidia',
       components: ['javascript', 'handlebars', 'markup-templating']
+    },
+
+    'ember-bootstrap': {
+      'bootstrapVersion': 3,
+      'importBootstrapFont': false,
+      'importBootstrapCSS': true
     }
   });
-
-  app.import('bower_components/bootstrap/dist/css/bootstrap.css');
-  app.import('bower_components/bootstrap/dist/js/bootstrap.js');
 
   return app.toTree();
 };
