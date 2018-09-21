@@ -1,6 +1,6 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render, click, find } from '@ember/test-helpers';
+import { render, click, find, waitUntil } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 
 module('Integration | Component | ember remodal', function(hooks) {
@@ -26,6 +26,7 @@ module('Integration | Component | ember remodal', function(hooks) {
     await render(hbs`{{ember-remodal openButton='open'}}`);
     let modal = find('[data-test-id="modalWindow"]');
     await click('[data-test-id="openButton"]');
+    await waitUntil(() => modal.classList.contains('remodal-is-opened'));
     assert.ok(modal.classList.contains('remodal-is-opened'));
   });
 
@@ -34,6 +35,7 @@ module('Integration | Component | ember remodal', function(hooks) {
     await render(hbs`{{ember-remodal openLink='open'}}`);
     let modal = find('[data-test-id="modalWindow"]');
     await click('[data-test-id="openLink"]');
+    await waitUntil(() => modal.classList.contains('remodal-is-opened'));
     assert.ok(modal.classList.contains('remodal-is-opened'));
   });
 });
