@@ -1,1 +1,0 @@
-[2,"inject",4,"tests/dummy/app/controllers/index.js","\nconst {\n  inject,\n  Controller\n} = Ember;"]
