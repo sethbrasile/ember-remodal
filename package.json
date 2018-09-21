@@ -62,7 +62,9 @@
     "node": "^4.5 || 6.* || >= 7.*"
   },
   "keywords": [
-    "ember-addon"
+    "ember-addon",
+    "remodal",
+    "modal"
   ],
   "ember-addon": {
     "configPath": "tests/dummy/config"
