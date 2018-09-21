@@ -1,17 +1,14 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import { Promise } from 'rsvp';
+import { run } from '@ember/runloop';
 import { moduleFor, test } from 'ember-qunit';
-
-const {
-  RSVP: { Promise },
-  run
-} = Ember;
 
 moduleFor('service:remodal', 'Unit | Service | remodal', {
   // Specify the other units that are required for this test.
   // needs: ['service:foo']
 });
 
-const ModalMock = Ember.Object.extend({
+const ModalMock = EmberObject.extend({
   openCalled: false,
   closeCalled: false,
 

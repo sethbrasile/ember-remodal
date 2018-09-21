@@ -1,9 +1,13 @@
-/*jshint node:true*/
-/* global require, module */
-var EmberAddon = require('ember-cli/lib/broccoli/ember-addon');
+'use strict';
+
+const EmberAddon = require('ember-cli/lib/broccoli/ember-addon');
 
 module.exports = function(defaults) {
-  var app = new EmberAddon(defaults, {
+  let app = new EmberAddon(defaults, {
+    'ember-cli-babel': {
+      includePolyfill: true,
+    },
+
     stylusOptions: {
       outputFile: 'dummy.css'
     },
@@ -11,18 +15,14 @@ module.exports = function(defaults) {
     'ember-prism': {
       theme: 'okaidia',
       components: ['javascript', 'handlebars', 'markup-templating']
+    },
+
+    'ember-bootstrap': {
+      'bootstrapVersion': 3,
+      'importBootstrapFont': false,
+      'importBootstrapCSS': true
     }
   });
-
-  /*
-    This build file specifies the options for the dummy test app of this
-    addon, located in `/tests/dummy`
-    This build file does *not* influence how the addon or the app using it
-    behave. You most likely want to be modifying `./index.js` or app's build file
-  */
-
-  app.import('bower_components/bootstrap/dist/css/bootstrap.css');
-  app.import('bower_components/bootstrap/dist/js/bootstrap.js');
 
   return app.toTree();
 };

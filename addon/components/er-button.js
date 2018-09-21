@@ -1,10 +1,8 @@
-import Ember from 'ember';
-import layout from '../templates/components/er-button';
+/* eslint-disable ember/closure-actions */
 
-const {
-  computed,
-  Component
-} = Ember;
+import { computed } from '@ember/object';
+import Component from '@ember/component';
+import layout from '../templates/components/er-button';
 
 export default Component.extend({
   layout,

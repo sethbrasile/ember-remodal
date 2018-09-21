@@ -1,23 +1,25 @@
-import Ember from 'ember';
-import layout from '../templates/components/ember-remodal';
+/* eslint-disable ember/no-on-calls-in-components */
+/* eslint-disable ember/closure-actions */
 
-const {
-  inject,
-  computed,
-  computed: { reads },
-  getOwner,
-  on,
-  RSVP: { Promise },
-  run: { next, scheduleOnce },
-  sendEvent,
-  warn,
-  Component
-} = Ember;
+import { inject as service } from '@ember/service';
+import $ from 'jquery';
+import { computed } from '@ember/object';
+import { reads } from '@ember/object/computed';
+import { getOwner } from '@ember/application';
+import { on } from '@ember/object/evented';
+import { Promise } from 'rsvp';
+import { scheduleOnce, next } from '@ember/runloop';
+import { sendEvent } from '@ember/object/events';
+import Component from '@ember/component';
+import layout from '../templates/components/ember-remodal';
+import { warn } from '@ember/debug';
 
 export default Component.extend({
   layout,
-  warn,
-  remodal: inject.service(),
+  warn() {
+    return warn;
+  },
+  remodal: service(),
   attributeBindings: ['dataTestId:data-test-id'],
   classNames: ['remodal-component'],
   tagName: 'span',
@@ -97,7 +99,7 @@ export default Component.extend({
     this.send(action);
 
     return new Promise((resolve) => {
-      Ember.$(document).one(actionName, modal, () => resolve(this));
+      $(document).one(actionName, modal, () => resolve(this));
     });
   },
 
@@ -123,14 +125,14 @@ export default Component.extend({
 
   _registerObservers() {
     let modal = this.get('modalId');
-    Ember.$(document).on('opened', modal, () => sendEvent(this, 'opened'));
-    Ember.$(document).on('closed', modal, () => sendEvent(this, 'closed'));
+    $(document).on('opened', modal, () => sendEvent(this, 'opened'));
+    $(document).on('closed', modal, () => sendEvent(this, 'closed'));
   },
 
   _deregisterObservers() {
     let modal = this.get('modalId');
-    Ember.$(document).off('opened', modal);
-    Ember.$(document).off('closed', modal);
+    $(document).off('opened', modal);
+    $(document).off('closed', modal);
   },
 
   _destroyDomElements() {
@@ -145,7 +147,7 @@ export default Component.extend({
     let config = this._getConfig();
     let appendTo = (config && config.APP.rootElement) ? config.APP.rootElement : '.ember-application';
 
-    let modal = Ember.$(this.get('modalId')).remodal({
+    let modal = $(this.get('modalId')).remodal({
       appendTo,
       hashTracking: this.get('hashTracking'),
       closeOnOutsideClick: this.get('closeOnOutsideClick'),

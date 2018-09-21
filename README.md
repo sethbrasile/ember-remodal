@@ -37,7 +37,6 @@ please feel free to fix it and PR or open an issue.
 
 * `git clone` this repository
 * `npm install`
-* `bower install`
 
 ## Running
 

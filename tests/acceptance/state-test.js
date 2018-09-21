@@ -1,73 +1,49 @@
-import { test } from 'qunit';
-import moduleForAcceptance from '../../tests/helpers/module-for-acceptance';
+import { module, test } from 'qunit';
+import { setupApplicationTest } from 'ember-qunit';
+import { visit, currentURL, click } from '@ember/test-helpers';
+import $ from 'jquery';
 
-moduleForAcceptance('Acceptance | state');
+module('Acceptance | state', function(hooks) {
+  setupApplicationTest(hooks);
 
-test('user can visit /state', function(assert) {
-  assert.expect(1);
-
-  visit('/state');
-
-  andThen(function() {
+  test('user can visit /state', async function(assert) {
+    assert.expect(1);
+    await visit('/state');
     assert.equal(currentURL(), '/state');
   });
-});
 
-test('"simple" state1 works', function(assert) {
-  assert.expect(1);
-
-  visit('/state');
-
-  click('[data-test-id="state-1"]');
-
-  andThen(function() {
-    let state = find('[data-test-id="modalWindow"] [data-test-id="state-text"]');
+  test('"simple" state1 works', async function(assert) {
+    assert.expect(1);
+    await visit('/state');
+    await click('[data-test-id="state-1"]');
+    let state = $('[data-test-id="modalWindow"] [data-test-id="state-text"]');
     assert.equal(state.text(), 'state 1');
   });
-});
 
-test('"simple" state2 works', function(assert) {
-  assert.expect(1);
-
-  visit('/state');
-
-  click('[data-test-id="state-2"]');
-
-  andThen(function() {
-    let state = find('[data-test-id="modalWindow"] [data-test-id="state-text"]');
+  test('"simple" state2 works', async function(assert) {
+    assert.expect(1);
+    await visit('/state');
+    await click('[data-test-id="state-2"]');
+    let state = $('[data-test-id="modalWindow"] [data-test-id="state-text"]');
     assert.equal(state.text(), 'state 2');
   });
-});
 
-test('"complex" setting initial state works', function(assert) {
-  assert.expect(1);
-
-  visit('/state/complex');
-
-  click('[data-test-id="Moose"]');
-
-  andThen(function() {
-    let state = find('[data-test-id="modalWindow"] [data-test-id="dog-name"]');
-    assert.equal(state.text(), 'Moose');
-  });
-});
-
-test('"complex" setting initial state then selecting another works', function(assert) {
-  assert.expect(2);
-
-  visit('/state/complex');
-
-  click('[data-test-id="Moose"]');
-
-  andThen(function() {
-    let state = find('[data-test-id="modalWindow"] [data-test-id="dog-name"]');
+  test('"complex" setting initial state works', async function(assert) {
+    assert.expect(1);
+    await visit('/state/complex');
+    await click('[data-test-id="Moose"]');
+    let state = $('[data-test-id="modalWindow"] [data-test-id="dog-name"]');
     assert.equal(state.text(), 'Moose');
   });
 
-  click('[data-test-id="Buttons"]');
-
-  andThen(function() {
-    let state = find('[data-test-id="modalWindow"] [data-test-id="dog-name"]');
+  test('"complex" setting initial state then selecting another works', async function(assert) {
+    await assert.expect(2);
+    await visit('/state/complex');
+    await click('[data-test-id="Moose"]');
+    let state = $('[data-test-id="modalWindow"] [data-test-id="dog-name"]');
+    assert.equal(state.text(), 'Moose');
+    await click('[data-test-id="Buttons"]');
+    state = $('[data-test-id="modalWindow"] [data-test-id="dog-name"]');
     assert.equal(state.text(), 'Buttons');
   });
 });

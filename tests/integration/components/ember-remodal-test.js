@@ -1,49 +1,39 @@
-import { moduleForComponent, test } from 'ember-qunit';
+import { module, test } from 'qunit';
+import { setupRenderingTest } from 'ember-qunit';
+import { render, click, find } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 
-moduleForComponent('ember-remodal', 'Integration | Component | ember remodal', {
-  integration: true
-});
+module('Integration | Component | ember remodal', function(hooks) {
+  setupRenderingTest(hooks);
 
-test('it renders', function(assert) {
+  test('renders', async function(assert) {
+    await render(hbs`{{ember-remodal}}`);
 
-  // Set any properties with this.set('myProperty', 'value');
-  // Handle any actions with this.on('myAction', function(val) { ... });" + EOL + EOL +
+    assert.equal(this.$().text().trim(), '');
 
-  this.render(hbs`{{ember-remodal}}`);
+    // Template block usage:" + EOL +
+    await render(hbs`
+      {{#ember-remodal}}
+        template block text
+      {{/ember-remodal}}
+    `);
 
-  assert.equal(this.$().text().trim(), '');
+    assert.equal(this.$().text().trim(), 'template block text');
+  });
 
-  // Template block usage:" + EOL +
-  this.render(hbs`
-    {{#ember-remodal}}
-      template block text
-    {{/ember-remodal}}
-  `);
+  test('it works by clicking the provided button', async function(assert) {
+    assert.expect(1);
+    await render(hbs`{{ember-remodal openButton='open'}}`);
+    let modal = find('[data-test-id="modalWindow"]');
+    await click('[data-test-id="openButton"]');
+    assert.ok(modal.classList.contains('remodal-is-opened'));
+  });
 
-  assert.equal(this.$().text().trim(), 'template block text');
-});
-
-test('it works by clicking the provided button', function(assert) {
-  assert.expect(1);
-
-  this.render(hbs`{{ember-remodal openButton='open'}}`);
-
-  let modal = this.$('[data-test-id="modalWindow"]');
-  let open = this.$('[data-test-id="openButton"]');
-
-  open.click();
-  assert.ok(modal.hasClass('remodal-is-opening'));
-});
-
-test('it works by clicking the provided link', function(assert) {
-  assert.expect(1);
-
-  this.render(hbs`{{ember-remodal openLink='open'}}`);
-
-  let modal = this.$('[data-test-id="modalWindow"]');
-  let open = this.$('[data-test-id="openLink"]');
-
-  open.click();
-  assert.ok(modal.hasClass('remodal-is-opening'));
+  test('it works by clicking the provided link', async function(assert) {
+    assert.expect(1);
+    await render(hbs`{{ember-remodal openLink='open'}}`);
+    let modal = find('[data-test-id="modalWindow"]');
+    await click('[data-test-id="openLink"]');
+    assert.ok(modal.classList.contains('remodal-is-opened'));
+  });
 });

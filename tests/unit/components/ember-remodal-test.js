@@ -1,19 +1,15 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import { Promise } from 'rsvp';
+import { next, run } from '@ember/runloop';
 import { moduleForComponent, test } from 'ember-qunit';
-
-const {
-  RSVP: { Promise },
-  run,
-  run: { next }
-} = Ember;
 
 moduleForComponent('ember-remodal', 'Unit | Component | ember remodal', {
   // Specify the other units that are required for this test
-  // needs: ['component:foo', 'helper:bar'],
+  needs: ['service:remodal'],
   unit: true
 });
 
-const ModalMock = Ember.Object.extend({
+const ModalMock = EmberObject.extend({
   openCalled: false,
   closeCalled: false,
 
@@ -325,7 +321,7 @@ test('options are set from the options hash', function(assert) {
 
 test('if "forService" is true, "this" is set as "name" on the remodal service', function(assert) {
   assert.expect(1);
-  const remodal = Ember.Object.create();
+  const remodal = EmberObject.create();
 
   run(() => {
     let component = this.subject({ remodal, forService: true });
@@ -359,7 +355,7 @@ test('"_destroyDomElements" calls "destroy" on "modal"', function(assert) {
 
   run(() => {
     let component = this.subject({
-      modal: Ember.Object.create({
+      modal: EmberObject.create({
         destroyCalled: false,
         destroy() {
           this.set('destroyCalled', true);

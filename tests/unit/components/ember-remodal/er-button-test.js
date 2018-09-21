@@ -1,9 +1,5 @@
+import { run } from '@ember/runloop';
 import { moduleForComponent, test } from 'ember-qunit';
-import Ember from 'ember';
-
-const {
-  run
-} = Ember;
 
 moduleForComponent('ember-remodal/er-button', 'Unit | Component | ember-remodal/er button', {
   // Specify the other units that are required for this test
