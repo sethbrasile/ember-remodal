@@ -35,5 +35,7 @@ module.exports = {
     importShim.import('vendor/remodal/dist/remodal.css');
     importShim.import('vendor/remodal/dist/remodal-default-theme.css');
     importShim.import('vendor/style.css');
+
+    importShim.import('vendor/ember-remodal/register-version.js');
   }
 };
