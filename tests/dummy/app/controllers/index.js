@@ -42,7 +42,8 @@ export default Controller.extend({
 
       modal.setProperties({
         title: 'Modal triggered with the "remodal" service',
-        text: 'This modal is triggered by adding an un-named "application modal" to the "application" template and calling this.get("remodal").open()',
+        text:
+          'This modal is triggered by adding an un-named "application modal" to the "application" template and calling this.get("remodal").open()',
         confirmButton: 'OK!'
       });
 
@@ -50,27 +51,31 @@ export default Controller.extend({
     },
 
     showApplicationModal2() {
-      this.get('remodal').open('appModal2').then((modal) => {
-        console.log('opening a modal can return a promise!');
-        console.log(`${modal.get('name')} was opened!`);
-      });
+      this.get('remodal')
+        .open('appModal2')
+        .then(modal => {
+          console.log('opening a modal can return a promise!');
+          console.log(`${modal.get('name')} was opened!`);
+        });
     },
 
     showApplicationModal3() {
-      this.get('remodal').open('appModal3', {
-        title: 'Named Modal triggered with the "remodal" service',
-        text: 'This modal is triggered by adding a named "application modal" to the "application" template and calling this.get("remodal").open("name")',
-        confirmButton: 'OK!'
-      })
+      this.get('remodal')
+        .open('appModal3', {
+          title: 'Named Modal triggered with the "remodal" service',
+          text:
+            'This modal is triggered by adding a named "application modal" to the "application" template and calling this.get("remodal").open("name")',
+          confirmButton: 'OK!'
+        })
 
-      .then((modal) => {
-        console.log(`${modal.get('name')} was opened!`);
-        return modal.close();
-      })
+        .then(modal => {
+          console.log(`${modal.get('name')} was opened!`);
+          return modal.close();
+        })
 
-      .then((modal) => {
-        console.log(`${modal.get('name')} was closed!`);
-      });
+        .then(modal => {
+          console.log(`${modal.get('name')} was closed!`);
+        });
     }
   }
 });

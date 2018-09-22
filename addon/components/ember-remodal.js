@@ -85,10 +85,11 @@ export default Component.extend({
       return this._promiseAction('close');
     } else {
       this.get('warn')(
-        'ember-remodal: You called "close" on a modal that has not yet been opened. This is not a big deal, but I thought you should know. The returned promise will immediately resolve.', false,
+        'ember-remodal: You called "close" on a modal that has not yet been opened. This is not a big deal, but I thought you should know. The returned promise will immediately resolve.',
+        false,
         { id: 'ember-remodal.close-called-on-unitialized-modal' }
       );
-      return new Promise((resolve) => resolve(this));
+      return new Promise(resolve => resolve(this));
     }
   },
 
@@ -98,7 +99,7 @@ export default Component.extend({
 
     this.send(action);
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       $(document).one(actionName, modal, () => resolve(this));
     });
   },
@@ -145,7 +146,7 @@ export default Component.extend({
 
   _createInstanceAndOpen() {
     let config = this._getConfig();
-    let appendTo = (config && config.APP.rootElement) ? config.APP.rootElement : '.ember-application';
+    let appendTo = config && config.APP.rootElement ? config.APP.rootElement : '.ember-application';
 
     let modal = $(this.get('modalId')).remodal({
       appendTo,

@@ -19,7 +19,7 @@ export default Service.extend({
   hashTracking: alias('ember-remodal.hashTracking'),
   closeOnOutsideClick: alias('ember-remodal.closeOnOutsideClick'),
 
-  open(name='ember-remodal', opts=null) {
+  open(name = 'ember-remodal', opts = null) {
     let modal = this.get(name);
 
     if (modal) {
@@ -33,7 +33,7 @@ export default Service.extend({
     }
   },
 
-  close(name='ember-remodal') {
+  close(name = 'ember-remodal') {
     let modal = this.get(name);
 
     if (modal) {
@@ -44,6 +44,8 @@ export default Service.extend({
   },
 
   _modalNotSetError(name) {
-    assert(`The requested modal, "${name}" can not be opened because it is not rendered in the current route. In order to use ember-remodal as a service, an instance of {{ember-remodal}} must currently be rendered, with "forService=true". Try putting it in your application template.`);
+    assert(
+      `The requested modal, "${name}" can not be opened because it is not rendered in the current route. In order to use ember-remodal as a service, an instance of {{ember-remodal}} must currently be rendered, with "forService=true". Try putting it in your application template.`
+    );
   }
 });
