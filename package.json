@@ -56,7 +56,6 @@
     "ember-wormhole": "0.5.5",
     "eslint-config-prettier": "3.1.0",
     "eslint-plugin-ember": "^5.0.0",
-    "eslint-plugin-ember-suave": "^1.0.0",
     "eslint-plugin-node": "^5.2.1",
     "loader.js": "^4.2.3",
     "prettier": "^1.14.3"
