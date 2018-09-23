@@ -1,7 +1,7 @@
 /* jshint node: true */
 'use strict';
-var path = require("path");
-var resolve = require("resolve");
+var path = require('path');
+var resolve = require('resolve');
 var Funnel = require('broccoli-funnel');
 var MergeTrees = require('broccoli-merge-trees');
 
@@ -11,12 +11,8 @@ module.exports = {
   treeForVendor(tree) {
     var remodalPath = path.dirname(resolve.sync('remodal'));
     var remodalTree = new Funnel(remodalPath, {
-      files: [
-        'remodal.min.js',
-        'remodal.css',
-        'remodal-default-theme.css'
-      ],
-      destDir: '/remodal/dist',
+      files: ['remodal.min.js', 'remodal.css', 'remodal-default-theme.css'],
+      destDir: '/remodal/dist'
     });
 
     return new MergeTrees([tree, remodalTree]);
