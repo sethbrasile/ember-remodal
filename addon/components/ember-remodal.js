@@ -12,13 +12,10 @@ import { scheduleOnce, next } from '@ember/runloop';
 import { sendEvent } from '@ember/object/events';
 import Component from '@ember/component';
 import layout from '../templates/components/ember-remodal';
-import { warn as emberWarn } from '@ember/debug';
+import Ember from 'ember';
 
 export default Component.extend({
   layout,
-  warn() {
-    return emberWarn;
-  },
   remodal: service(),
   attributeBindings: ['dataTestId:data-test-id'],
   classNames: ['remodal-component'],
@@ -39,6 +36,10 @@ export default Component.extend({
   erOpenButton: false,
   erCancelButton: false,
   erConfirmButton: false,
+
+  warn() {
+    Ember.warn;
+  },
 
   didInsertElement() {
     scheduleOnce('afterRender', this, '_setProperties');
