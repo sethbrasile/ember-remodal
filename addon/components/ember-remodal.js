@@ -12,12 +12,12 @@ import { scheduleOnce, next } from '@ember/runloop';
 import { sendEvent } from '@ember/object/events';
 import Component from '@ember/component';
 import layout from '../templates/components/ember-remodal';
-import { warn } from '@ember/debug';
+import { warn as emberWarn } from '@ember/debug';
 
 export default Component.extend({
   layout,
   warn() {
-    return warn;
+    return emberWarn;
   },
   remodal: service(),
   attributeBindings: ['dataTestId:data-test-id'],
