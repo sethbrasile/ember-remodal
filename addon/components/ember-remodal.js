@@ -37,10 +37,6 @@ export default Component.extend({
   erCancelButton: false,
   erConfirmButton: false,
 
-  warn() {
-    Ember.warn;
-  },
-
   didInsertElement() {
     scheduleOnce('afterRender', this, '_setProperties');
     scheduleOnce('afterRender', this, '_registerObservers');
@@ -85,7 +81,7 @@ export default Component.extend({
     if (this.get('modal')) {
       return this._promiseAction('close');
     } else {
-      this.get('warn')(
+      Ember.Logger.warn(
         'ember-remodal: You called "close" on a modal that has not yet been opened. This is not a big deal, but I thought you should know. The returned promise will immediately resolve.',
         false,
         { id: 'ember-remodal.close-called-on-unitialized-modal' }

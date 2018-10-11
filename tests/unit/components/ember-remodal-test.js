@@ -331,25 +331,6 @@ test('if "forService" is true, "this" is set as "name" on the remodal service', 
   });
 });
 
-test('"warn" is called if a modal is closed before opening', function(assert) {
-  assert.expect(2);
-
-  run(() => {
-    let component = this.subject({
-      warnCalled: false,
-      warn() {
-        component.set('warnCalled', true);
-      }
-    });
-
-    this.render();
-
-    assert.notOk(component.get('warnCalled'));
-    component.close();
-    assert.ok(component.get('warnCalled'));
-  });
-});
-
 test('"_destroyDomElements" calls "destroy" on "modal"', function(assert) {
   assert.expect(2);
 
