@@ -12,13 +12,10 @@ import { scheduleOnce, next } from '@ember/runloop';
 import { sendEvent } from '@ember/object/events';
 import Component from '@ember/component';
 import layout from '../templates/components/ember-remodal';
-import { warn } from '@ember/debug';
+import Ember from 'ember';
 
 export default Component.extend({
   layout,
-  warn() {
-    return warn;
-  },
   remodal: service(),
   attributeBindings: ['dataTestId:data-test-id'],
   classNames: ['remodal-component'],
@@ -84,7 +81,7 @@ export default Component.extend({
     if (this.get('modal')) {
       return this._promiseAction('close');
     } else {
-      this.get('warn')(
+      Ember.Logger.warn(
         'ember-remodal: You called "close" on a modal that has not yet been opened. This is not a big deal, but I thought you should know. The returned promise will immediately resolve.',
         false,
         { id: 'ember-remodal.close-called-on-unitialized-modal' }
