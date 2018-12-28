@@ -25,17 +25,18 @@
   },
   "dependencies": {
     "@ember/jquery": "^0.5.2",
+    "broccoli-funnel": "^2.0.1",
+    "broccoli-merge-trees": "^3.0.2",
     "ember-cli-babel": "^7.1.2",
     "ember-cli-htmlbars": "^3.0.0",
-    "remodal": "^1.1.1"
+    "remodal": "^1.1.1",
+    "resolve": "^1.9.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-0",
     "@ember/optional-features": "^0.6.3",
     "bootstrap": "^3.4.0",
     "broccoli-asset-rev": "^2.7.0",
-    "broccoli-funnel": "^2.0.1",
-    "broccoli-merge-trees": "^3.0.2",
     "ember-bootstrap": "^2.4.0",
     "ember-cli": "~3.6.0",
     "ember-cli-code-coverage": "^1.0.0-beta.7",
@@ -68,8 +69,7 @@
     "eslint-plugin-prettier": "^3.0.0",
     "loader.js": "^4.7.0",
     "prettier": "^1.15.3",
-    "qunit-dom": "^0.8.0",
-    "resolve": "^1.9.0"
+    "qunit-dom": "^0.8.0"
   },
   "engines": {
     "node": "6.* || 8.* || >= 10.*"
