@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "@ember/jquery": "^0.5.2",
-    "broccoli-merge-trees": "^3.0.2",
     "ember-cli-babel": "^7.1.2",
     "ember-cli-htmlbars": "^3.0.0",
     "remodal": "^1.1.1"
@@ -36,6 +35,7 @@
     "bootstrap": "^3.4.0",
     "broccoli-asset-rev": "^2.7.0",
     "broccoli-funnel": "^2.0.1",
+    "broccoli-merge-trees": "^3.0.2",
     "ember-bootstrap": "^2.4.0",
     "ember-cli": "~3.6.0",
     "ember-cli-code-coverage": "^1.0.0-beta.7",
