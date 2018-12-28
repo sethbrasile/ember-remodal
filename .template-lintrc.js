@@ -5,6 +5,7 @@ module.exports = {
 
   rules: {
     'attribute-indentation': false,
-    'block-indentation': false
+    'block-indentation': false,
+    'no-invalid-interactive': false
   }
 };
