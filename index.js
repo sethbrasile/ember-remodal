@@ -6,7 +6,7 @@ var Funnel = require('broccoli-funnel');
 var MergeTrees = require('broccoli-merge-trees');
 
 module.exports = {
-  name: 'ember-remodal',
+  name: require('./package').name,
 
   treeForVendor(tree) {
     var remodalPath = path.dirname(resolve.sync('remodal'));
