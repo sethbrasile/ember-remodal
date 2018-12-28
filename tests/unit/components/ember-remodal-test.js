@@ -168,45 +168,6 @@ test('_closeModal calls "close" on "modal"', function(assert) {
   });
 });
 
-test('"confirm" action sends "onConfirm" action', function(assert) {
-  assert.expect(2);
-
-  run(() => {
-    let component = this.subject({ modal: ModalMock.create() });
-    component.set('onConfirmCalled', false);
-
-    component.set('onConfirm', () => {
-      component.set('onConfirmCalled', true);
-    });
-
-    this.render();
-
-    assert.notOk(component.get('onConfirmCalled'));
-    component.send('confirm');
-    assert.ok(component.get('onConfirmCalled'));
-  });
-});
-
-test('"confirm" action sends "_closeModal" action', function(assert) {
-  assert.expect(2);
-
-  run(() => {
-    let component = this.subject({
-      closeModalCalled: false,
-
-      _closeModal() {
-        this.set('_closeModalCalled', true);
-      }
-    });
-
-    this.render();
-
-    assert.notOk(component.get('_closeModalCalled'));
-    run(() => component.send('confirm'));
-    next(() => assert.ok(component.get('_closeModalCalled')));
-  });
-});
-
 test('"confirm" action does not send "close" action when "closeOnConfirm" is false', function(assert) {
   assert.expect(2);
 
@@ -229,26 +190,6 @@ test('"confirm" action does not send "close" action when "closeOnConfirm" is fal
   });
 });
 
-test('"cancel" action sends "close" action', function(assert) {
-  assert.expect(2);
-
-  run(() => {
-    let component = this.subject({
-      closeModalCalled: false,
-
-      _closeModal() {
-        this.set('_closeModalCalled', true);
-      }
-    });
-
-    this.render();
-
-    assert.notOk(component.get('_closeModalCalled'));
-    run(() => component.send('cancel'));
-    next(() => assert.ok(component.get('_closeModalCalled')));
-  });
-});
-
 test('"cancel" action does not send "close" action when "closeOnCancel" is false', function(assert) {
   assert.expect(2);
 
@@ -267,31 +208,6 @@ test('"cancel" action does not send "close" action when "closeOnCancel" is false
     assert.notOk(component.get('_closeModalCalled'));
     run(() => component.send('cancel'));
     next(() => assert.notOk(component.get('_closeModalCalled')));
-  });
-});
-
-test('"_closeOnCondition" only sends close when "onCondition" is true', function(assert) {
-  assert.expect(2);
-
-  run(() => {
-    let component = this.subject({
-      _closeModalCalled: false,
-      closeOnConfirm: false,
-
-      _closeModal() {
-        this.set('_closeModalCalled', true);
-      }
-    });
-
-    this.render();
-
-    run(() => component._closeOnCondition('Confirm'));
-    next(() => assert.notOk(component.get('_closeModalCalled')));
-    run(() => {
-      component.set('closeOnConfirm', true);
-      component._closeOnCondition('Confirm');
-    });
-    next(() => assert.ok(component.get('_closeModalCalled')));
   });
 });
 
