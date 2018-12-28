@@ -5,6 +5,7 @@ module.exports = {
     sourceType: 'module'
   },
   plugins: [
+    'prettier',
     'ember'
   ],
   extends: [
@@ -15,6 +16,7 @@ module.exports = {
     browser: true
   },
   rules: {
+    quotes: ['error', 'single', { allowTemplateLiterals: true, avoidEscape: true }]
   },
   overrides: [
     // node files
