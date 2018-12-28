@@ -10,7 +10,7 @@
   <p class="subtext">
     **This might not seem completely true, as ember-remodal does allow <code>text</code>
     and <code>title</code> to be set, but those options only exist to facilitate
-    {{link-to 'very simple use-cases' 'inline'}}. You should not use them to
+    {{link-to "very simple use-cases" "inline"}}. You should not use them to
     manage the state of modal content.
   </p>
 
@@ -25,25 +25,25 @@
     avoided.
   </p>
 
-  <br />
+  <br>
 
   <h3>In Summary</h3>
 
   <h4>
-    Think of ember-remodal's {{link-to 'block-form' 'block'}} as any other html
+    Think of ember-remodal"s {{link-to "block-form" "block"}} as any other html
     element (like a <code>div</code>), and handle your application state
     elsewhere.
   </h4>
 
-  <br />
+  <br>
 </div>
 
 <ul class="nav nav-tabs">
-  {{#link-to 'state.simple' tagName='li' classNames='link'}}
+  {{#link-to "state.simple" tagName="li" classNames="link"}}
     <a>Simple</a>
   {{/link-to}}
 
-  {{#link-to 'state.complex' tagName='li' classNames='link'}}
+  {{#link-to "state.complex" tagName="li" classNames="link"}}
     <a>Complex (with objects/models)</a>
   {{/link-to}}
 </ul>

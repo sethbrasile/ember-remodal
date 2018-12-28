@@ -3,40 +3,40 @@
 
   <p>
     Generally, you will set properties on a modal when the modal is defined in a
-    template or via {{link-to 'the options hash' 'options'}}. It is also possible
+    template or via {{link-to "the options hash" "options"}}. It is also possible
     to set properties on a modal programmatically.
   </p>
 
   <p>
     You should not do this unless you have made a very conscious decision to do
-    so. While this pattern is possible, if you need {{link-to 'state' 'state'}}
-    in your modals, you should use a {{link-to 'block-form' 'block'}} modal.
+    so. While this pattern is possible, if you need {{link-to "state" "state"}}
+    in your modals, you should use a {{link-to "block-form" "block"}} modal.
   </p>
 
   <div class="content">
-{{#code-block language='javascript'}}
+{{#code-block language="javascript"}}
   openMyAwesomeModal() {
-    this.get('remodal').open('my-awesome-modal', {
-      title: 'A Modal',
-      text: 'Text in a modal'
+    this.get("remodal").open("my-awesome-modal", {
+      title: "A Modal",
+      text: "Text in a modal"
     });
   },
 
   openMySecondModal() {
-    const modal = this.get('remodal.my-second-modal');
+    const modal = this.get("remodal.my-second-modal");
 
     modal.setProperties({
-      title: 'A Modal',
-      text: 'Text in a modal'
+      title: "A Modal",
+      text: "Text in a modal"
     });
 
-    modal.set('text', 'Other text in a modal');
+    modal.set("text", "Other text in a modal");
 
     modal.open();
   },
 
   changeAwesomeModalText(text) {
-    this.set('remodal.my-awesome-modal.text', text);
+    this.set("remodal.my-awesome-modal.text", text);
   }
 {{/code-block}}
   </div>

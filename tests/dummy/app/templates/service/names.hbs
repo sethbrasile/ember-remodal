@@ -7,13 +7,13 @@
   </p>
 
   <div class="content">
-{{#code-block language='javascript'}}
+{{#code-block language="javascript"}}
   export default Ember.Whatever.extend({
     remodal: Ember.inject.service(),
 
     actions: {
       openModal() {
-        this.get('remodal').open('ember-remodal');
+        this.get("remodal").open("ember-remodal");
       }
     }
   });
@@ -27,21 +27,21 @@
   </p>
 
   <div class="content">
-{{#code-block language='handlebars'}}
-  \{{ember-remodal forService=true name='my-awesome-modal'}}
-  &lt;button \{{action 'openMyAwesomeModal'}}&gt;Open!&lt;/button&gt;
+{{#code-block language="handlebars"}}
+  \{{ember-remodal forService=true name="my-awesome-modal"}}
+  &lt;button \{{action "openMyAwesomeModal"}}&gt;Open!&lt;/button&gt;
 
-  \{{ember-remodal forService=true name='my-second-modal'}}
-  &lt;button \{{action 'openMySecondModal'}}&gt;Open!&lt;/button&gt;
+  \{{ember-remodal forService=true name="my-second-modal"}}
+  &lt;button \{{action "openMySecondModal"}}&gt;Open!&lt;/button&gt;
 {{/code-block}}
 
-{{#code-block language='javascript'}}
+{{#code-block language="javascript"}}
   openMyAwesomeModal() {
-    this.get('remodal').open('my-awesome-modal');
+    this.get("remodal").open("my-awesome-modal");
   },
 
   openMySecondModal() {
-    this.get('remodal').open('my-second-modal');
+    this.get("remodal").open("my-second-modal");
   }
 {{/code-block}}
   </div>

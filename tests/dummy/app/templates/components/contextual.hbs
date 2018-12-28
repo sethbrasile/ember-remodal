@@ -2,13 +2,13 @@
 
 <p>
   These were introduced in Ember 2.3 and are the way of the future!
-  {{link-to 'Legacy components' 'components.legacy'}} are available in ember-remodal versions &lt; 1.0.0, so use &lt; 1.0.0 if
+  {{link-to "Legacy components" "components.legacy"}} are available in ember-remodal versions &lt; 1.0.0, so use &lt; 1.0.0 if
   you're stuck on an older version of Ember.
 </p>
 
 <p>
   Please note that even while using these components,
-  {{link-to 'actions' 'options.actions'}} are still handled on the
+  {{link-to "actions" "options.actions"}} are still handled on the
   <code>ember-remodal</code> component.
 </p>
 
@@ -34,10 +34,10 @@
       </p>
 
 
-{{#code-block language='handlebars'}}
+{{#code-block language="handlebars"}}
   \{{#ember-remodal as |modal|}}
     \{{#modal.open}}
-      \{{!-- Anything you put here will open the modal on click and fire the 'onOpen' action --}}
+      \{{!-- Anything you put here will open the modal on click and fire the "onOpen" action --}}
     \{{/modal.open}}
   \{{/ember-remodal}}
 {{/code-block}}
@@ -53,10 +53,10 @@
         animation is complete.
       </p>
 
-{{#code-block language='handlebars'}}
+{{#code-block language="handlebars"}}
   \{{#ember-remodal as |modal|}}
     \{{#modal.confirm}}
-      \{{!-- Anything you put here will close the modal on click and fire the 'onConfirm' action --}}
+      \{{!-- Anything you put here will close the modal on click and fire the "onConfirm" action --}}
     \{{/modal.confirm}}
   \{{/ember-remodal}}
 {{/code-block}}
@@ -73,10 +73,10 @@
         animation is complete.
       </p>
 
-{{#code-block language='handlebars'}}
+{{#code-block language="handlebars"}}
   \{{#ember-remodal as |modal|}}
     \{{#modal.cancel}}
-      \{{!-- Anything you put here will close the modal on click and fire the 'onCancel' action --}}
+      \{{!-- Anything you put here will close the modal on click and fire the "onCancel" action --}}
     \{{/modal.cancel}}
   \{{/ember-remodal}}
 {{/code-block}}

@@ -33,47 +33,47 @@
   </p>
 
   {{ember-remodal
-    openButton='Open Modal With Actions'
-    confirmButton='OK'
-    cancelButton='Cancel'
-    onOpen='notifyOpened'
-    onConfirm='notifyConfirmed'
-    onCancel='notifyCanceled'
-    onClose=(action 'notifyClosed')
+    openButton="Open Modal With Actions"
+    confirmButton="OK"
+    cancelButton="Cancel"
+    onOpen="notifyOpened"
+    onConfirm="notifyConfirmed"
+    onCancel="notifyCanceled"
+    onClose=(action "notifyClosed")
   }}
 
-{{#code-block language='handlebars'}}
+{{#code-block language="handlebars"}}
   \{{ember-remodal
-    openButton='Open Modal With Actions'
-    confirmButton='OK'
-    cancelButton='Cancel'
-    onOpen='notifyOpened'
-    onConfirm='notifyConfirmed'
-    onCancel='notifyCanceled'
+    openButton="Open Modal With Actions"
+    confirmButton="OK"
+    cancelButton="Cancel"
+    onOpen="notifyOpened"
+    onConfirm="notifyConfirmed"
+    onCancel="notifyCanceled"
     \{{!-- Closure actions work too --}}
-    onClose=(action 'notifyClose')
+    onClose=(action "notifyClose")
   }}
 {{/code-block}}
 
-{{#code-block language='javascript'}}
+{{#code-block language="javascript"}}
   export default Ember.Whatever.extend({
-    notify: Ember.inject.service('notify'),
+    notify: Ember.inject.service("notify"),
 
     actions: {
       notifyOpened() {
-        this.get('notify').info('Opened');
+        this.get("notify").info("Opened");
       },
 
       notifyConfirmed() {
-        this.get('notify').success('Confirmed');
+        this.get("notify").success("Confirmed");
       },
 
       notifyCanceled() {
-        this.get('notify').error('Canceled');
+        this.get("notify").error("Canceled");
       },
 
       notifyClosed() {
-        this.get('notify').warning('Closed');
+        this.get("notify").warning("Closed");
       }
     }
   });

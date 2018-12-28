@@ -1,12 +1,12 @@
 <div class="content">
-  {{#ember-remodal title='Words and an Image' dataTestId='modal' as |m|}}
+  {{#ember-remodal title="Words and an Image" dataTestId="modal" as |m|}}
     {{#m.open}}
       <button class="btn btn-primary" data-test-id="openButton">Open!</button>
     {{/m.open}}
 
     <div class="content">
       <p>It's amazing how many photos on flickr are photos of cats.</p>
-      <img src="http://loremflickr.com/320/240" alt="random image" />
+      <img src="http://loremflickr.com/320/240" alt="random image">
     </div>
 
     <div class="actions">
@@ -20,8 +20,8 @@
     </div>
   {{/ember-remodal}}
 
-{{#code-block language='handlebars'}}
-  \{{#ember-remodal title='Words and an Image' as |m|}}
+{{#code-block language="handlebars"}}
+  \{{#ember-remodal title="Words and an Image" as |m|}}
     \{{#m.open}}
       &lt;button class="btn btn-primary"&gt;Open!&lt;/button&gt;
     \{{/m.open}}

@@ -8,7 +8,7 @@
         <span class="icon-bar"></span>
       </button>
 
-      {{#link-to 'index' class="navbar-brand"}}
+      {{#link-to "index" class="navbar-brand"}}
         <img src="ember-logo.png" alt="Ember Logo">
         <span>remodal</span>
       {{/link-to}}
@@ -17,38 +17,38 @@
     <div class="collapse navbar-collapse" id="navbar">
       <ul class="nav navbar-nav">
         <li>
-          {{link-to 'Inline' 'inline'}}
+          {{link-to "Inline" "inline"}}
         </li>
         <li>
-          {{link-to 'Block' 'block'}}
+          {{link-to "Block" "block"}}
         </li>
         <li>
-          {{link-to 'Components' 'components'}}
+          {{link-to "Components" "components"}}
         </li>
         <li>
-          {{link-to 'Service (Programmatic Use)' 'service'}}
+          {{link-to "Service (Programmatic Use)" "service"}}
         </li>
         <li>
-          {{link-to 'State' 'state'}}
+          {{link-to "State" "state"}}
         </li>
         <li>
-          {{link-to 'Options/Actions' 'options'}}
+          {{link-to "Options/Actions" "options"}}
         </li>
         <li>
-          {{link-to 'Styling' 'styling'}}
+          {{link-to "Styling" "styling"}}
         </li>
         <li>
-          {{link-to 'Testing' 'options.testing'}}
+          {{link-to "Testing" "options.testing"}}
         </li>
         <li>
-          {{link-to 'Upgrade Guide' 'upgrading'}}
+          {{link-to "Upgrade Guide" "upgrading"}}
         </li>
       </ul>
 
       <ul class="nav navbar-nav navbar-right">
         <li>
           <a href="https://github.com/sethbrasile/ember-remodal">
-            {{fa-icon 'github'}}
+            {{fa-icon "github"}}
           </a>
         </li>
       </ul>
@@ -62,4 +62,4 @@
   {{outlet}}
 </div>
 
-{{ember-notify messageStyle='bootstrap'}}
+{{ember-notify messageStyle="bootstrap"}}
