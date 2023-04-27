@@ -7,27 +7,27 @@ module('Integration | Component | ember-remodal/er button', function(hooks) {
   setupRenderingTest(hooks);
 
   test('renders', async function(assert) {
-    await render(hbs`{{ember-remodal/er-button}}`);
+    await render(hbs`<EmberRemodal::ErButton />`);
 
-    assert.equal(this.$().text().trim(), '');
+    assert.dom(this.element).hasNoText();
 
     // Template block usage:" + EOL +
     await render(hbs`
-      {{#ember-remodal/er-button}}
+      <EmberRemodal::ErButton>
         template block text
-      {{/ember-remodal/er-button}}
+      </EmberRemodal::ErButton>
     `);
 
-    assert.equal(this.$().text().trim(), 'template block text');
+    assert.dom(this.element).hasText('template block text');
   });
 
   test('"click" sends "action" action', async function(assert) {
     this.set('myAction', () => assert.ok(true));
 
     await render(hbs`
-      {{#ember-remodal/er-button action=(action myAction)}}
-        <button class="button"></button>
-      {{/ember-remodal/er-button}}
+      <EmberRemodal::ErButton @action={{this.myAction}}>
+          <button class="button"></button>
+      </EmberRemodal::ErButton>
     `);
 
     await click('.button');
