@@ -1,1 +1,1 @@
-Ember.libraries.register('Ember Remodal', '2.18.0');
+Ember.libraries.register('Ember Remodal', '3.0.0');
