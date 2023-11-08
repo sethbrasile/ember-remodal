@@ -1162,9 +1162,9 @@
     ember-modifier-manager-polyfill "^1.2.0"
 
 "@ember/test-helpers@^2.6.0":
-  version "2.9.3"
-  resolved "https://registry.npmjs.org/@ember/test-helpers/-/test-helpers-2.9.3.tgz"
-  integrity sha512-ejVg4Dj+G/6zyLvQsYOvmGiOLU6AS94tY4ClaO1E2oVvjjtVJIRmVLFN61I+DuyBg9hS3cFoPjQRTZB9MRIbxQ==
+  version "2.9.4"
+  resolved "https://registry.yarnpkg.com/@ember/test-helpers/-/test-helpers-2.9.4.tgz#985022e9ba05cfc918bcf08b77cbb355f85b723e"
+  integrity sha512-z+Qs1NYWyIVDmrY6WdmOS5mdG1lJ5CFfzh6dRhLfs9lq45deDaDrVNcaCYhnNeJZTvUBK2XR2SvPcZm0RloXdA==
   dependencies:
     "@ember/test-waiters" "^3.0.0"
     "@embroider/macros" "^1.10.0"
@@ -3052,7 +3052,7 @@ body@^5.1.0:
     raw-body "~1.1.0"
     safe-json-parse "~1.0.1"
 
-bootstrap@^3.3.7:
+bootstrap@^3.4.1:
   version "3.4.1"
   resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-3.4.1.tgz#c3a347d419e289ad11f4033e3c4132b87c081d72"
   integrity sha512-yN5oZVmRCwe5aKwzRj6736nSmKDX7pLYwsXiCj/EYmo16hODaBiT4En5btW/jhBF/seV+XMx3aYwukYC3A49DA==
@@ -4785,7 +4785,7 @@ ember-auto-import@^1.11.3:
     walk-sync "^0.3.3"
     webpack "^4.43.0"
 
-ember-auto-import@^2.2.3, ember-auto-import@^2.4.0, ember-auto-import@^2.4.3:
+ember-auto-import@^2.2.3, ember-auto-import@^2.4.0, ember-auto-import@^2.6.3:
   version "2.6.3"
   resolved "https://registry.yarnpkg.com/ember-auto-import/-/ember-auto-import-2.6.3.tgz#f18d1b93dd10b08ba5496518436f9d56dd4e000a"
   integrity sha512-uLhrRDJYWCRvQ4JQ1e64XlSrqAKSd6PXaJ9ZsZI6Tlms9T4DtQFxNXasqji2ZRJBVrxEoLCRYX3RTldsQ0vNGQ==
@@ -4955,7 +4955,7 @@ ember-cli-code-coverage@1.0.0-beta.6:
     rsvp "^4.8.3"
     walk-sync "^0.3.3"
 
-ember-cli-dependency-checker@^3.2.0:
+ember-cli-dependency-checker@^3.3.2:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/ember-cli-dependency-checker/-/ember-cli-dependency-checker-3.3.2.tgz#94ed7e8e3d47e494082eb9ccfaa489d603ab6017"
   integrity sha512-PwkrW5oYsdPWwt+0Tojufmv/hxVETTjkrEdK7ANQB2VSnqpA5UcYubwpQM9ONuR2J8wyNDMwEHlqIrk/FYtBsQ==
@@ -4991,7 +4991,7 @@ ember-cli-htmlbars@^2.0.1:
 
 ember-cli-htmlbars@^2.0.3:
   version "2.0.5"
-  resolved "https://registry.npmjs.org/ember-cli-htmlbars/-/ember-cli-htmlbars-2.0.5.tgz"
+  resolved "https://registry.yarnpkg.com/ember-cli-htmlbars/-/ember-cli-htmlbars-2.0.5.tgz#b5a105429a6bce4f7c9c97b667e3b8926e31397f"
   integrity sha512-3f3PAxdnQ/fhQa8XP/3z4RLRgLHxV8j4Ln75aHbRdemOCjBa048KxL9l+acRLhCulbGQCMnLiIUIC89PAzLrcA==
   dependencies:
     broccoli-persistent-filter "^1.4.3"
@@ -5108,7 +5108,7 @@ ember-cli-release@0.2.9:
     semver "^4.3.1"
     silent-error "^1.0.0"
 
-ember-cli-sri@^2.1.0:
+ember-cli-sri@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/ember-cli-sri/-/ember-cli-sri-2.1.1.tgz#971620934a4b9183cf7923cc03e178b83aa907fd"
   integrity sha512-YG/lojDxkur9Bnskt7xB6gUOtJ6aPl/+JyGYm9HNDk3GECVHB3SMN3rlGhDKHa1ndS5NK2W2TSLb9bzRbGlMdg==
@@ -5120,12 +5120,13 @@ ember-cli-string-utils@^1.1.0:
   resolved "https://registry.npmjs.org/ember-cli-string-utils/-/ember-cli-string-utils-1.1.0.tgz"
   integrity "sha1-ObZ3/CgF9VFzc1N2/O8njqpEUqE= sha512-PlJt4fUDyBrC/0X+4cOpaGCiMawaaB//qD85AXmDRikxhxVzfVdpuoec02HSiTGTTB85qCIzWBIh8lDOiMyyFg=="
 
-ember-cli-stylus@1.0.6:
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/ember-cli-stylus/-/ember-cli-stylus-1.0.6.tgz#a33f1eb55dc27f326db039dca932fe3ef3765cbe"
-  integrity sha512-FqxtxxRLdNL9TTQIR+iHDZQFBj3Tu3LxuYhjkCArMPAUnJvGlUTIV01K9B1JyNjP+OpQ3FLg5mtx9UfUL5jKlg==
+ember-cli-stylus@1.0.7:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/ember-cli-stylus/-/ember-cli-stylus-1.0.7.tgz#9b8296779686e590c0d01536d4cfb76a434d5392"
+  integrity sha512-mk+9iZ9jxTkxIfuHAlUoUL3yw7JZmxjq7hiHQ/DFm317EtlT+fUDg3teglJvmtaM5D5JBGZka1dYP3t3fvAujw==
   dependencies:
     broccoli-stylus-single "^1.0.0"
+    ember-cli-version-checker "^1.1.7"
     stylus "0.x"
 
 ember-cli-terser@^4.0.2:
@@ -5215,6 +5216,13 @@ ember-cli-typescript@^5.0.0:
     semver "^7.3.2"
     stagehand "^1.0.0"
     walk-sync "^2.2.0"
+
+ember-cli-version-checker@^1.1.7:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/ember-cli-version-checker/-/ember-cli-version-checker-1.3.1.tgz#0bc2d134c830142da64bf9627a0eded10b61ae72"
+  integrity sha512-mu1Apdd19ZuDsy9WAHheFhltaJx+0ardFNM8Hb/AeRO9RokOK/bdUq/Jc1oeg0/Hl18tnxg8STG9TyJ6HgE3+g==
+  dependencies:
+    semver "^5.3.0"
 
 ember-cli-version-checker@^2.1.0:
   version "2.1.2"
@@ -5514,7 +5522,7 @@ ember-popper-modifier@^2.0.0:
 
 ember-prism@0.3.0:
   version "0.3.0"
-  resolved "https://registry.npmjs.org/ember-prism/-/ember-prism-0.3.0.tgz"
+  resolved "https://registry.yarnpkg.com/ember-prism/-/ember-prism-0.3.0.tgz#487870c8ee3969511bd5d501a3c38385892d293f"
   integrity sha512-Qt8G5+G2yha7LSl0fXfYOCaOq5NtixoTK2vehq/cWGv3ATTsT3l5/KiCaKKwGMeGL2J2bmNsEPNEXgxWCmPLjQ==
   dependencies:
     ember-cli-babel "^6.8.2"
@@ -8301,7 +8309,7 @@ loader-utils@^2.0.0:
     emojis-list "^3.0.0"
     json5 "^2.1.2"
 
-loader.js@^4.2.3:
+loader.js@^4.7.0:
   version "4.7.0"
   resolved "https://registry.yarnpkg.com/loader.js/-/loader.js-4.7.0.tgz#a1a52902001c83631efde9688b8ab3799325ef1f"
   integrity sha512-9M2KvGT6duzGMgkOcTkWb+PR/Q2Oe54df/tLgHGVmFpAmtqJ553xJh6N63iFYI2yjo2PeJXbS5skHi/QpJq4vA==
@@ -9967,7 +9975,7 @@ printf@^0.6.1:
 
 prismjs@^1.8.3:
   version "1.29.0"
-  resolved "https://registry.npmjs.org/prismjs/-/prismjs-1.29.0.tgz"
+  resolved "https://registry.yarnpkg.com/prismjs/-/prismjs-1.29.0.tgz#f113555a8fa9b57c35e637bba27509dcf802dd12"
   integrity sha512-Kx/1w86q/epKcmte75LNrEoT+lX8pBpavuAbvJWRXar7Hz8jrtF+e3vY751p0R8H9HdArwaCTNDDzHg/ScJK1Q==
 
 private@^0.1.6, private@^0.1.8, private@~0.1.5:
@@ -10134,7 +10142,7 @@ qunit-dom@^1.6.0:
     ember-cli-babel "^7.23.0"
     ember-cli-version-checker "^5.1.1"
 
-qunit@^2.17.2:
+qunit@^2.20.0:
   version "2.20.0"
   resolved "https://registry.yarnpkg.com/qunit/-/qunit-2.20.0.tgz#66a404a0142781316bbda91535869ce5671555b1"
   integrity sha512-N8Fp1J55waE+QG1KwX2LOyqulZUToRrrPBqDOfYfuAMkEglFL15uwvmH1P4Tq/omQ/mGbBI8PEB3PhIfvUb+jg==
@@ -10551,7 +10559,7 @@ resolve-url@^0.2.1:
   resolved "https://registry.npmjs.org/resolve-url/-/resolve-url-0.2.1.tgz"
   integrity "sha1-LGN/53yJOv0qZj/iGqkIAGjiBSo= sha512-ZuF55hVUQaaczgOIwqWzkEcEidmlD/xl44x1UZnhOXcYuFN2S6+rcxpG+C1N3So0wvNI3DmJICUFfu2SxhBmvg=="
 
-resolve@^1.1.6, resolve@^1.1.7, resolve@^1.10.0, resolve@^1.10.1, resolve@^1.11.1, resolve@^1.12.0, resolve@^1.13.1, resolve@^1.14.2, resolve@^1.17.0, resolve@^1.18.1, resolve@^1.20.0, resolve@^1.22.0, resolve@^1.3.3, resolve@^1.4.0, resolve@^1.5.0, resolve@^1.8.1:
+resolve@^1.1.6, resolve@^1.1.7, resolve@^1.10.0, resolve@^1.10.1, resolve@^1.11.1, resolve@^1.12.0, resolve@^1.13.1, resolve@^1.14.2, resolve@^1.17.0, resolve@^1.18.1, resolve@^1.20.0, resolve@^1.22.0, resolve@^1.22.8, resolve@^1.3.3, resolve@^1.4.0, resolve@^1.5.0:
   version "1.22.8"
   resolved "https://registry.npmjs.org/resolve/-/resolve-1.22.8.tgz"
   integrity sha512-oKWePCxqpd6FlLvGV1VU0x7bkPmmCNolxzjMf4NczoDnQcIWrAF+cPtZn5i6n+RfD2d9i0tzpKnG6Yk168yIyw==
