@@ -211,6 +211,15 @@ dialog.remodal-wrapper.remodal-is-closing::backdrop {
   background-color: transparent;
   color: #fff;
   padding: 0;
+
+  /* The invisible card still spans the full width; let clicks fall through
+     the empty area to the backdrop (closeOnOutsideClick), while its actual
+     content stays interactive. */
+  pointer-events: none;
+}
+
+.invisible.remodal.window > * {
+  pointer-events: auto;
 }
 
 .invisible.remodal.window .native.close {

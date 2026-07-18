@@ -1,12 +1,9 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render, click, find } from '@ember/test-helpers';
+import { render, click } from '@ember/test-helpers';
 import EmberRemodal from '#src/components/ember-remodal.gts';
 import type { CloseReason } from '#src/components/ember-remodal.gts';
-
-function dialog(): HTMLDialogElement {
-  return find('[data-test-id="modalWrapper"]') as HTMLDialogElement;
-}
+import { dialog } from '../helpers/remodal-test-helpers.ts';
 
 module('Rendering | ember-remodal | confirm and cancel', function (hooks) {
   setupRenderingTest(hooks);
@@ -123,6 +120,40 @@ module('Rendering | ember-remodal | confirm and cancel', function (hooks) {
     assert.strictEqual(confirmed, 1, '@onConfirm fired');
     assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
     assert.true(dialog().open, 'modal stayed open');
+  });
+
+  test("m.confirm does not swallow a checkbox's default toggle behavior", async function (assert) {
+    // Regression test: the yielded confirm/cancel buttons previously called
+    // preventDefault() unconditionally, which suppressed a wrapped
+    // checkbox's native toggle. The old addon's confirm/cancel buttons never
+    // did this (only the open-trigger path preventDefaults, to stop
+    // `<a href="#">` from navigating).
+    let confirmed = 0;
+    const handleConfirm = () => confirmed++;
+
+    await render(
+      <template>
+        <EmberRemodal
+          @openButton="Open"
+          @closeOnConfirm={{false}}
+          @onConfirm={{handleConfirm}}
+          as |m|
+        >
+          <m.confirm>
+            <label>
+              <input type="checkbox" data-test-agree />
+              I agree
+            </label>
+          </m.confirm>
+        </EmberRemodal>
+      </template>,
+    );
+    await click('[data-test-id="openButton"]');
+
+    await click('[data-test-agree]');
+
+    assert.dom('[data-test-agree]').isChecked('checkbox still toggles');
+    assert.strictEqual(confirmed, 1, '@onConfirm still fired');
   });
 
   test('@closeOnCancel={{false}} fires @onCancel but keeps the modal open', async function (assert) {

@@ -14,10 +14,11 @@ export interface ErButtonSignature {
 
 export default class ErButton extends Component<ErButtonSignature> {
   handleClick = (event: Event): void => {
-    // Old ember-remodal buttons were commonly wrapped in `<a href="#">`;
-    // prevent default so those links never navigate.
-    event.preventDefault();
-    this.args.onClick();
+    // Deliberately no preventDefault here: the wrapper must not swallow the
+    // default behavior of consumer content (checkboxes, form controls, real
+    // links). The open trigger's link-safety preventDefault lives in the
+    // modal's handleOpenClick instead.
+    this.args.onClick(event);
   };
 
   <template>

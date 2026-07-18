@@ -1,20 +1,15 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render, click, find, settled } from '@ember/test-helpers';
+import { render, click, find } from '@ember/test-helpers';
 import { on } from '@ember/modifier';
+import Component from '@glimmer/component';
+import type Owner from '@ember/owner';
 import EmberRemodal from '#src/components/ember-remodal.gts';
-
-function dialog(): HTMLDialogElement {
-  return find('[data-test-id="modalWrapper"]') as HTMLDialogElement;
-}
-
-function pressEscape(): Promise<void> {
-  // The native `cancel` event is what the browser fires on Esc inside an open
-  // <dialog>; synthetic keyboard events do not trigger it, so dispatch it
-  // directly.
-  dialog().dispatchEvent(new Event('cancel', { cancelable: true }));
-  return settled();
-}
+import {
+  dialog,
+  lookupService,
+  pressEscape,
+} from '../helpers/remodal-test-helpers.ts';
 
 module('Rendering | ember-remodal | open and close', function (hooks) {
   setupRenderingTest(hooks);
@@ -73,16 +68,14 @@ module('Rendering | ember-remodal | open and close', function (hooks) {
       </template>,
     );
 
-    const openButton = find('[data-test-open]');
-    assert.ok(openButton, 'the m.open button is rendered');
+    assert.dom('[data-test-open]').exists('the m.open button is rendered');
     assert.notOk(
-      dialog().contains(openButton),
+      dialog().contains(find('[data-test-open]')),
       'the m.open button is not inside the <dialog>',
     );
-    assert.ok(
-      find('.ember-remodal-open-button-target [data-test-open]'),
-      'the m.open button is portaled into the target span',
-    );
+    assert
+      .dom('.ember-remodal-open-button-target [data-test-open]')
+      .exists('the m.open button is portaled into the target span');
 
     await click('[data-test-open]');
 
@@ -281,19 +274,99 @@ module('Rendering | ember-remodal | open and close', function (hooks) {
   test('the document scroll is locked while the modal is open', async function (assert) {
     await render(<template><EmberRemodal @openButton="Open" /></template>);
 
-    const html = document.documentElement;
-    assert.false(html.classList.contains('remodal-is-locked'));
+    assert.dom(document.documentElement).doesNotHaveClass('remodal-is-locked');
 
     await click('[data-test-id="openButton"]');
-    assert.true(
-      html.classList.contains('remodal-is-locked'),
-      'html is locked while open',
-    );
+    assert
+      .dom(document.documentElement)
+      .hasClass('remodal-is-locked', 'html is locked while open');
 
     await click('[data-test-id="nativeClose"]');
-    assert.false(
-      html.classList.contains('remodal-is-locked'),
-      'lock is released after closing',
+    assert
+      .dom(document.documentElement)
+      .doesNotHaveClass('remodal-is-locked', 'lock is released after closing');
+  });
+
+  test('a chained reopen (close().then(open())) survives the queued native close event', async function (assert) {
+    // Regression test: `dialog.close()` dispatches its native `close` event
+    // from a QUEUED task, not synchronously. A naive close-then-reopen could
+    // let that stale event arrive after the reopen had already started,
+    // clobbering it (dialog left visibly open, but state forced to 'closed'
+    // and the scroll lock released). handleDialogClose must recognize a
+    // stale event by checking `dialog.open` rather than trusting timing.
+    const service = lookupService(this);
+
+    await render(
+      <template>
+        <EmberRemodal @forService={{true}} @name="reopen" @title="Reopen" />
+      </template>,
     );
+
+    const modal = await service.open('reopen');
+    await modal.close().then((m) => m.open());
+
+    // Give the queued native `close` event a chance to land before asserting.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    assert.true(dialog().open, 'dialog element is still natively open');
+    assert.strictEqual(modal.state, 'opened');
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
+    assert
+      .dom(document.documentElement)
+      .hasClass('remodal-is-locked', 'scroll lock still held');
+  });
+
+  test('service.open() called during the initial render pass still opens the modal', async function (assert) {
+    // Regression test: registering with the service happens in the
+    // component's constructor, before its <dialog> element has been
+    // captured by the registerDialog modifier. A service.open() call that
+    // lands in that window must wait for the element instead of silently
+    // no-opping.
+    class EarlyOpener extends Component {
+      constructor(owner: Owner, args: object) {
+        super(owner, args);
+        const remodal = owner.lookup('service:remodal');
+        void remodal.open('early-modal');
+      }
+
+      <template></template>
+    }
+
+    await render(
+      <template>
+        <EmberRemodal @forService={{true}} @name="early-modal" @title="Early" />
+        <EarlyOpener />
+      </template>,
+    );
+
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
+    assert.true(dialog().open);
+  });
+
+  test('isOpen (and thus yielded m.isOpen) stays true through the closing animation', async function (assert) {
+    // Regression test: isOpen previously excluded 'closing', so lazily
+    // rendered content driven by `{{#if m.isOpen}}` was torn out the instant
+    // close() was called, before the closing animation had a chance to play.
+    // close() sets state synchronously before its first internal await, so
+    // this is observable without racing the render/animation timing.
+    const service = lookupService(this);
+
+    await render(
+      <template>
+        <EmberRemodal @forService={{true}} @name="lazy" @title="Lazy" />
+      </template>,
+    );
+
+    const modal = await service.open('lazy');
+    assert.true(modal.isOpen, 'open while opened');
+
+    const closePromise = modal.close();
+    assert.true(
+      modal.isOpen,
+      'still true synchronously after close() starts (state is "closing")',
+    );
+
+    await closePromise;
+    assert.false(modal.isOpen, 'false once fully closed');
   });
 });

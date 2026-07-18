@@ -1,9 +1,8 @@
 import { module, test } from 'qunit';
 import { setupTest } from 'ember-qunit';
-import type { TestContext } from '@ember/test-helpers';
-import type RemodalService from '#src/services/remodal.ts';
 import type EmberRemodal from '#src/components/ember-remodal.gts';
 import type { EmberRemodalOptions } from '#src/components/ember-remodal.gts';
+import { lookupService } from '../helpers/remodal-test-helpers.ts';
 
 class FakeModal {
   openCalls = 0;
@@ -23,10 +22,6 @@ class FakeModal {
 
 function asModal(fake: FakeModal): EmberRemodal {
   return fake as unknown as EmberRemodal;
-}
-
-function lookupService(context: TestContext): RemodalService {
-  return context.owner.lookup('service:remodal');
 }
 
 module('Unit | Service | remodal', function (hooks) {
@@ -58,6 +53,22 @@ module('Unit | Service | remodal', function (hooks) {
       fake.serviceOverrides,
       { title: 'Hello' },
       'previous overrides persist when open() is called without options',
+    );
+  });
+
+  test('open() merges option overrides across calls instead of replacing them', async function (assert) {
+    const service = lookupService(this);
+    const fake = new FakeModal();
+
+    service.register('a', asModal(fake));
+
+    await service.open('a', { title: 'Hello' });
+    await service.open('a', { text: 'World' });
+
+    assert.deepEqual(
+      fake.serviceOverrides,
+      { title: 'Hello', text: 'World' },
+      'a later call merges onto, rather than replacing, earlier overrides',
     );
   });
 

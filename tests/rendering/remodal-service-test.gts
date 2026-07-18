@@ -1,17 +1,8 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render, find } from '@ember/test-helpers';
-import type { TestContext } from '@ember/test-helpers';
+import { render } from '@ember/test-helpers';
 import EmberRemodal from '#src/components/ember-remodal.gts';
-import type RemodalService from '#src/services/remodal.ts';
-
-function dialog(): HTMLDialogElement {
-  return find('[data-test-id="modalWrapper"]') as HTMLDialogElement;
-}
-
-function lookupService(context: TestContext): RemodalService {
-  return context.owner.lookup('service:remodal');
-}
+import { dialog, lookupService } from '../helpers/remodal-test-helpers.ts';
 
 module('Rendering | remodal service', function (hooks) {
   setupRenderingTest(hooks);
@@ -66,6 +57,28 @@ module('Rendering | remodal service', function (hooks) {
       .hasText('Overridden', 'override persists on a subsequent open');
   });
 
+  test('service.open merges option overrides across calls instead of replacing them', async function (assert) {
+    // Regression test: the 2.x service used setProperties, which merged each
+    // override onto the modal; a prior rewrite replaced the whole overrides
+    // object per call, silently dropping earlier keys.
+    const service = lookupService(this);
+
+    await render(
+      <template><EmberRemodal @forService={{true}} @name="merge" /></template>,
+    );
+
+    await service.open('merge', { title: 'A title' });
+    assert.dom('[data-test-id="title"]').hasText('A title');
+
+    await service.close('merge');
+    await service.open('merge', { text: 'B text' });
+
+    assert
+      .dom('[data-test-id="title"]')
+      .hasText('A title', 'earlier override survives a later one');
+    assert.dom('[data-test-id="text"]').hasText('B text');
+  });
+
   test('service.close closes the modal and resolves', async function (assert) {
     const service = lookupService(this);
 
@@ -96,6 +109,33 @@ module('Rendering | remodal service', function (hooks) {
       },
       /not-registered.*can not be opened because it is not rendered/,
       'throws the not-registered assertion',
+    );
+  });
+
+  test('the registry is keyed by the name a modal registered under, not by @name after a service override changes it', async function (assert) {
+    // Regression test: registration used the constructor-time name, but a
+    // service override to @name could change what `this.name` returns
+    // afterward. unregister() must use the same snapshotted name, or a
+    // destroyed instance is stranded in the registry under its original name.
+    const service = lookupService(this);
+
+    await render(
+      <template>
+        <EmberRemodal @forService={{true}} @name="snap" @title="Snap" />
+      </template>,
+    );
+
+    await service.open('snap', { name: 'renamed-via-override' });
+    await service.close('snap');
+
+    await render(<template></template>);
+
+    assert.throws(
+      () => {
+        void service.open('snap');
+      },
+      /snap.*can not be opened because it is not rendered/,
+      'the registry has no stale entry left under the original name',
     );
   });
 

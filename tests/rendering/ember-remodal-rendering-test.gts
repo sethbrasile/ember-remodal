@@ -97,14 +97,14 @@ module('Rendering | ember-remodal', function (hooks) {
     assert.dom('[data-test-id="openButton"]').hasText('Open me');
   });
 
-  test('direct args take precedence over @options', async function (assert) {
+  test('@options takes precedence over direct args (matches 2.x setProperties behavior)', async function (assert) {
     await render(
       <template>
         <EmberRemodal @title="Direct" @options={{hash title="From options"}} />
       </template>,
     );
 
-    assert.dom('[data-test-id="title"]').hasText('Direct');
+    assert.dom('[data-test-id="title"]').hasText('From options');
   });
 
   test('the native close button renders by default', async function (assert) {

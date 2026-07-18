@@ -1,8 +1,8 @@
 import Component from '@glimmer/component';
 import { tracked } from '@glimmer/tracking';
+import { warn } from '@ember/debug';
 import { hash } from '@ember/helper';
 import { on } from '@ember/modifier';
-import { getOwner } from '@ember/owner';
 import { service } from '@ember/service';
 import { waitForPromise } from '@ember/test-waiters';
 import { modifier } from 'ember-modifier';
@@ -90,13 +90,15 @@ function nextFrame(): Promise<void> {
 }
 
 // Shared scroll-lock bookkeeping so multiple simultaneously-open modals
-// only lock/unlock the document once.
-let openModalCount = 0;
+// only lock/unlock the document once. The set tracks which modal instances
+// currently hold the lock; the document locks on 0 → 1 and unlocks on 1 → 0.
+const lockHolders = new Set<object>();
 let savedBodyPaddingRight: string | null = null;
 
-function acquireScrollLock(): void {
-  openModalCount += 1;
-  if (openModalCount === 1) {
+function acquireScrollLock(holder: object): void {
+  const wasEmpty = lockHolders.size === 0;
+  lockHolders.add(holder);
+  if (wasEmpty) {
     // Measure before locking: overflow-hidden removes the scrollbar.
     const scrollbarWidth =
       window.innerWidth - document.documentElement.clientWidth;
@@ -108,13 +110,22 @@ function acquireScrollLock(): void {
   }
 }
 
-function releaseScrollLock(): void {
-  openModalCount = Math.max(0, openModalCount - 1);
-  if (openModalCount === 0) {
+function releaseScrollLock(holder: object): void {
+  const removed = lockHolders.delete(holder);
+  if (removed && lockHolders.size === 0) {
     document.documentElement.classList.remove('remodal-is-locked');
     document.body.style.paddingRight = savedBodyPaddingRight ?? '';
     savedBodyPaddingRight = null;
   }
+}
+
+function createOpenButtonTarget(): HTMLSpanElement | null {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+  const span = document.createElement('span');
+  span.className = 'ember-remodal-open-button-target';
+  return span;
 }
 
 export default class EmberRemodal extends Component<EmberRemodalSignature> {
@@ -122,155 +133,57 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
 
   @tracked state: ModalState = 'closed';
   @tracked serviceOverrides: EmberRemodalOptions | null = null;
-  @tracked openButtonTarget: Element | null = null;
 
   dialogElement: HTMLDialogElement | null = null;
+
+  // Created eagerly (not tracked) so yielded `m.open` buttons have a stable
+  // portal destination from the very first render; the element is attached to
+  // the DOM by `attachOpenButtonTarget`. Only null in SSR, where ErButton
+  // falls back to rendering inline.
+  openButtonTarget: HTMLSpanElement | null = createOpenButtonTarget();
 
   private openDeferred: Deferred<this> | null = null;
   private closeDeferred: Deferred<this> | null = null;
   // Bumped whenever a new transition (open/close/forced close/destroy) takes
   // over; stale in-flight transitions notice and settle without side effects.
   private transitionId = 0;
-  private holdsScrollLock = false;
+  // The name this instance was registered under; name changes after
+  // registration do not re-key the registry.
+  private registeredName: string | null = null;
+  // Whether open() has ever actually started a transition; used to scope the
+  // "close before open" warning.
+  private hasOpened = false;
+  private readonly testingAnimationDisabled: boolean;
 
   constructor(owner: Owner, args: EmberRemodalArgs) {
     super(owner, args);
+    this.testingAnimationDisabled = this.resolveTestingAnimationDisabled(owner);
     if (this.forService) {
-      this.remodal.register(this.name, this);
+      this.registeredName = this.name;
+      this.remodal.register(this.registeredName, this);
     }
   }
 
   override willDestroy(): void {
     super.willDestroy();
     this.transitionId += 1;
-    if (this.forService) {
-      this.remodal.unregister(this.name, this);
+    if (this.registeredName !== null) {
+      this.remodal.unregister(this.registeredName, this);
     }
+    this.setState('closed');
     if (this.dialogElement?.open) {
       this.dialogElement.close();
     }
-    this.releaseLock();
     this.settlePendingTransitions();
   }
 
-  // --- option resolution: serviceOverrides → args → @options → default ---
-
-  private option<K extends keyof EmberRemodalOptions>(
-    key: K,
-  ): EmberRemodalOptions[K] {
-    return (
-      this.serviceOverrides?.[key] ?? this.args[key] ?? this.args.options?.[key]
-    );
-  }
-
-  get name(): string {
-    return this.option('name') ?? 'ember-remodal';
-  }
-
-  get title() {
-    return this.option('title');
-  }
-
-  get text() {
-    return this.option('text');
-  }
-
-  get confirmButton() {
-    return this.option('confirmButton');
-  }
-
-  get cancelButton() {
-    return this.option('cancelButton');
-  }
-
-  get openButton() {
-    return this.option('openButton');
-  }
-
-  get openLink() {
-    return this.option('openLink');
-  }
-
-  get linkButton() {
-    return this.option('linkButton');
-  }
-
-  get forService(): boolean {
-    return this.option('forService') ?? false;
-  }
-
-  get dataTestId() {
-    return this.option('dataTestId');
-  }
-
-  get modifier(): string {
-    return this.option('modifier') ?? '';
-  }
-
-  get modalClasses() {
-    return this.option('modalClasses');
-  }
-
-  get buttonClasses() {
-    return this.option('buttonClasses');
-  }
-
-  get outerButtonClasses() {
-    return this.option('outerButtonClasses');
-  }
-
-  get innerButtonClasses() {
-    return this.option('innerButtonClasses');
-  }
-
-  get openButtonClasses() {
-    return this.option('openButtonClasses');
-  }
-
-  get openLinkClasses() {
-    return this.option('openLinkClasses');
-  }
-
-  get cancelButtonClasses() {
-    return this.option('cancelButtonClasses');
-  }
-
-  get confirmButtonClasses() {
-    return this.option('confirmButtonClasses');
-  }
-
-  get closeOnEscape(): boolean {
-    return this.option('closeOnEscape') ?? true;
-  }
-
-  get closeOnCancel(): boolean {
-    return this.option('closeOnCancel') ?? true;
-  }
-
-  get closeOnConfirm(): boolean {
-    return this.option('closeOnConfirm') ?? true;
-  }
-
-  get closeOnOutsideClick(): boolean {
-    return this.option('closeOnOutsideClick') ?? true;
-  }
-
-  get disableForeground(): boolean {
-    return this.option('disableForeground') ?? false;
-  }
-
-  get disableNativeClose(): boolean {
-    return this.option('disableNativeClose') ?? this.disableForeground;
-  }
-
-  get disableAnimation(): boolean {
-    if (this.option('disableAnimation')) {
-      return true;
-    }
+  private resolveTestingAnimationDisabled(owner: Owner): boolean {
     try {
-      const owner = getOwner(this) as unknown as
+      const resolverOwner = owner as unknown as
         { resolveRegistration?: (name: string) => unknown } | undefined;
-      const config = owner?.resolveRegistration?.('config:environment') as
+      const config = resolverOwner?.resolveRegistration?.(
+        'config:environment',
+      ) as
         | {
             environment?: string;
             'ember-remodal'?: { disableAnimationWhileTesting?: boolean };
@@ -285,6 +198,60 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     }
   }
 
+  // --- option resolution: serviceOverrides → @options → args → default ---
+  // (matches 2.x, where service opts and the options hash overwrote direct
+  // attrs via setProperties)
+
+  opt = <K extends keyof EmberRemodalOptions>(
+    key: K,
+  ): EmberRemodalOptions[K] => {
+    return (
+      this.serviceOverrides?.[key] ?? this.args.options?.[key] ?? this.args[key]
+    );
+  };
+
+  get name(): string {
+    return this.opt('name') ?? 'ember-remodal';
+  }
+
+  get forService(): boolean {
+    return this.opt('forService') ?? false;
+  }
+
+  get modifier(): string {
+    return this.opt('modifier') ?? '';
+  }
+
+  get closeOnEscape(): boolean {
+    return this.opt('closeOnEscape') ?? true;
+  }
+
+  get closeOnCancel(): boolean {
+    return this.opt('closeOnCancel') ?? true;
+  }
+
+  get closeOnConfirm(): boolean {
+    return this.opt('closeOnConfirm') ?? true;
+  }
+
+  get closeOnOutsideClick(): boolean {
+    return this.opt('closeOnOutsideClick') ?? true;
+  }
+
+  get disableForeground(): boolean {
+    return this.opt('disableForeground') ?? false;
+  }
+
+  get disableNativeClose(): boolean {
+    return this.opt('disableNativeClose') ?? this.disableForeground;
+  }
+
+  get disableAnimation(): boolean {
+    return (
+      (this.opt('disableAnimation') ?? false) || this.testingAnimationDisabled
+    );
+  }
+
   get animationState(): string {
     return this.disableAnimation ? 'disable-animation' : '';
   }
@@ -294,7 +261,9 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
   }
 
   get isOpen(): boolean {
-    return this.state === 'opening' || this.state === 'opened';
+    // Deliberately includes 'closing' so lazily-rendered content survives the
+    // closing animation instead of vanishing the instant close() is called.
+    return this.state !== 'closed';
   }
 
   // --- element capture modifiers ---
@@ -308,22 +277,12 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     };
   });
 
-  captureOpenButtonTarget = modifier((element: Element) => {
-    // Deferred to a microtask: the tracked target may already have been
-    // consumed by yielded `m.open` buttons during this same render pass, and
-    // writing it synchronously would trigger the backtracking-rerender
-    // assertion. The waiter keeps `settled()` reliable in tests.
-    void waitForPromise(
-      Promise.resolve().then(() => {
-        if (!this.isDestroying) {
-          this.openButtonTarget = element;
-        }
-      }),
-    );
+  attachOpenButtonTarget = modifier((element: Element) => {
+    if (this.openButtonTarget) {
+      element.appendChild(this.openButtonTarget);
+    }
     return () => {
-      if (this.openButtonTarget === element) {
-        this.openButtonTarget = null;
-      }
+      this.openButtonTarget?.remove();
     };
   });
 
@@ -339,14 +298,28 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     if (this.args.onBeforeOpen?.() === false) {
       return this;
     }
+    if (!this.dialogElement) {
+      // e.g. service.open() during the initial render pass, before our
+      // <dialog> has been inserted; give rendering a few frames to catch up.
+      await waitForPromise(this.waitForDialogElement());
+    }
+    if (this.isDestroying) {
+      return this;
+    }
     const dialog = this.dialogElement;
     if (!dialog) {
+      warn(
+        'ember-remodal: "open" was called, but the modal\'s <dialog> element never rendered, so there is nothing to open. The returned promise will immediately resolve.',
+        false,
+        { id: 'ember-remodal.missing-dialog-element' },
+      );
       return this;
     }
 
     const deferred = defer<this>();
     this.openDeferred = deferred;
     const runId = ++this.transitionId;
+    this.hasOpened = true;
 
     if (this.state === 'closing') {
       // Interrupt the in-flight close: cancelling its animations wakes its
@@ -357,16 +330,15 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     if (!dialog.open) {
       dialog.showModal();
     }
-    this.acquireLock();
-    this.state = 'opening';
+    this.setState('opening');
 
-    await this.waitForTransition(dialog);
+    await this.animationsSettled(dialog, runId);
 
     if (this.openDeferred === deferred) {
       this.openDeferred = null;
     }
     if (this.transitionId === runId && !this.isDestroying) {
-      this.state = 'opened';
+      this.setState('opened');
       this.args.onOpen?.();
     }
     deferred.resolve(this);
@@ -375,8 +347,10 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
 
   close = async (reason?: CloseReason): Promise<this> => {
     if (this.state === 'closed') {
-      console.warn(
+      warn(
         'ember-remodal: You called "close" on a modal that has not yet been opened. This is not a big deal, but I thought you should know. The returned promise will immediately resolve.',
+        this.hasOpened,
+        { id: 'ember-remodal.close-called-on-uninitialized-modal' },
       );
       return this;
     }
@@ -396,18 +370,15 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
       // Interrupt the in-flight open; its continuation settles itself.
       this.cancelAnimations(dialog);
     }
-    this.state = 'closing';
+    this.setState('closing');
 
-    await this.waitForTransition(dialog);
+    await this.animationsSettled(dialog, runId);
 
     if (this.closeDeferred === deferred) {
       this.closeDeferred = null;
     }
     if (this.transitionId === runId && !this.isDestroying) {
-      this.state = 'closed';
-      dialog.close();
-      this.releaseLock();
-      this.args.onClose?.(reason);
+      this.finalizeClose(reason);
     }
     deferred.resolve(this);
     return deferred.promise;
@@ -448,9 +419,9 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     void this.cancel();
   };
 
-  handleOpenClick = (event: Event): void => {
+  handleOpenClick = (event?: Event): void => {
     // Open triggers may render as `<a href="#">`; never navigate.
-    event.preventDefault();
+    event?.preventDefault();
     void this.open();
   };
 
@@ -472,29 +443,56 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     if (this.isDestroying || this.state === 'closed') {
       return;
     }
+    // The native `close` event is dispatched from a QUEUED task, so it can
+    // arrive after a newer open() has already re-opened the dialog. If the
+    // dialog is natively open again, this event is stale; a genuine external
+    // close always leaves `dialog.open === false`.
+    if (!this.dialogElement || this.dialogElement.open) {
+      return;
+    }
     // The dialog closed without going through close() — e.g. a
     // `<form method="dialog">` submission inside user content, or a browser
     // force-close that ignored our cancel preventDefault. Re-sync state.
     this.transitionId += 1;
-    this.state = 'closed';
-    this.releaseLock();
-    this.settlePendingTransitions();
-    this.args.onClose?.();
+    this.finalizeClose();
   };
 
   // --- internals ---
 
-  private acquireLock(): void {
-    if (!this.holdsScrollLock) {
-      this.holdsScrollLock = true;
-      acquireScrollLock();
+  // The single funnel for state writes: acquires the scroll lock on the
+  // closed → non-closed edge and releases it on the non-closed → closed edge,
+  // so lock bookkeeping can never drift from the state machine.
+  private setState(next: ModalState): void {
+    const previous = this.state;
+    if (next === previous) {
+      return;
+    }
+    const wasClosed = previous === 'closed';
+    const willBeClosed = next === 'closed';
+    this.state = next;
+    if (wasClosed && !willBeClosed) {
+      acquireScrollLock(this);
+    } else if (!wasClosed && willBeClosed) {
+      releaseScrollLock(this);
     }
   }
 
-  private releaseLock(): void {
-    if (this.holdsScrollLock) {
-      this.holdsScrollLock = false;
-      releaseScrollLock();
+  // Shared teardown for every way a modal ends up closed (close()'s success
+  // path and an external/native dialog close). Sets state (which releases the
+  // scroll lock) BEFORE closing the native dialog, so the queued native
+  // `close` event hits handleDialogClose's state guard.
+  private finalizeClose(reason?: CloseReason): void {
+    this.setState('closed');
+    if (this.dialogElement?.open) {
+      this.dialogElement.close();
+    }
+    this.settlePendingTransitions();
+    this.args.onClose?.(reason);
+  }
+
+  private async waitForDialogElement(): Promise<void> {
+    for (let i = 0; i < 10 && !this.dialogElement && !this.isDestroying; i++) {
+      await nextFrame();
     }
   }
 
@@ -507,11 +505,19 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
   }
 
   private ownAnimations(dialog: HTMLDialogElement): Animation[] {
-    // Only wait on the wrapper/backdrop and card animations; user content may
-    // legitimately contain infinite animations (e.g. spinners) whose
-    // `finished` promise never settles.
+    // Only wait on our own CSS animations (the `remodal-` keyframes) targeting
+    // the wrapper/backdrop or the card. User content — and even consumer
+    // classes applied to the card via @modalClasses — may legitimately carry
+    // infinite animations (e.g. spinners) whose `finished` promise never
+    // settles; waiting on those would hang open()/close() forever.
     const card = dialog.querySelector('.remodal');
     return dialog.getAnimations({ subtree: true }).filter((animation) => {
+      if (
+        !(animation instanceof CSSAnimation) ||
+        !animation.animationName.startsWith('remodal-')
+      ) {
+        return false;
+      }
       const target =
         animation.effect instanceof KeyframeEffect
           ? animation.effect.target
@@ -526,62 +532,77 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     }
   }
 
-  private async waitForTransition(dialog: HTMLDialogElement): Promise<void> {
-    await waitForPromise(this.animationsSettled(dialog));
-  }
-
-  private async animationsSettled(dialog: HTMLDialogElement): Promise<void> {
-    // Two frames so the state-class change has applied and CSS animations
-    // have actually started before we collect them.
-    await nextFrame();
-    await nextFrame();
-    const animations = this.ownAnimations(dialog);
-    if (animations.length > 0) {
-      // allSettled: cancelled animations reject their `finished` promise.
-      await Promise.allSettled(animations.map((a) => a.finished));
+  private animationsSettled(
+    dialog: HTMLDialogElement,
+    runId: number,
+  ): Promise<void> {
+    if (this.disableAnimation) {
+      return Promise.resolve();
     }
+    // The waiter keeps `settled()` (and `await click(…)`) reliable in tests.
+    return waitForPromise(
+      (async () => {
+        // Two frames so the state-class change has applied and CSS animations
+        // have actually started before we collect them. Bail after each await
+        // if a newer transition has taken over, so a superseded transition
+        // never collects or waits on its successor's animations.
+        await nextFrame();
+        if (this.transitionId !== runId || this.isDestroying) {
+          return;
+        }
+        await nextFrame();
+        if (this.transitionId !== runId || this.isDestroying) {
+          return;
+        }
+        const animations = this.ownAnimations(dialog);
+        if (animations.length > 0) {
+          // allSettled: cancelled animations reject their `finished` promise.
+          await Promise.allSettled(animations.map((a) => a.finished));
+        }
+      })(),
+    );
   }
 
   <template>
     <span
       class="remodal-component"
-      data-test-id={{this.dataTestId}}
+      data-test-id={{this.opt "dataTestId"}}
       ...attributes
     >
-      {{#if this.linkButton}}
+      {{#if (this.opt "linkButton")}}
         <a
           href="#"
           class="ember-remodal outer link text
-            {{this.buttonClasses}}
-            {{this.outerButtonClasses}}"
+            {{this.opt 'buttonClasses'}}
+            {{this.opt 'outerButtonClasses'}}"
           data-test-id="linkButton"
           {{on "click" this.handleOpenClick}}
-        >{{this.linkButton}}</a>
-      {{else if this.openLink}}
+        >{{this.opt "linkButton"}}</a>
+      {{else if (this.opt "openLink")}}
         <a
           href="#"
           class="ember-remodal outer link text
-            {{this.buttonClasses}}
-            {{this.outerButtonClasses}}
-            {{this.openLinkClasses}}"
+            {{this.opt 'buttonClasses'}}
+            {{this.opt 'outerButtonClasses'}}
+            {{this.opt 'openLinkClasses'}}"
           data-test-id="openLink"
           {{on "click" this.handleOpenClick}}
-        >{{this.openLink}}</a>
-      {{else if this.openButton}}
+        >{{this.opt "openLink"}}</a>
+      {{else if (this.opt "openButton")}}
         <button
           type="button"
           class="ember-remodal outer open button
-            {{this.buttonClasses}}
-            {{this.outerButtonClasses}}
-            {{this.openButtonClasses}}"
+            {{this.opt 'buttonClasses'}}
+            {{this.opt 'outerButtonClasses'}}
+            {{this.opt 'openButtonClasses'}}"
           data-test-id="openButton"
           {{on "click" this.handleOpenClick}}
-        >{{this.openButton}}</button>
+        >{{this.opt "openButton"}}</button>
       {{/if}}
 
       <span
-        class="ember-remodal-open-button-target"
-        {{this.captureOpenButtonTarget}}
+        class="ember-remodal-open-button-target-host"
+        {{this.attachOpenButtonTarget}}
       ></span>
 
       {{! The wrapper click handler only detects clicks on the backdrop area
@@ -593,7 +614,7 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
         class="remodal-wrapper
           {{this.stateClass}}
           {{this.modifier}}
-          {{if this.disableAnimation 'disable-animation'}}"
+          {{this.animationState}}"
         data-test-id="modalWrapper"
         {{on "click" this.handleWrapperClick}}
         {{on "cancel" this.handleNativeCancel}}
@@ -609,7 +630,7 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
             {{this.animationState}}
             window
             {{if this.disableForeground 'invisible'}}
-            {{this.modalClasses}}"
+            {{this.opt 'modalClasses'}}"
           data-test-id="modalWindow"
         >
           {{#unless this.disableNativeClose}}
@@ -622,18 +643,18 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
             ></button>
           {{/unless}}
 
-          {{#if this.title}}
+          {{#if (this.opt "title")}}
             <h2
               class="ember-remodal inner title text"
               data-test-id="title"
-            >{{this.title}}</h2>
+            >{{this.opt "title"}}</h2>
           {{/if}}
 
-          {{#if this.text}}
+          {{#if (this.opt "text")}}
             <p
               class="ember-remodal inner paragraph text"
               data-test-id="text"
-            >{{this.text}}</p>
+            >{{this.opt "text"}}</p>
           {{/if}}
 
           {{#if (has-block)}}
@@ -644,7 +665,9 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
               {{yield
                 (hash
                   open=(component
-                    ErButton destination=this.openButtonTarget onClick=this.open
+                    ErButton
+                    destination=this.openButtonTarget
+                    onClick=this.handleOpenClick
                   )
                   confirm=(component ErButton onClick=this.confirm)
                   cancel=(component ErButton onClick=this.cancel)
@@ -658,28 +681,28 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
             </div>
           {{/if}}
 
-          {{#if this.cancelButton}}
+          {{#if (this.opt "cancelButton")}}
             <button
               type="button"
               class="remodal-cancel ember-remodal inner cancel button
-                {{this.buttonClasses}}
-                {{this.innerButtonClasses}}
-                {{this.cancelButtonClasses}}"
+                {{this.opt 'buttonClasses'}}
+                {{this.opt 'innerButtonClasses'}}
+                {{this.opt 'cancelButtonClasses'}}"
               data-test-id="cancelButton"
               {{on "click" this.cancelAction}}
-            >{{this.cancelButton}}</button>
+            >{{this.opt "cancelButton"}}</button>
           {{/if}}
 
-          {{#if this.confirmButton}}
+          {{#if (this.opt "confirmButton")}}
             <button
               type="button"
               class="remodal-confirm ember-remodal inner confirm button
-                {{this.buttonClasses}}
-                {{this.innerButtonClasses}}
-                {{this.confirmButtonClasses}}"
+                {{this.opt 'buttonClasses'}}
+                {{this.opt 'innerButtonClasses'}}
+                {{this.opt 'confirmButtonClasses'}}"
               data-test-id="confirmButton"
               {{on "click" this.confirmAction}}
-            >{{this.confirmButton}}</button>
+            >{{this.opt "confirmButton"}}</button>
           {{/if}}
         </div>
       </dialog>
