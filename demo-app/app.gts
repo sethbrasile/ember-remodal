@@ -1,6 +1,7 @@
 import EmberApp from 'ember-strict-application-resolver';
 import EmberRouter from '@ember/routing/router';
 import PageTitleService from 'ember-page-title/services/page-title';
+import RemodalService from '#src/services/remodal.ts';
 
 class Router extends EmberRouter {
   location = 'history';
@@ -20,6 +21,7 @@ export class App extends EmberApp {
   modules = {
     './router': Router,
     './services/page-title': PageTitleService,
+    './services/remodal': RemodalService,
     /**
      * NOTE: this glob will import everything matching the glob,
      *     and includes non-services in the services directory.

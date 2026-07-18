@@ -1,6 +1,194 @@
 /**
-* See: https://vite.dev/guide/features.html#css
-*      for features beyond normal CSS that are available to you.
-*
-* This CSS is meant for the demo-app only, and will not be included in the published assets for this library.
-*/
+ * Styles for the demo-app only — not included in the published addon.
+ * The addon's own styles (the ported remodal theme) ship from src/styles/.
+ */
+
+:root {
+  --demo-ink: #2b2e38;
+  --demo-muted: #6b7080;
+  --demo-accent: #2f7dd1;
+  --demo-surface: #ffffff;
+  --demo-bg: #f4f5f7;
+  --demo-border: #e3e5ea;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  color: var(--demo-ink);
+  background: var(--demo-bg);
+  line-height: 1.6;
+}
+
+code {
+  font-family:
+    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  background: #eceef2;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+
+.demo {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.demo-hero {
+  text-align: center;
+  padding: 2.5rem 0 1.5rem;
+}
+
+.demo-hero h1 {
+  margin: 0 0 0.5rem;
+  font-size: 2.6rem;
+  letter-spacing: -0.02em;
+}
+
+.demo-tagline {
+  margin: 0 auto;
+  max-width: 34rem;
+  color: var(--demo-muted);
+  font-size: 1.1rem;
+}
+
+.demo-section {
+  background: var(--demo-surface);
+  border: 1px solid var(--demo-border);
+  border-radius: 10px;
+  padding: 1.5rem 1.75rem 1.75rem;
+  margin-top: 1.5rem;
+}
+
+.demo-section h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.demo-section > p {
+  margin: 0 0 1rem;
+  color: var(--demo-muted);
+}
+
+/* buttons */
+
+.demo-button {
+  display: inline-block;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--demo-accent);
+  border: 0;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.demo-button:hover,
+.demo-button:focus {
+  background: #2668ae;
+}
+
+.demo-button.subtle {
+  color: var(--demo-ink);
+  background: #e8eaef;
+}
+
+.demo-button.subtle:hover,
+.demo-button.subtle:focus {
+  background: #dcdfe6;
+}
+
+.demo-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* inside-modal helpers */
+
+.demo-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.demo-lazy {
+  border-left: 4px solid var(--demo-accent);
+  background: #f0f6fc;
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+/* service demo log */
+
+.demo-log {
+  margin: 1rem 0 0;
+  padding: 0.75rem 1rem 0.75rem 2.25rem;
+  background: #10131a;
+  color: #9fe8a8;
+  border-radius: 8px;
+  font-family:
+    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+}
+
+/* frameless (disableForeground) modal content */
+
+.demo-frameless {
+  color: #fff;
+  font-size: 1.3rem;
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+.demo-frameless-hint {
+  font-size: 0.95rem;
+  opacity: 0.7;
+}
+
+/* a custom remodal theme, applied via @modifier="demo-midnight" */
+
+.remodal.demo-midnight {
+  background: #1b1f2a;
+  color: #e8eaf2;
+  border-radius: 12px;
+}
+
+.remodal.demo-midnight .remodal-close {
+  color: #8b91a5;
+}
+
+.remodal.demo-midnight .remodal-close:hover,
+.remodal.demo-midnight .remodal-close:focus {
+  color: #e8eaf2;
+}
+
+dialog.remodal-wrapper.demo-midnight::backdrop {
+  background: rgba(10, 12, 20, 0.85);
+}
+
+.demo-footer {
+  margin-top: 2.5rem;
+  text-align: center;
+  color: var(--demo-muted);
+  font-size: 0.9rem;
+}
+
+.demo-footer a {
+  color: var(--demo-accent);
+}

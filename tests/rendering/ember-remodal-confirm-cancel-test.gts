@@ -1,0 +1,150 @@
+import { module, test } from 'qunit';
+import { setupRenderingTest } from 'ember-qunit';
+import { render, click, find } from '@ember/test-helpers';
+import EmberRemodal from '#src/components/ember-remodal.gts';
+import type { CloseReason } from '#src/components/ember-remodal.gts';
+
+function dialog(): HTMLDialogElement {
+  return find('[data-test-id="modalWrapper"]') as HTMLDialogElement;
+}
+
+module('Rendering | ember-remodal | confirm and cancel', function (hooks) {
+  setupRenderingTest(hooks);
+
+  test('@confirmButton fires @onConfirm, closes, and reports the reason to @onClose', async function (assert) {
+    let confirmed = 0;
+    const reasons: (CloseReason | undefined)[] = [];
+    const handleConfirm = () => confirmed++;
+    const handleClose = (reason?: CloseReason) => reasons.push(reason);
+
+    await render(
+      <template>
+        <EmberRemodal
+          @openButton="Open"
+          @confirmButton="Confirm"
+          @onConfirm={{handleConfirm}}
+          @onClose={{handleClose}}
+        />
+      </template>,
+    );
+    await click('[data-test-id="openButton"]');
+
+    await click('[data-test-id="confirmButton"]');
+
+    assert.strictEqual(confirmed, 1, '@onConfirm fired once');
+    assert.deepEqual(reasons, ['confirmation'], 'reason passed to @onClose');
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-closed');
+    assert.false(dialog().open);
+  });
+
+  test('@cancelButton fires @onCancel, closes, and reports the reason to @onClose', async function (assert) {
+    let cancelled = 0;
+    const reasons: (CloseReason | undefined)[] = [];
+    const handleCancel = () => cancelled++;
+    const handleClose = (reason?: CloseReason) => reasons.push(reason);
+
+    await render(
+      <template>
+        <EmberRemodal
+          @openButton="Open"
+          @cancelButton="Cancel"
+          @onCancel={{handleCancel}}
+          @onClose={{handleClose}}
+        />
+      </template>,
+    );
+    await click('[data-test-id="openButton"]');
+
+    await click('[data-test-id="cancelButton"]');
+
+    assert.strictEqual(cancelled, 1, '@onCancel fired once');
+    assert.deepEqual(reasons, ['cancellation'], 'reason passed to @onClose');
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-closed');
+    assert.false(dialog().open);
+  });
+
+  test('the yielded m.confirm and m.cancel buttons work', async function (assert) {
+    const events: string[] = [];
+    const handleConfirm = () => events.push('confirm');
+    const handleCancel = () => events.push('cancel');
+
+    await render(
+      <template>
+        <EmberRemodal
+          @onConfirm={{handleConfirm}}
+          @onCancel={{handleCancel}}
+          as |m|
+        >
+          <m.open data-test-open>
+            <button type="button">Open</button>
+          </m.open>
+          <m.confirm data-test-confirm>
+            <button type="button">Yes</button>
+          </m.confirm>
+          <m.cancel data-test-cancel>
+            <button type="button">No</button>
+          </m.cancel>
+        </EmberRemodal>
+      </template>,
+    );
+
+    await click('[data-test-open]');
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
+
+    await click('[data-test-confirm]');
+    assert.deepEqual(events, ['confirm'], '@onConfirm fired');
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-closed');
+
+    await click('[data-test-open]');
+    await click('[data-test-cancel]');
+    assert.deepEqual(events, ['confirm', 'cancel'], '@onCancel fired');
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-closed');
+    assert.false(dialog().open);
+  });
+
+  test('@closeOnConfirm={{false}} fires @onConfirm but keeps the modal open', async function (assert) {
+    let confirmed = 0;
+    const handleConfirm = () => confirmed++;
+
+    await render(
+      <template>
+        <EmberRemodal
+          @openButton="Open"
+          @confirmButton="Confirm"
+          @closeOnConfirm={{false}}
+          @onConfirm={{handleConfirm}}
+        />
+      </template>,
+    );
+    await click('[data-test-id="openButton"]');
+
+    await click('[data-test-id="confirmButton"]');
+
+    assert.strictEqual(confirmed, 1, '@onConfirm fired');
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
+    assert.true(dialog().open, 'modal stayed open');
+  });
+
+  test('@closeOnCancel={{false}} fires @onCancel but keeps the modal open', async function (assert) {
+    let cancelled = 0;
+    const handleCancel = () => cancelled++;
+
+    await render(
+      <template>
+        <EmberRemodal
+          @openButton="Open"
+          @cancelButton="Cancel"
+          @closeOnCancel={{false}}
+          @onCancel={{handleCancel}}
+        />
+      </template>,
+    );
+    await click('[data-test-id="openButton"]');
+
+    await click('[data-test-id="cancelButton"]');
+
+    assert.strictEqual(cancelled, 1, '@onCancel fired');
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
+    assert.true(dialog().open, 'modal stayed open');
+  });
+});

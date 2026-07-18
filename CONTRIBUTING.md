@@ -17,12 +17,11 @@
 
 ## Running tests
 
-- `pnpm test` – Runs the test suite on the current Ember version
-- `pnpm test:watch` – Runs the test suite in "watch mode"
+- `pnpm test` – Runs the test suite in headless Chrome
 
-## Running the test application
+## Running the demo application
 
 - `pnpm start`
-- Visit the test application at [http://localhost:4200](http://localhost:4200).
+- Visit the demo application at [http://localhost:4200](http://localhost:4200).
 
 For more information on using ember-cli, visit [https://cli.emberjs.com/release/](https://cli.emberjs.com/release/).

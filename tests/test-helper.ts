@@ -5,6 +5,7 @@ import { setApplication } from '@ember/test-helpers';
 import { setup } from 'qunit-dom';
 import { start as qunitStart, setupEmberOnerrorValidation } from 'ember-qunit';
 import { setTesting } from '@embroider/macros';
+import RemodalService from '#src/services/remodal.ts';
 
 class Router extends EmberRouter {
   location = 'none';
@@ -14,8 +15,7 @@ class Router extends EmberRouter {
 class TestApp extends EmberApp {
   modules = {
     './router': Router,
-    // add any custom services here
-    // import.meta.glob('./services/*', { eager: true }),
+    './services/remodal': RemodalService,
   };
 }
 
