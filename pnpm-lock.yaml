@@ -8,12 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@ember/test-waiters':
+        specifier: ^4.1.1
+        version: 4.1.2
       '@embroider/addon-shim':
         specifier: ^1.8.9
         version: 1.10.3
       decorator-transforms:
         specifier: ^2.2.2
         version: 2.4.0(@babel/core@7.29.7)
+      ember-modifier:
+        specifier: ^4.2.0
+        version: 4.3.0(@babel/core@7.29.7)
     devDependencies:
       '@babel/core':
         specifier: ^7.25.2
@@ -36,9 +42,6 @@ importers:
       '@ember/test-helpers':
         specifier: ^5.2.1
         version: 5.4.3(@babel/core@7.29.7)
-      '@ember/test-waiters':
-        specifier: ^4.1.1
-        version: 4.1.2
       '@embroider/addon-dev':
         specifier: ^8.1.0
         version: 8.3.1(@glint/template@1.7.8)(rollup@4.62.2)
@@ -2217,6 +2220,9 @@ packages:
     peerDependenciesMeta:
       '@typescript-eslint/parser':
         optional: true
+
+  ember-modifier@4.3.0:
+    resolution: {integrity: sha512-O0rirSLQbGg0VJ/NqoQ4uN1bh2iAekZC/Ykma+FkjCM2ofrO38u+d8n3+AK6uVWeMJmogGX2KL+Is5fofoInJg==}
 
   ember-page-title@9.0.3:
     resolution: {integrity: sha512-fedRHUsvq8tIZgOii8jTrfAyeq+la/9H5eAzhNNwEyzo7nDMmqK2SxsyBUGXprd8fOacsPabLlzlucMi/4mUpA==}
@@ -7032,6 +7038,14 @@ snapshots:
     transitivePeerDependencies:
       - eslint
       - typescript
+
+  ember-modifier@4.3.0(@babel/core@7.29.7):
+    dependencies:
+      '@embroider/addon-shim': 1.10.3
+      decorator-transforms: 2.4.0(@babel/core@7.29.7)
+    transitivePeerDependencies:
+      - '@babel/core'
+      - supports-color
 
   ember-page-title@9.0.3:
     dependencies:

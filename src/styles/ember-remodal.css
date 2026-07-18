@@ -1,0 +1,235 @@
+/*
+ * ember-remodal theme, ported from Remodal v1.1.1 (default theme)
+ * Remodal is (c) 2015 Ilya Makarov (@vodkabears), MIT licensed.
+ * https://github.com/vodkabears/Remodal
+ *
+ * Adapted for the native <dialog> element: the wrapper is the <dialog>
+ * itself and the overlay is its ::backdrop pseudo-element.
+ */
+
+/* scroll lock */
+html.remodal-is-locked {
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* wrapper = the <dialog> itself, full-viewport, transparent; card centers via flex */
+dialog.remodal-wrapper {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  outline: none;
+  padding: 10px;
+  background: transparent;
+  color: inherit;
+  overflow: auto;
+  text-align: center;
+  -webkit-overflow-scrolling: touch;
+}
+
+dialog.remodal-wrapper[open] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* overlay = ::backdrop, remodal's dark slate at 90% */
+dialog.remodal-wrapper::backdrop {
+  background: rgba(43, 46, 56, 0.9);
+}
+
+/* the dialog card — ported verbatim from remodal-default-theme */
+.remodal {
+  position: relative;
+  outline: none;
+  text-size-adjust: 100%;
+  box-sizing: border-box;
+  width: 100%;
+  margin: auto;
+  padding: 35px;
+  transform: translate3d(0, 0, 0);
+  color: #2b2e38;
+  background: #fff;
+}
+
+@media only screen and (min-width: 641px) {
+  .remodal {
+    max-width: 700px;
+  }
+}
+
+/* animations — remodal's exact keyframes, 0.3s fill forwards */
+.remodal.remodal-is-opening {
+  animation: remodal-opening-keyframes 0.3s ease forwards;
+}
+
+.remodal.remodal-is-closing {
+  animation: remodal-closing-keyframes 0.3s ease forwards;
+}
+
+@keyframes remodal-opening-keyframes {
+  from {
+    transform: scale(1.05);
+    opacity: 0;
+  }
+
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes remodal-closing-keyframes {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  to {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+}
+
+dialog.remodal-wrapper.remodal-is-opening::backdrop {
+  animation: remodal-overlay-opening-keyframes 0.3s ease forwards;
+}
+
+dialog.remodal-wrapper.remodal-is-closing::backdrop {
+  animation: remodal-overlay-closing-keyframes 0.3s ease forwards;
+}
+
+@keyframes remodal-overlay-opening-keyframes {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes remodal-overlay-closing-keyframes {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+/* close button — remodal's, top-left 35x35 with × glyph */
+.remodal-close {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  overflow: visible;
+  width: 35px;
+  height: 35px;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s;
+  text-decoration: none;
+  color: #95979c;
+  border: 0;
+  outline: 0;
+  background: transparent;
+}
+
+.remodal-close:hover,
+.remodal-close:focus {
+  color: #2b2e38;
+}
+
+.remodal-close::before {
+  font-family: Arial, "Helvetica CY", "Nimbus Sans L", sans-serif !important;
+  font-size: 25px;
+  line-height: 35px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 35px;
+  content: "\00d7";
+  text-align: center;
+}
+
+/* confirm/cancel buttons — remodal default theme */
+.remodal-confirm,
+.remodal-cancel {
+  font: inherit;
+  display: inline-block;
+  overflow: visible;
+  min-width: 110px;
+  margin: 0;
+  padding: 12px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-align: center;
+  vertical-align: middle;
+  text-decoration: none;
+  border: 0;
+  outline: 0;
+  color: #fff;
+}
+
+.remodal-confirm {
+  background: #81c784;
+}
+
+.remodal-confirm:hover,
+.remodal-confirm:focus {
+  background: #66bb6a;
+}
+
+.remodal-cancel {
+  background: #e57373;
+}
+
+.remodal-cancel:hover,
+.remodal-cancel:focus {
+  background: #ef5350;
+}
+
+.remodal-confirm::-moz-focus-inner,
+.remodal-cancel::-moz-focus-inner,
+.remodal-close::-moz-focus-inner {
+  padding: 0;
+  border: 0;
+}
+
+/* old ember-remodal extras */
+.invisible.remodal.window {
+  background-color: transparent;
+  color: #fff;
+  padding: 0;
+}
+
+.invisible.remodal.window .native.close {
+  color: #fff;
+}
+
+/* animation kill-switch (disableAnimation / disableAnimationWhileTesting) */
+.disable-animation.remodal.remodal-is-opening,
+.disable-animation.remodal.remodal-is-closing,
+dialog.disable-animation.remodal-wrapper.remodal-is-opening::backdrop,
+dialog.disable-animation.remodal-wrapper.remodal-is-closing::backdrop {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .remodal.remodal-is-opening,
+  .remodal.remodal-is-closing,
+  dialog.remodal-wrapper.remodal-is-opening::backdrop,
+  dialog.remodal-wrapper.remodal-is-closing::backdrop {
+    animation: none;
+  }
+}
