@@ -1,27 +1,20 @@
-# See https://help.github.com/ignore-files/ for more about ignoring files.
-
 # compiled output
-/dist
-/tmp
+dist/
+dist-tests/
+declarations/
 
-# dependencies
-/node_modules
-/bower_components
+# from scenarios
+tmp/
+config/optional-features.json
+ember-cli-build.cjs
 
-# misc
-/.sass-cache
-/connect.lock
-/coverage/*
-/libpeerconnection.log
-npm-debug.log*
-yarn-error.log
-testem.log
+# npm/pnpm/yarn pack output
+*.tgz
 
-# ember-try
-.node_modules.ember-try/
-bower.json.ember-try
-package.json.ember-try
+# deps & caches
+node_modules/
+.eslintcache
+.prettiercache
 
-# editor
-remodal.sublime-project
-remodal.sublime-workspace
+# potentially containing secrets
+*.local
