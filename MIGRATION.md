@@ -42,6 +42,28 @@ Remodal's URL-hash tracking (`#modalname` in the address bar) is gone. In an
 Ember app the router owns the URL; if you need URL-driven modals, drive
 `service.open()`/`close()` from a route or query param instead.
 
+### Removed: the service's property aliases
+
+2.x's `remodal` service exposed a grab-bag of properties that aliased onto the
+default modal instance — `service.title`, `service.confirmButton`,
+`service.closeOnEscape`, `service.modifier`, `service.buttonClasses`, and
+several more (see the old `addon/services/remodal.js`). Reading or setting
+these directly (`this.remodal.set('title', 'Are you sure?')`,
+`{{this.remodal.title}}`) only ever worked if a modal happened to be
+registered under the default name; it was never a documented, reliable API.
+
+3.0 drops them entirely. Pass options through `service.open(name, opts)`
+instead:
+
+```js
+// 2.x
+this.remodal.set('title', 'Are you sure?');
+this.remodal.open();
+
+// 3.0
+this.remodal.open('ember-remodal', { title: 'Are you sure?' });
+```
+
 ### Confirm/cancel buttons are now styled
 
 The confirm and cancel buttons now carry the `remodal-confirm` /
@@ -62,6 +84,10 @@ check for visual conflicts with the new defaults, or override
   old wrapper are unnecessary (and have no effect).
 - Focus containment and restoration are handled by the browser's native modal
   behavior.
+- Some browsers (notably Chromium) may force-close a `<dialog>` on a quick
+  double-press of Escape, as part of a built-in abuse-prevention guard, even
+  with `@closeOnEscape={{false}}`. This is a platform limitation, not addon
+  behavior — the modal's internal state stays consistent either way.
 
 ## What stayed the same
 
@@ -76,8 +102,15 @@ check for visual conflicts with the new defaults, or override
 - **The yielded block API**: `m.open`, `m.confirm`, `m.cancel` work exactly as
   before (including portaling of `m.open` out of the dialog).
 - **The `remodal` service**: `open(name, opts?)` and `close(name)`, the same
-  default name (`'ember-remodal'`), the same persistent option overrides, and
-  the same helpful assertion when a modal is not rendered.
+  default name (`'ember-remodal'`), the same persistent option overrides
+  (merged cumulatively across calls, exactly like 2.x's `setProperties`), and
+  the same helpful assertion when a modal is not rendered (in production
+  builds, where the assertion is stripped, `open()`/`close()` reject the
+  returned promise instead — an improvement over 2.x, which threw an
+  unguarded error in that case).
+- **Option precedence**: `@options` wins over individual arguments, and
+  `service.open()` overrides win over both — the same order 2.x resolved
+  options in.
 - **Promise semantics**: `open()`/`close()` resolve with the modal once the
   animation finishes — and now they resolve reliably even for interrupted or
   rapid open/close sequences (2.x issue #44).

@@ -116,14 +116,18 @@ this.remodal
   .then(() => this.remodal.close('wat'));
 ```
 
-Options passed to `open()` override the rendered arguments and persist across
-subsequent opens until replaced. Opening a `name` that is not currently
-rendered throws a helpful assertion.
+Options passed to `open()` override the rendered arguments and `@options`, and
+merge into — rather than replace — any options set by a previous `open()`
+call, so they persist across subsequent opens until the app tears the modal
+down. Opening a `name` that is not currently rendered throws a helpful
+assertion (in dev/test builds) or rejects the returned promise (in production,
+where the assertion is stripped).
 
 ## Options
 
 All options can be passed as individual arguments (`@title="Hi"`) or grouped in
-an `@options` hash. Individual arguments win over `@options`; options passed to
+an `@options` hash. The `@options` hash wins over individual arguments
+(matching 2.x's `setProperties`-based precedence); options passed to
 `service.open()` win over both.
 
 | Option                 | Default                     | Description                                                                    |
@@ -183,6 +187,11 @@ Remodal v1.1.1, MIT) ships with the addon and is applied automatically.
 - Fine-grained class hooks: `modalClasses`, `buttonClasses`,
   `outerButtonClasses`, `innerButtonClasses`, and the per-button variants (see
   the options table).
+- Custom open/close animations are recognized and awaited by `open()`/
+  `close()` only if their CSS `@keyframes` name starts with `remodal-`
+  (matching the built-in `remodal-opening-keyframes`, etc.). This is
+  deliberate: animations on other elements inside your yielded content (a
+  spinner, say) are ignored so they can't hang `open()`/`close()` forever.
 
 ### Disabling animations in tests
 
@@ -208,6 +217,11 @@ if (environment === 'test') {
 - The built-in close button is a real `<button>` with a `title`.
 - All open/close animations are suppressed under
   `prefers-reduced-motion: reduce`.
+- Some browsers (notably Chromium) may force-close a `<dialog>` if Escape is
+  pressed twice in quick succession, as part of a built-in abuse-prevention
+  guard — regardless of `@closeOnEscape={{false}}`. This is a platform
+  limitation, not addon behavior; the modal's internal state stays consistent
+  either way (`@onClose` still fires).
 
 ## Contributing
 

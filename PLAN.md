@@ -131,22 +131,40 @@ A 27-item fix spec was written to `/tmp/claude-0/.../scratchpad/FIXES.md` coveri
 - `CI=1 CHROME_BIN=/opt/pw-browsers/chromium pnpm test` — **green, 56/56 passing** (up from 49; +7 new regression tests, 1 existing test corrected)
 - `pnpm lint:format` and `pnpm lint:publish` — **not re-run this pass**, should be checked in Phase 6 alongside a final full `pnpm lint`
 
-**NOT yet done (still pending — paused here):**
-- Item 26 — `MIGRATION.md` additions: removed service alias properties, production-build rejected-promise behavior change, the Chromium double-Escape platform caveat, explicit statement of `@options` precedence
-- Item 27 — `README.md` additions: custom open/close animations must keep the `remodal-` keyframe-name prefix to be awaited; brief mention of the Escape caveat in the accessibility section
-- A personal review pass over the full fix-pass diff (same rigor as Phase 2/4) — not yet done since this pass was paused before reaching Phase 6
-- Committing and pushing
+**Items 26–27 (✅ done):**
+- `README.md`: fixed the options-precedence description (previously stated the
+  pre-fix, incorrect precedence — corrected to "`@options` wins over
+  individual arguments; `service.open()` wins over both"); clarified that
+  service overrides merge rather than replace; documented that production
+  builds get a rejected promise instead of a bare assertion; added a styling
+  note that custom open/close animations need a `remodal-`-prefixed
+  `@keyframes` name to be awaited; added the Chromium double-Escape caveat to
+  the Accessibility section.
+- `MIGRATION.md`: added a new "Removed: the service's property aliases"
+  breaking-change section (2.x's `service.title`/`service.set(...)`-style
+  aliases are gone — use `service.open(name, opts)`); added the Chromium
+  double-Escape caveat to "under-the-hood differences"; made option
+  precedence and the merge/production-rejection behavior explicit under "What
+  stayed the same".
+- Verified `pnpm format` and `pnpm lint:format` clean after the doc edits.
 
-### Phase 6 — Final verification, commit, push (⬜ not started)
-- Complete Phase 5 items 26–27 (MIGRATION.md / README.md updates).
-- Run the full `pnpm lint` suite (format/hbs/js/types/publish) once more end to end, plus `pnpm build` and the test suite, as a final gate.
-- Review the fix-pass diff personally (same rigor as Phase 2) before committing.
-- Commit (message should reference the review findings fixed, similar style to the two prior commits).
-- Delete this `PLAN.md` before the final push (working notes, not part of the addon) — or ask the user first if they'd like it kept as a design doc.
-- Push to `claude/ember-remodal-modernize-he3lc5` with `git push -u origin claude/ember-remodal-modernize-he3lc5`.
-- Do **not** open a PR unless the user explicitly asks.
+**Explicitly deferred to a future session, per the user:**
+- A personal/adversarial review pass over the Phase 5 fix-pass diff (same
+  rigor as Phase 2/4's 8-angle review) — the user asked to skip this for now.
 
-**Next action when development resumes:** items 26–27 (doc updates), then Phase 6.
+### Phase 6 — Final verification, commit, push (🔶 in progress)
+- Run the full `pnpm lint` suite (format/hbs/js/types/publish) once more end
+  to end, plus `pnpm build` and the test suite, as a final gate. *(Not yet
+  re-run after the doc-only changes in this pass — low risk since no
+  source/test files changed, but worth a final pass before merge.)*
+- ~~Review the fix-pass diff personally~~ — deferred to a future session per
+  the user.
+- Commit and push to `claude/ember-remodal-modernize-he3lc5`.
+- Open a **draft** PR per the user's request (2026-07-18) — normally this
+  addon workflow does not open PRs unless explicitly asked; the user asked
+  for one this time, as a draft pending review.
+
+**Next action:** commit + push these doc changes, then open the draft PR.
 
 ## Commits so far
 
