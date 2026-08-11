@@ -176,9 +176,14 @@ class ServiceDemo extends Component {
         removes the white card so your content floats on the backdrop — lightbox
         style.
       </p>
+      {{! A frameless modal has no visible title, so @ariaLabel is what gives its
+          <dialog> an accessible name. Without it the addon warns
+          (ember-remodal.modal-without-accessible-name) and screen readers
+          announce nothing but "dialog". }}
       <EmberRemodal
         @openButton="Open frameless modal"
         @openButtonClasses="demo-button"
+        @ariaLabel="Frameless modal"
         @disableForeground={{true}}
       >
         <div class="demo-frameless">
