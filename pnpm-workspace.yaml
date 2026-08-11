@@ -1,5 +1,9 @@
 allowBuilds:
   esbuild: false
+  # Reached only by the @embroider/try compat scenarios (5.8 / 5.12), whose
+  # ember-cli chain resolves core-js@2. pnpm errors on any build-script package
+  # that isn't listed here, which failed the ember-lts-5.8 job at install time.
+  core-js: false
 
 # Docs: https://pnpm.io/settings
 # https://github.com/emberjs/rfcs/pull/907
