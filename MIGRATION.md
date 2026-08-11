@@ -319,7 +319,7 @@ development (`ember-remodal.modal-without-accessible-name`).
 Every 2.x class hook still exists — see the
 [styling table in the README](README.md#styling-hooks) — and all of the
 `remodal-*` names are preserved. The ported theme does deviate from upstream
-Remodal in eight places, each for a WCAG or correctness reason, and each
+Remodal in nine places, each for a WCAG or correctness reason, and each
 revertible. They are listed in [CHANGELOG.md](CHANGELOG.md#fixed); the ones
 most likely to be visible in a 2.x app:
 
@@ -327,6 +327,9 @@ most likely to be visible in a 2.x app:
   reaches AA contrast. Set `--ember-remodal-confirm-background` and
   `--ember-remodal-cancel-background` back to `#81c784` / `#e57373` (and the
   `-hover` variants to `#66bb6a` / `#ef5350`) for upstream fidelity.
+- The close button's × glyph is darker (`#767981` rather than `#95979c`) so it
+  reaches 3:1 against the card. Set `--ember-remodal-close-color` back for
+  upstream fidelity.
 - The dialog, card and buttons draw `:focus-visible` rings; upstream set
   `outline: none` on all of them.
 - `@disableForeground`'s styling hangs off `ember-remodal-invisible` rather than

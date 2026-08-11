@@ -9,20 +9,44 @@ function missingModalMessage(name: string): string {
 }
 
 export default class RemodalService extends Service {
-  private registry = new Map<string, EmberRemodal>();
+  // A stack per name, not a single entry: duplicate names are a mistake worth
+  // warning about, but the last-writer-wins Map they used to share meant
+  // destroying the winner left every earlier modal permanently unreachable —
+  // routinely the case when a route renders its own copy of a modal the
+  // application template already renders. The newest registration still wins
+  // lookups; unregistering it uncovers the one it shadowed.
+  private registry = new Map<string, EmberRemodal[]>();
 
   register(name: string, modal: EmberRemodal): void {
-    const existing = this.registry.get(name);
+    const stack = this.registry.get(name);
     warn(
-      `ember-remodal: a modal is already registered with the service under the name "${name}". The most recently rendered one wins, and destroying it will leave the other unreachable — give each service-driven modal a unique "name".`,
-      existing === undefined || existing === modal,
+      `ember-remodal: a modal is already registered with the service under the name "${name}". The most recently rendered one wins lookups until it is destroyed — give each service-driven modal a unique "name".`,
+      stack === undefined || stack.length === 0 || stack.at(-1) === modal,
       { id: 'ember-remodal.duplicate-service-name' },
     );
-    this.registry.set(name, modal);
+    if (stack === undefined) {
+      this.registry.set(name, [modal]);
+    } else if (stack.at(-1) !== modal) {
+      // Re-registering an instance already on top is a no-op; anything else
+      // goes on top and shadows what was there.
+      stack.push(modal);
+    }
   }
 
   unregister(name: string, modal: EmberRemodal): void {
-    if (this.registry.get(name) === modal) {
+    const stack = this.registry.get(name);
+    if (!stack) {
+      return;
+    }
+    // Search rather than pop: a shadowed modal can be torn down before the one
+    // shadowing it (independent `{{#if}}`s, a route exiting under the
+    // application template), and that must not evict the live entry.
+    const index = stack.lastIndexOf(modal);
+    if (index === -1) {
+      return;
+    }
+    stack.splice(index, 1);
+    if (stack.length === 0) {
       this.registry.delete(name);
     }
   }
@@ -31,7 +55,7 @@ export default class RemodalService extends Service {
     name = 'ember-remodal',
     opts?: EmberRemodalOptions,
   ): Promise<EmberRemodal> {
-    const modal = this.registry.get(name);
+    const modal = this.registry.get(name)?.at(-1);
     if (!modal) {
       return Promise.reject(new Error(missingModalMessage(name)));
     }
@@ -42,7 +66,7 @@ export default class RemodalService extends Service {
   }
 
   close(name = 'ember-remodal'): Promise<EmberRemodal> {
-    const modal = this.registry.get(name);
+    const modal = this.registry.get(name)?.at(-1);
     if (!modal) {
       return Promise.reject(new Error(missingModalMessage(name)));
     }

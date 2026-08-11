@@ -323,6 +323,33 @@ module('Rendering | ember-remodal theme', function (hooks) {
       }
     });
 
+    test('the close glyph clears WCAG 1.4.11 against the card', async function (assert) {
+      // Upstream's #95979c measured 2.92:1 on the white card. The glyph is the
+      // only thing identifying the control visually, so it is a graphical
+      // object under 1.4.11 and needs 3:1 — and at 25px it clears 1.4.3's
+      // large-text 3:1 too, whichever way you classify it.
+      await render(
+        <template>
+          <EmberRemodal @openButton="Open" @disableAnimation={{true}} />
+        </template>,
+      );
+      await click('[data-test-id="openButton"]');
+
+      const close = find('[data-test-id="nativeClose"]')!;
+      const style = getComputedStyle(close);
+      const card = getComputedStyle(find('[data-test-id="modalWindow"]')!);
+      const ratio = contrastRatio(style.color, card.backgroundColor);
+
+      assert.ok(
+        ratio >= 3,
+        `close glyph: ${style.color} on ${card.backgroundColor} = ${ratio.toFixed(2)}:1 (>= 3:1)`,
+      );
+      assert.ok(
+        parseFloat(getComputedStyle(close, '::before').fontSize) >= 24,
+        'the glyph is large text (25px), so 3:1 is the right threshold',
+      );
+    });
+
     test('hover/focus backgrounds also clear AA', function (assert) {
       // The hover colours are what a pointer user actually reads text against.
       const probe = document.createElement('div');

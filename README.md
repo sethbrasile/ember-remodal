@@ -158,7 +158,10 @@ export default class extends Component {
 ```
 
 Give each service-driven modal its own `@name`. Two modals registered under one
-name is last-writer-wins, and the addon warns about it in development.
+name is last-writer-wins — the most recently rendered one answers `open()` and
+`close()` — and the addon warns about it in development. Registrations are
+stacked rather than overwritten, so destroying the winner uncovers the modal it
+was shadowing instead of leaving the name unreachable.
 
 ## Promises and state
 
@@ -323,7 +326,7 @@ lands inside the dialog, and `::backdrop` inherits only from the dialog itself.
 | `--ember-remodal-color`                     | `#2b2e38`                 |
 | `--ember-remodal-color-scheme`              | `light`                   |
 | `--ember-remodal-overlay`                   | `rgba(43, 46, 56, 0.9)`   |
-| `--ember-remodal-close-color`               | `#95979c`                 |
+| `--ember-remodal-close-color`               | `#767981`                 |
 | `--ember-remodal-close-color-hover`         | `#2b2e38`                 |
 | `--ember-remodal-button-color`              | `#fff`                    |
 | `--ember-remodal-confirm-background`        | `#2e7d32`                 |
@@ -546,7 +549,7 @@ filtered by id with `registerWarnHandler`.
 | `ember-remodal.modal-without-accessible-name`        | A modal is opened with neither `@title` nor `@ariaLabel`                                        |
 | `ember-remodal.no-keyboard-exit`                     | A modal is opened with `@closeOnEscape={{false}}` and contains no focusable control              |
 | `ember-remodal.er-button-without-focusable-content`  | An `<m.open>` / `<m.confirm>` / `<m.cancel>` block contains no focusable control                 |
-| `ember-remodal.duplicate-service-name`               | Two `@forService` modals register under the same `@name` (last writer wins)                     |
+| `ember-remodal.duplicate-service-name`               | Two `@forService` modals register under the same `@name` (the newest wins until it is destroyed) |
 | `ember-remodal.close-called-on-uninitialized-modal`  | `close()` is called on a modal that has never been opened. Harmless; the promise resolves         |
 
 ## Contributing

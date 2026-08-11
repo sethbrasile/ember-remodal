@@ -173,6 +173,10 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
   measured 2.01:1 and 2.99:1 against white text. They are now `#2e7d32` /
   `#c62828` (5.13:1 and 5.62:1), hovers `#1b5e20` / `#b71c1c`. Revertible via
   `--ember-remodal-confirm-background` and `--ember-remodal-cancel-background`.
+- The close button's **× glyph failed WCAG 1.4.11**: upstream's `#95979c`
+  measured 2.92:1 against the white card, and the glyph is the only visual
+  identification the control has. It is now `#767981` (4.35:1). Revertible via
+  `--ember-remodal-close-color`.
 - **`outline: none` / `outline: 0`** came off the dialog, the card and all three
   buttons, where it had left a 1.18:1 background swap as the only focus cue and
   nothing at all in the `@disableForeground` path. Focus is now drawn with
@@ -217,7 +221,10 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
 - A modal whose `<dialog>` never renders **rejects** instead of resolving
   indistinguishably from success.
 - A dev warning (`ember-remodal.duplicate-service-name`) fires when two
-  `@forService` modals share a `@name`. The behavior is still last-writer-wins.
+  `@forService` modals share a `@name`. Lookups are still last-writer-wins, but
+  the registry now **stacks** registrations instead of overwriting them, so
+  destroying the newest uncovers the one it shadowed rather than leaving the
+  name unreachable for the rest of the session.
 - Two unterminated `{{! template-lint-disable no-invalid-interactive }}`
   comments had suppressed the rule across the whole card subtree and every
   yielded block.

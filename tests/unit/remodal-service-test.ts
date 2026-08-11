@@ -106,7 +106,7 @@ module('Unit | Service | remodal', function (hooks) {
     assert.strictEqual(result, asModal(fake));
   });
 
-  test('registering the same name again replaces the previous modal', async function (assert) {
+  test('registering the same name again shadows the previous modal', async function (assert) {
     const service = lookupService(this);
     const first = new FakeModal();
     const second = new FakeModal();
@@ -118,6 +118,63 @@ module('Unit | Service | remodal', function (hooks) {
 
     assert.strictEqual(first.openCalls, 0);
     assert.strictEqual(second.openCalls, 1);
+  });
+
+  test('unregistering the shadowing modal uncovers the one it shadowed', async function (assert) {
+    // The registry used to be one entry per name, so tearing down the winner
+    // of a duplicate-name collision left the earlier modal registered nowhere:
+    // every later `service.open('a')` rejected even though a modal named "a"
+    // was still on screen.
+    const service = lookupService(this);
+    const first = new FakeModal();
+    const second = new FakeModal();
+
+    service.register('a', asModal(first));
+    service.register('a', asModal(second));
+    service.unregister('a', asModal(second));
+
+    const result = await service.open('a');
+
+    assert.strictEqual(result, asModal(first), 'resolves with the survivor');
+    assert.strictEqual(first.openCalls, 1, 'the shadowed modal is reachable');
+    assert.strictEqual(second.openCalls, 0, 'the destroyed one is not opened');
+  });
+
+  test('a shadowed modal can be torn down without evicting the live one', async function (assert) {
+    // Destruction order is not registration order: a modal in an exiting route
+    // can outlive one in the application template, or vice versa.
+    const service = lookupService(this);
+    const first = new FakeModal();
+    const second = new FakeModal();
+
+    service.register('a', asModal(first));
+    service.register('a', asModal(second));
+    service.unregister('a', asModal(first));
+
+    await service.open('a');
+    assert.strictEqual(second.openCalls, 1, 'the top of the stack still wins');
+
+    service.unregister('a', asModal(second));
+    await assert.rejects(
+      service.open('a'),
+      /can not be opened because it is not rendered/,
+      'the name is gone once every registration is unregistered',
+    );
+  });
+
+  test('re-registering the modal already on top does not stack a duplicate', async function (assert) {
+    const service = lookupService(this);
+    const fake = new FakeModal();
+
+    service.register('a', asModal(fake));
+    service.register('a', asModal(fake));
+    service.unregister('a', asModal(fake));
+
+    await assert.rejects(
+      service.open('a'),
+      /can not be opened because it is not rendered/,
+      'one unregister is enough to clear one instance',
+    );
   });
 
   test('unregister() only removes the entry when the instance matches', async function (assert) {

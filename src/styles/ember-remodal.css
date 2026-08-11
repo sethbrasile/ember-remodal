@@ -8,6 +8,7 @@
  *
  * Deliberate deviations from upstream fidelity (see CHANGELOG):
  *   - confirm/cancel backgrounds darkened to reach WCAG 1.4.3 AA on white text
+ *   - the close glyph darkened to reach WCAG 1.4.11 against the card
  *   - `outline: none` on the dialog/card/buttons replaced with :focus-visible
  *     rings (WCAG 2.4.7)
  *   - `touch-action: none` dropped from the scroll lock, `transform:
@@ -31,7 +32,11 @@
   --ember-remodal-color: #2b2e38;
   --ember-remodal-color-scheme: light;
   --ember-remodal-overlay: rgba(43, 46, 56, 0.9);
-  --ember-remodal-close-color: #95979c;
+  /* #767981 measures 4.35:1 against the white card; upstream's #95979c measured
+     2.92:1 and fails WCAG 1.4.11 for the × glyph (a graphical object, since the
+     alt-text `content` form keeps it out of the accessible name). Set this back
+     to #95979c for pixel fidelity at the cost of the contrast failure. */
+  --ember-remodal-close-color: #767981;
   --ember-remodal-close-color-hover: #2b2e38;
   --ember-remodal-button-color: #fff;
 
@@ -236,7 +241,7 @@ dialog.remodal-wrapper.remodal-is-closing::backdrop {
   cursor: pointer;
   transition: color 0.2s;
   text-decoration: none;
-  color: var(--ember-remodal-close-color, #95979c);
+  color: var(--ember-remodal-close-color, #767981);
   border: 0;
   background: transparent;
 }
