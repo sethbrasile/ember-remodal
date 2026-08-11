@@ -8,9 +8,13 @@
     "dialog",
     "remodal"
   ],
-  "repository": "https://github.com/sethbrasile/ember-remodal",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sethbrasile/ember-remodal.git"
+  },
   "license": "MIT",
   "author": "Seth Brasile <seth.brasile@gmail.com>",
+  "type": "module",
   "imports": {
     "#src/*": "./src/*"
   },
@@ -20,11 +24,15 @@
       "default": "./dist/index.js"
     },
     "./addon-main.js": "./addon-main.cjs",
+    "./package.json": "./package.json",
     "./*.css": "./dist/*.css",
     "./*": {
       "types": "./declarations/*.d.ts",
       "default": "./dist/*.js"
     }
+  },
+  "publishConfig": {
+    "tag": "beta"
   },
   "files": [
     "addon-main.cjs",
@@ -42,7 +50,7 @@
     "lint:hbs:fix": "ember-template-lint . --fix --no-error-on-unmatched-pattern",
     "lint:js": "eslint . --cache",
     "lint:js:fix": "eslint . --fix",
-    "lint:publish": "pnpm build && publint run --level error",
+    "lint:publish": "pnpm build && publint run && attw --pack . --profile node16 --ignore-rules cjs-resolves-to-esm --exclude-entrypoints ./addon-main.js",
     "lint:types": "ember-tsc --noEmit",
     "prepack": "rollup --config",
     "start": "vite dev",
@@ -51,6 +59,7 @@
   "dependencies": {
     "@ember/test-waiters": "^4.1.1",
     "@embroider/addon-shim": "^1.8.9",
+    "@glint/template": "^1.6.1",
     "decorator-transforms": "^2.2.2",
     "ember-modifier": "^4.2.0"
   },
@@ -58,22 +67,23 @@
     "ember-source": ">= 5.8.0"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
     "@babel/core": "^7.25.2",
     "@babel/eslint-parser": "^7.25.1",
     "@babel/plugin-transform-typescript": "^7.25.2",
     "@babel/runtime": "^7.25.6",
-    "@ember/app-tsconfig": "^1.0.0",
-    "@ember/library-tsconfig": "^1.0.0",
+    "@ember/app-tsconfig": "^2.0.0",
+    "@ember/library-tsconfig": "^2.0.0",
     "@ember/test-helpers": "^5.2.1",
     "@embroider/addon-dev": "^8.1.0",
     "@embroider/compat": "^4.1.0",
     "@embroider/core": "^4.1.0",
     "@embroider/macros": "^1.20.1",
+    "@embroider/try": "^1.0.2",
     "@embroider/vite": "^1.1.5",
     "@eslint/js": "^9.17.0",
     "@glimmer/component": "^2.0.0",
     "@glint/ember-tsc": "^1.0.3",
-    "@glint/template": "^1.6.1",
     "@glint/tsserver-plugin": "^2.0.0",
     "@rollup/plugin-babel": "^6.0.4",
     "@types/qunit": "^2.19.12",
@@ -101,6 +111,7 @@
     "typescript-eslint": "^8.19.1",
     "vite": "^7.1.9"
   },
+  "packageManager": "pnpm@11.20.0",
   "ember": {
     "edition": "octane"
   },
