@@ -283,7 +283,17 @@ module('Rendering | ember-remodal theme', function (hooks) {
       assert.strictEqual(
         getComputedStyle(card).getPropertyValue('-webkit-text-size-adjust'),
         '100%',
-        'the prefixed property is declared',
+        'text inflation is suppressed',
+      );
+      // Chrome ALIASES `text-size-adjust` onto `-webkit-text-size-adjust`, so
+      // the computed read above is satisfied by the unprefixed declaration on
+      // its own and stayed green when the prefixed one was deleted. The whole
+      // point of the deviation is WebKit, which implements only the prefixed
+      // form and is not the engine running this suite — the source is the only
+      // place where the two are distinguishable from here.
+      assert.ok(
+        /-webkit-text-size-adjust:\s*100%/.test(css),
+        'the prefixed declaration is really in the stylesheet, not just its Chrome alias',
       );
       assert.notOk(
         /-webkit-overflow-scrolling|::-moz-focus-inner/.test(css),
@@ -350,29 +360,136 @@ module('Rendering | ember-remodal theme', function (hooks) {
       );
     });
 
-    test('hover/focus backgrounds also clear AA', function (assert) {
-      // The hover colours are what a pointer user actually reads text against.
-      const probe = document.createElement('div');
-      probe.innerHTML =
-        '<button class="remodal-confirm" id="p1"></button><button class="remodal-cancel" id="p2"></button>';
-      document.body.append(probe);
-      const dispose = addStyleSheet(
-        '#p1, #p2 { background: var(--ember-remodal-confirm-background-hover) }' +
-          '#p2 { background: var(--ember-remodal-cancel-background-hover) }',
-        'last',
+    test('the contrast figures quoted in the docs are the ones the theme produces', async function (assert) {
+      // README, CHANGELOG, MIGRATION and the stylesheet header all quote exact
+      // ratios as the justification for the deliberate colour deviations. The
+      // threshold assertions elsewhere in this module would survive any change
+      // that stayed above the threshold, so the published numbers themselves
+      // are pinned here — recomputed from the rendered elements, not from the
+      // hex values, so a token change moves them.
+      await render(
+        <template>
+          <EmberRemodal
+            @openButton="Open"
+            @title="Figures"
+            @confirmButton="Yes"
+            @cancelButton="No"
+            @disableAnimation={{true}}
+          />
+        </template>,
       );
-      try {
-        for (const id of ['p1', 'p2']) {
-          const style = getComputedStyle(document.getElementById(id)!);
-          const ratio = contrastRatio(style.color, style.backgroundColor);
-          assert.ok(
-            ratio >= 4.5,
-            `${id} hover: ${style.color} on ${style.backgroundColor} = ${ratio.toFixed(2)}:1`,
-          );
-        }
-      } finally {
-        dispose();
-        probe.remove();
+      await click('[data-test-id="openButton"]');
+
+      const card = find('[data-test-id="modalWindow"]') as HTMLElement;
+      const cardBackground = getComputedStyle(card).backgroundColor;
+
+      for (const [id, published] of [
+        ['confirmButton', '5.13'],
+        ['cancelButton', '5.62'],
+      ] as const) {
+        const style = getComputedStyle(find(`[data-test-id="${id}"]`)!);
+        assert.strictEqual(
+          contrastRatio(style.color, style.backgroundColor).toFixed(2),
+          published,
+          `${id} measures the published ${published}:1`,
+        );
+      }
+
+      // showModal() puts initial focus on the close button, and
+      // `.remodal-close:focus` transitions its colour towards the hover value
+      // over 0.2s — so a naive read here returns a value some way along that
+      // transition, which is what made an exact-figure assertion flaky. The
+      // published figure is the resting colour: drop focus and let the
+      // transition back to it finish before measuring.
+      const close = find('[data-test-id="nativeClose"]') as HTMLElement;
+      close.blur();
+      await Promise.all(
+        close
+          .getAnimations()
+          .map((animation) => animation.finished.catch(() => undefined)),
+      );
+      const glyphColor = getComputedStyle(close).color;
+      assert.strictEqual(
+        contrastRatio(glyphColor, cardBackground).toFixed(2),
+        '4.35',
+        'the close glyph measures the published 4.35:1 against the card',
+      );
+
+      const inline = card.style.cssText;
+      card.style.cssText = declaredStyle(assert, '.remodal:focus-visible');
+      const ringColor = getComputedStyle(card).outlineColor;
+      card.style.cssText = inline;
+      assert.strictEqual(
+        contrastRatio(ringColor, cardBackground).toFixed(1),
+        '13.5',
+        'the ink focus ring measures the published 13.5:1 on the light card',
+      );
+    });
+
+    test('hover/focus backgrounds also clear AA', async function (assert) {
+      // The hover colours are what a pointer user actually reads text against.
+      // :hover cannot be synthesised from inside the page, so the next best
+      // thing is measured here: the declaration is read off the addon's OWN
+      // `.remodal-confirm:hover` / `.remodal-cancel:hover` rules and then
+      // resolved on the real rendered button, in the real cascade. Deleting
+      // either rule, or lowering either token, fails this test.
+      //
+      // The version this replaces built a detached <div>, fed it an injected
+      // stylesheet that merely named the same custom property, and measured
+      // that — proving the colour maths and nothing at all about the selectors,
+      // so deleting both real rules left it green (QC-2-07).
+      await render(
+        <template>
+          <EmberRemodal
+            @openButton="Open"
+            @confirmButton="Yes"
+            @cancelButton="No"
+            @disableAnimation={{true}}
+          />
+        </template>,
+      );
+      await click('[data-test-id="openButton"]');
+
+      for (const [id, selector, token] of [
+        [
+          'confirmButton',
+          '.remodal-confirm:hover',
+          '--ember-remodal-confirm-background-hover',
+        ],
+        [
+          'cancelButton',
+          '.remodal-cancel:hover',
+          '--ember-remodal-cancel-background-hover',
+        ],
+      ] as const) {
+        const declaration = declaredStyle(assert, selector);
+        assert.ok(
+          declaration.includes(token),
+          `${selector} paints its background from ${token} (${declaration})`,
+        );
+
+        const button = find(`[data-test-id="${id}"]`) as HTMLElement;
+        const resting = getComputedStyle(button).backgroundColor;
+        const inline = button.style.cssText;
+        // `transition: background 0.2s` is part of the real rule set, and a
+        // computed style read while a transition is running returns the value
+        // it is animating FROM — the resting colour. Suppressed so the read is
+        // of the hover colour rather than of the transition's first frame.
+        button.style.cssText = `transition: none; ${declaration}`;
+        const style = getComputedStyle(button);
+        const hovered = style.backgroundColor;
+        const ratio = contrastRatio(style.color, hovered);
+        button.style.cssText = inline;
+
+        assert.notStrictEqual(
+          hovered,
+          resting,
+          `${id} hover (${hovered}) differs from its resting background (${resting})`,
+        );
+        assert.ok(
+          ratio >= 4.5,
+          `${id} hover: ${style.color} on ${hovered} = ${ratio.toFixed(2)}:1 (>= 4.5:1)`,
+        );
       }
     });
 
@@ -466,19 +583,48 @@ module('Rendering | ember-remodal theme', function (hooks) {
       await settled();
 
       assert.strictEqual(document.activeElement, card, 'the card holds focus');
-      // A programmatically focused, non-interactive element is not guaranteed to
-      // match :focus-visible; when it does not, fall back to checking that the
-      // rule resolves at all. Resolved to a value rather than branching around
-      // two different assertions, so the test always reports the same one.
-      const outline = card.matches(':focus-visible')
-        ? getComputedStyle(card).outlineStyle
-        : matchingSelectors('.remodal:focus-visible').length > 0
-          ? 'declared for .remodal:focus-visible'
-          : 'none';
+
+      // `.remodal:focus-visible` is the only rule that draws the card's ring,
+      // and neither of the obvious ways to check it works: a programmatically
+      // focused, non-interactive element is not guaranteed to match
+      // :focus-visible, and when it does, Chrome's own UA focus ring satisfies
+      // a bare `outlineStyle !== 'none'` read with zero author CSS — which is
+      // exactly why the version this replaces stayed green after the rule was
+      // deleted (QC-2-06). Read the addon's own declaration instead and resolve
+      // it on the real card, so the rule, the values it resolves to and the
+      // contrast they produce are all under test.
+      const declaration = declaredStyle(assert, '.remodal:focus-visible');
+      const behind = effectiveBackground(card);
+      const inline = card.style.cssText;
+      card.style.cssText = declaration;
+      const style = getComputedStyle(card);
+      const outlineStyle = style.outlineStyle;
+      const outlineWidth = style.outlineWidth;
+      const outlineColor = style.outlineColor;
+      const boxShadow = style.boxShadow;
+      card.style.cssText = inline;
+
+      assert.strictEqual(
+        outlineStyle,
+        'solid',
+        `the card draws a solid focus outline (${outlineStyle} ${outlineWidth} ${outlineColor})`,
+      );
+      assert.ok(
+        parseFloat(outlineWidth) >= 2,
+        `the outline is at least 2px (${outlineWidth})`,
+      );
       assert.notStrictEqual(
-        outline,
+        boxShadow,
         'none',
-        `the card draws a focus outline (${outline})`,
+        `the card draws the contrasting halo too (${boxShadow})`,
+      );
+      const haloColor = boxShadow.match(/rgba?\([^)]*\)/)?.[0];
+      assert.ok(haloColor, `the halo colour is resolvable (${boxShadow})`);
+      const ring = contrastRatio(outlineColor, behind);
+      const halo = contrastRatio(haloColor!, behind);
+      assert.ok(
+        Math.max(ring, halo) >= 3,
+        `card focus indicator contrast: outline ${ring.toFixed(2)}:1, halo ${halo.toFixed(2)}:1 (>= 3:1)`,
       );
     });
   });
@@ -538,6 +684,28 @@ module('Rendering | ember-remodal theme', function (hooks) {
       } finally {
         dispose();
       }
+
+      // Again with the consumer's declaration INSIDE `@layer ember-remodal`.
+      // That is what the cascade looks like on an engine with no `@layer`
+      // support (deviation eleven), where the layer separates nothing and the
+      // only thing left protecting the override is that the addon declares its
+      // tokens on `:where(html)` — zero specificity — against a consumer's
+      // `:root` (0,1,0). Without this the `:where()` claim is untested: the
+      // layer alone makes the assertions above pass at any specificity.
+      const layered = addStyleSheet(
+        '@layer ember-remodal { :root { --ember-remodal-background: rgb(9, 9, 9) } }',
+        'first',
+      );
+      try {
+        assert.strictEqual(
+          getComputedStyle(find('[data-test-id="modalWindow"]')!)
+            .backgroundColor,
+          'rgb(9, 9, 9)',
+          'a same-layer consumer rule still wins, because the defaults carry no specificity',
+        );
+      } finally {
+        layered();
+      }
     });
 
     test('an unlayered consumer rule beats the addon at equal specificity, layer-first or not', async function (assert) {
@@ -579,14 +747,17 @@ module('Rendering | ember-remodal theme', function (hooks) {
       }
     });
 
-    test('the same rule inside the addon layer does not win', async function (assert) {
+    test('the same rule inside the addon layer loses, a later layer wins', async function (assert) {
       // The control for the test above: identical selector, identical
       // declarations, identical position — but inside `@layer ember-remodal`,
       // so it is ordered by the layer rather than ahead of it. Earlier in the
-      // same layer loses to the addon's own rule. If the `@layer` wrapper ever
-      // came off the stylesheet, THIS rule would win (it would be a plain tie
-      // decided by source order, and the addon's sheet is loaded later), so
-      // this assertion is what proves the layer is really there.
+      // same layer loses to the addon's own rule.
+      //
+      // That first half does NOT prove the layer is there: strip the wrapper
+      // off the addon's sheet and it still passes, because unlayered CSS
+      // outranks every layer, so an unlayered addon beats this layered rule
+      // just as the layered addon does. The second half below is the half that
+      // goes red when the wrapper comes off.
       const dispose = addStyleSheet(
         '@layer ember-remodal { .remodal { background: rgb(255, 0, 0); padding: 1px } }',
         'first',
@@ -610,6 +781,58 @@ module('Rendering | ember-remodal theme', function (hooks) {
           'the addon default still applies',
         );
         assert.strictEqual(style.paddingTop, '35px', 'and so does its padding');
+      } finally {
+        dispose();
+      }
+
+      // A consumer layer ordered after `ember-remodal` does win — which is only
+      // true while the addon's rules are inside a layer at all. Unlayered CSS
+      // outranks every layer, so if the wrapper came off the sheet the addon's
+      // own `padding: 35px` would beat this.
+      const later = addStyleSheet(
+        '@layer ember-remodal, ember-remodal-consumer;' +
+          '@layer ember-remodal-consumer { .remodal { padding: 2px } }',
+        'first',
+      );
+      try {
+        assert.strictEqual(
+          getComputedStyle(find('[data-test-id="modalWindow"]')!).paddingTop,
+          '2px',
+          'a layer declared after ember-remodal overrides the addon',
+        );
+      } finally {
+        later();
+      }
+    });
+
+    test('a layered !important outranks an unlayered one', async function (assert) {
+      // Deviation ten's accepted cost, pinned so it cannot change unnoticed.
+      // For IMPORTANT declarations the cascade reverses layer order and puts
+      // unlayered author styles last, so the sheet's two deliberate
+      // `!important`s outrank a consumer `!important` — a consumer who needs to
+      // win has to declare their own layer after `ember-remodal`, which is what
+      // MIGRATION.md tells them. Without the wrapper the rule below would win
+      // outright: same specificity, same origin, loaded later.
+      const dispose = addStyleSheet(
+        '.remodal-close::before { font-family: monospace !important }',
+        'last',
+      );
+      try {
+        await render(
+          <template>
+            <EmberRemodal @openButton="Open" @disableAnimation={{true}} />
+          </template>,
+        );
+        await click('[data-test-id="openButton"]');
+
+        const glyph = getComputedStyle(
+          find('[data-test-id="nativeClose"]')!,
+          '::before',
+        );
+        assert.ok(
+          glyph.fontFamily.startsWith('Arial'),
+          `the layered !important still paints the glyph (${glyph.fontFamily})`,
+        );
       } finally {
         dispose();
       }
@@ -852,10 +1075,14 @@ module('Rendering | ember-remodal theme', function (hooks) {
       // won outright, so @disableForeground rendered a fully hidden modal that
       // still held the top layer and trapped focus. Two independent defences
       // now: the card does not carry the bare class at all unless the consumer
-      // opts in, and `@layer` inverts `!important` precedence so the addon's
-      // layered `visibility: visible !important` outranks an unlayered one.
-      // Opted INTO the legacy classes here, so the second defence is the one
-      // under test.
+      // opts in, and the addon's `visibility: visible !important` outranks
+      // Bootstrap's. Opted INTO the legacy classes here, so the second defence
+      // is the one under test.
+      //
+      // Against Bootstrap's own rule the `!important` alone is what wins:
+      // `.ember-remodal-invisible.remodal` (0,2,0) already outweighs
+      // `.invisible` (0,1,0), and unwrapping the layer leaves this half green.
+      // The second half below is where the layer is load-bearing.
       const dispose = addStyleSheet(
         '.invisible { visibility: hidden !important }',
         'last',
@@ -886,6 +1113,25 @@ module('Rendering | ember-remodal theme', function (hooks) {
           'visible',
           'and so does its content',
         );
+
+        // And against a more specific form of the same rule — an app whose
+        // build emits the utility under a wrapper selector, or repeats the
+        // class. (0,2,1) outweighs the addon's (0,2,0), so specificity no
+        // longer saves the modal and the layer is what does: among important
+        // author declarations, unlayered ones rank below every layer.
+        const stronger = addStyleSheet(
+          'body .invisible.invisible { visibility: hidden !important }',
+          'last',
+        );
+        try {
+          assert.strictEqual(
+            getComputedStyle(find('[data-test-id="modalWindow"]')!).visibility,
+            'visible',
+            'and one that outweighs the addon on specificity as well',
+          );
+        } finally {
+          stronger();
+        }
       } finally {
         dispose();
       }
@@ -1036,6 +1282,33 @@ function declarationsFor(
     }
   }
   return merged;
+}
+
+/**
+ * The declaration block the addon declares for `selector`, as text ready to
+ * assign to an element's `style.cssText` — which resolves its `var()`s in that
+ * element's real cascade.
+ *
+ * This is how a rule that only applies in a state the test runner cannot enter
+ * (`:hover`, and `:focus-visible` on a programmatically focused element) is
+ * measured without a detached probe: the values come from the addon's own rule
+ * and resolve against the real element, so deleting the rule empties the
+ * declaration and the caller's assertions go red.
+ *
+ * The dev test build carries the stylesheet twice — the `#src` copy the
+ * component imports and the `dist` copy `published-package-test` pulls in via
+ * the package specifier — so more than one match is expected; they must agree.
+ */
+function declaredStyle(assert: Assert, selector: string): string {
+  const rules = matchingSelectors(selector);
+  assert.ok(rules.length > 0, `${selector} is declared by the addon`);
+  const declarations = [...new Set(rules.map((rule) => rule.style.cssText))];
+  assert.strictEqual(
+    declarations.length,
+    Math.min(rules.length, 1),
+    `every copy of ${selector} declares the same thing (${declarations.join(' | ')})`,
+  );
+  return declarations[0] ?? '';
 }
 
 function matchingSelectors(selector: string): CSSStyleRule[] {

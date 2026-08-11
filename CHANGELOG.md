@@ -272,3 +272,59 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
 - FastBoot: the v1 `index.js` that imported `remodal.min.js` into the vendor
   tree — the thing FastBoot 1.0 broke — no longer exists in any form. FastBoot
   itself is not tested or claimed as supported. (#42)
+
+### Deliberate deviations from upstream Remodal
+
+The ported theme is not a pixel-for-pixel copy of Remodal v1.1.1. It deviates in
+**eleven** places, each for an accessibility, correctness or cascade-safety
+reason, and each revertible from a consuming application — see the entries above
+for the revert instructions. This is the canonical list; README, MIGRATION,
+LICENSE and the stylesheet header all point at it.
+
+Each id below is enforced: `pnpm verify:css-deviations` deletes or neutralises
+the CSS behind it, rebuilds, and requires the test that pins it to go red. An
+id with no killing mutation fails that script, so a twelfth deviation cannot be
+added without a test that would notice its loss.
+
+<!-- deviation-registry:start -->
+
+1. `confirm-cancel-contrast` — confirm/cancel backgrounds darkened to `#2e7d32`
+   / `#c62828` (and hovers to `#1b5e20` / `#b71c1c`) so white labels reach
+   WCAG 1.4.3 AA.
+2. `close-glyph-contrast` — the × glyph darkened to `#767981` so it reaches
+   WCAG 1.4.11 against the card.
+3. `focus-visible-rings` — `outline: none` / `outline: 0` removed from the
+   dialog, the card and all three buttons, replaced by `:focus-visible` ring
+   pairs (WCAG 2.4.7).
+4. `no-touch-action-lock` — `touch-action: none` dropped from the scroll lock,
+   with `overscroll-behavior: contain` on the dialog in its place
+   (WCAG 2.1.1, 1.4.10).
+5. `no-translate3d` — `transform: translate3d(0, 0, 0)` dropped from the card,
+   which had made it a containing block for `position: fixed` content.
+6. `namespaced-invisible` — the `@disableForeground` styling moved off the bare
+   `invisible` class, which Bootstrap owns, onto `ember-remodal-invisible`.
+7. `dialog-border-box` — the wrapper is the `<dialog>` itself, so it carries
+   explicit `box-sizing: border-box` plus `width`/`height`/`max-*` overrides of
+   the UA `fit-content` sizing rather than upstream's plain `<div>` geometry.
+8. `bg-blur-hook` — the `.remodal-bg` blur is keyed on
+   `html.remodal-is-locked .remodal-bg` rather than upstream's
+   `.remodal-bg.remodal-is-opened`, because the state class goes on the
+   `<dialog>` and the card, never on the page background.
+9. `webkit-text-size-adjust` — the prefixed property is declared alongside the
+   unprefixed one, and `-webkit-overflow-scrolling` / `::-moz-focus-inner` were
+   deleted as dead.
+10. `css-layer` — the whole sheet ships inside `@layer ember-remodal`, which
+    inverts `!important` precedence against unlayered consumer CSS.
+11. `no-layer-fallback` — engines without `@layer` support get no layer
+    protection, and no unlayered fallback copy is shipped for them; on those
+    engines the zero-specificity `:where(html)` token block is all that keeps a
+    consumer override winning.
+
+<!-- deviation-registry:end -->
+
+Note on 11: an engine that does not recognise `@layer` discards the whole
+at-rule, including its block, so it gets no addon theme at all rather than an
+unlayered one. The addon already requires `dialog.showModal()` and
+`Element.getAnimations()`; `@layer` shipped in the same release as `showModal()`
+in Safari (15.4) and ahead of it in Firefox (97 vs 98), so Chrome 84–98 is the
+only window where the required APIs are present and `@layer` is not.

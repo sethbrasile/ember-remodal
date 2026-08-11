@@ -65,6 +65,7 @@
     "prepublishOnly": "node ./scripts/assert-clean-tree.mjs",
     "start": "vite dev",
     "test": "pnpm build:dist && node ./scripts/link-self.mjs && vite build --mode=development --out-dir dist-tests && testem --file testem.cjs ci --port 0",
+    "verify:css-deviations": "node ./scripts/css-mutation-selftest.mjs",
     "verify:published-package": "node ./scripts/verify-published-package.mjs"
   },
   "dependencies": {
