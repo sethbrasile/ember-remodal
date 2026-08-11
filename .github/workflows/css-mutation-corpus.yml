@@ -43,10 +43,13 @@ jobs:
   css-mutation-corpus:
     name: "CSS Mutation Corpus"
     runs-on: ubuntu-latest
-    # 26 mutations x (rebuild + full suite). Ten minutes is the observed wall
-    # time; the budget is generous so a slow runner is not reported as a failure
-    # of the corpus.
-    timeout-minutes: 45
+    # 26 mutations x (rebuild + full suite). The only end-to-end measurement so
+    # far is ~55 minutes on a developer laptop; a GitHub runner is slower, and
+    # this job has never actually executed (a workflow_dispatch trigger is not
+    # registered until the file reaches the default branch). The budget is set
+    # well above the measurement so the first real run reports on the corpus
+    # rather than on the timeout.
+    timeout-minutes: 120
 
     steps:
       - uses: actions/checkout@v4

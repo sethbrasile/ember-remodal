@@ -363,10 +363,9 @@ added without a test that would notice its loss.
    deleted as dead.
 10. `css-layer` — the whole sheet ships inside `@layer ember-remodal`, which
     inverts `!important` precedence against unlayered consumer CSS.
-11. `no-layer-fallback` — engines without `@layer` support get no layer
-    protection, and no unlayered fallback copy is shipped for them; on those
-    engines the zero-specificity `:where(html)` token block is all that keeps a
-    consumer override winning.
+11. `no-layer-fallback` — an engine that does not support cascade layers gets no
+    theme at all, because it discards the whole at-rule including its block, and
+    no unlayered fallback copy is shipped for it.
 
 <!-- deviation-registry:end -->
 
