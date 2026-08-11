@@ -1,0 +1,25 @@
+{
+  /**
+   * The tsconfig an Ember app gets from the blueprint, with three deliberate
+   * overrides. Copied into the throwaway fixture project by
+   * `scripts/verify-published-package.mjs`.
+   */
+  "extends": "@ember/app-tsconfig",
+  "compilerOptions": {
+    /**
+     * The whole point of the gate. `@ember/app-tsconfig` sets this to `true`,
+     * which is right for an app (nobody can fix another package's types) and
+     * fatal as a verification strategy: with it on, TypeScript never looks
+     * inside `ember-remodal/declarations/*.d.ts` at all, so a semantically
+     * broken published declaration is invisible. The runner reports only the
+     * diagnostics that belong to this fixture or to `ember-remodal` itself —
+     * third-party libraries do not have to pass a check they never opted into.
+     */
+    "skipLibCheck": false,
+    /** So `import * as sheet from '…/ember-remodal.css'` is a real check. */
+    "allowArbitraryExtensions": true,
+    "resolveJsonModule": true,
+    "types": ["ember-source/types", "@glint/ember-tsc/types"]
+  },
+  "include": ["consumer-types.ts"]
+}

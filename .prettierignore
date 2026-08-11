@@ -8,9 +8,11 @@
 
 # misc
 /coverage/
-pnpm-lock.yaml
 config/ember-cli-update.json
-*.yaml
-*.yml
-*.md
-*.html
+
+# Agent/QC working directories. Not package content, and not ours to reformat.
+/.agents/
+/.claude/
+
+# Machine-generated, and rewritten wholesale on every install.
+pnpm-lock.yaml

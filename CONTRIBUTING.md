@@ -16,15 +16,15 @@ installs with `--frozen-lockfile`.
 
 ## Repository layout
 
-| Path                | What it is                                                           |
-| ------------------- | -------------------------------------------------------------------- |
-| `src/`              | The addon itself. Everything published lives here                     |
-| `src/test-support/` | The published `ember-remodal/test-support` entry point                |
-| `src/styles/`       | The ported Remodal theme, imported by the component                  |
-| `tests/`            | The test suite (rendering + unit), run against the built addon        |
-| `demo-app/`         | The Vite-served demo application                                     |
+| Path                | What it is                                                             |
+| ------------------- | ---------------------------------------------------------------------- |
+| `src/`              | The addon itself. Everything published lives here                      |
+| `src/test-support/` | The published `ember-remodal/test-support` entry point                 |
+| `src/styles/`       | The ported Remodal theme, imported by the component                    |
+| `tests/`            | The test suite (rendering + unit), run against the built addon         |
+| `demo-app/`         | The Vite-served demo application                                       |
 | `scripts/`          | `link-self.mjs` (used by `pnpm test`) and `check-declaration-deps.mjs` |
-| `.try.mjs`          | The `@embroider/try` compatibility scenarios CI runs                  |
+| `.try.mjs`          | The `@embroider/try` compatibility scenarios CI runs                   |
 
 ## Linting
 

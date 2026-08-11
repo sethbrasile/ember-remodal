@@ -29,7 +29,10 @@
     },
     "./addon-main.js": "./addon-main.cjs",
     "./package.json": "./package.json",
-    "./*.css": "./dist/*.css",
+    "./*.css": {
+      "types": "./declarations/*.d.css.ts",
+      "default": "./dist/*.css"
+    },
     "./*": {
       "types": "./declarations/*.d.ts",
       "default": "./dist/*.js"
@@ -49,6 +52,7 @@
     "build:dist": "rollup --config --environment SKIP_DECLARATIONS:true",
     "format": "prettier . --cache --write",
     "lint": "concurrently \"pnpm:lint:*(!fix)\" --names \"lint:\" --prefixColors auto",
+    "lint:audit": "pnpm audit --audit-level=high --ignore-registry-errors",
     "lint:fix": "concurrently \"pnpm:lint:*:fix\" --names \"fix:\" --prefixColors auto && pnpm run format",
     "lint:format": "prettier . --cache --check",
     "lint:hbs": "ember-template-lint . --no-error-on-unmatched-pattern",
@@ -58,19 +62,26 @@
     "lint:publish": "pnpm build && publint run && attw --pack . --profile node16 --ignore-rules cjs-resolves-to-esm --exclude-entrypoints ./addon-main.js && node ./scripts/check-declaration-deps.mjs",
     "lint:types": "ember-tsc --noEmit",
     "prepack": "rollup --config",
+    "prepublishOnly": "node ./scripts/assert-clean-tree.mjs",
     "start": "vite dev",
-    "test": "pnpm build:dist && node ./scripts/link-self.mjs && vite build --mode=development --out-dir dist-tests && testem --file testem.cjs ci --port 0"
+    "test": "pnpm build:dist && node ./scripts/link-self.mjs && vite build --mode=development --out-dir dist-tests && testem --file testem.cjs ci --port 0",
+    "verify:published-package": "node ./scripts/verify-published-package.mjs"
   },
   "dependencies": {
     "@ember/test-waiters": "^4.1.1",
     "@embroider/addon-shim": "^1.8.9",
-    "@glint/template": "^1.6.1",
     "decorator-transforms": "^2.2.2",
     "ember-modifier": "^4.2.0"
   },
   "peerDependencies": {
     "@glimmer/component": ">= 1.1.2",
+    "@glint/template": ">= 1.6.1",
     "ember-source": ">= 5.8.0"
+  },
+  "peerDependenciesMeta": {
+    "@glint/template": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
@@ -90,6 +101,7 @@
     "@eslint/js": "^9.17.0",
     "@glimmer/component": "^2.0.0",
     "@glint/ember-tsc": "^1.0.3",
+    "@glint/template": "^1.6.1",
     "@glint/tsserver-plugin": "^2.0.0",
     "@rollup/plugin-babel": "^6.0.4",
     "@types/qunit": "^2.19.12",

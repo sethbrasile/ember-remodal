@@ -173,7 +173,7 @@ Any `try`/`catch` you wrote around a synchronous throw needs to become a
 
 2.x was a classic `Component` with `tagName: 'span'`, so `class="x"` in a curly
 invocation merged onto its element. 3.0 is a Glimmer component, and curly
-invocation passes `class=` as an *argument*, which the component ignores. Use
+invocation passes `class=` as an _argument_, which the component ignores. Use
 angle-bracket invocation, where `class` is an attribute again:
 
 ```hbs
@@ -226,7 +226,7 @@ Your `@confirmButtonClasses` / `@cancelButtonClasses` still apply — check for
 visual conflicts, or override `.remodal-confirm` / `.remodal-cancel`, or set
 `--ember-remodal-confirm-background` / `--ember-remodal-cancel-background`.
 
-### Backdrop dismissal requires press *and* release
+### Backdrop dismissal requires press _and_ release
 
 `@closeOnOutsideClick` (still `true` by default) now dismisses only when both
 the `mousedown` and the `click` land on the backdrop, and never when the press
@@ -236,7 +236,7 @@ modal, because the `click` dispatches on the common ancestor.
 
 ### Under-the-hood differences that may affect edge cases
 
-- The wrapper element *is* the `<dialog>`. It keeps the `remodal-wrapper` class
+- The wrapper element _is_ the `<dialog>`. It keeps the `remodal-wrapper` class
   the jQuery library used to add at runtime, and gains
   `data-test-id="modalWrapper"`.
 - The modal renders in the browser's top layer, so `z-index` hacks around the
@@ -416,7 +416,7 @@ drop their manual waits.
   modal component once the animation finishes — and now they resolve reliably
   for interrupted and rapid open/close sequences
   ([#44](https://github.com/sethbrasile/ember-remodal/issues/44)). The promise
-  *type* changed; see [RSVP](#rsvp-promises--native-promises) above.
+  _type_ changed; see [RSVP](#rsvp-promises--native-promises) above.
 - **CSS class names**: `remodal`, `remodal-wrapper`, the `remodal-is-*` state
   classes, `remodal-is-initialized`, `remodal-close`, `remodal-is-locked`,
   `remodal-bg`, and every `ember-remodal …` utility class.

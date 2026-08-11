@@ -20,7 +20,7 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
 ### Breaking
 
 - **Ember >= 5.8 is required**, and the package is a v2 addon (`"type":
-  "module"`, `exports`-only entry points). It works in any Embroider/Vite app
+"module"`, `exports`-only entry points). It works in any Embroider/Vite app
   and in classic builds via `@embroider/compat`. Older Ember must stay on 2.x.
   (#55, #45, #43)
 - **jQuery, `remodal` and `ember-wormhole` are no longer dependencies.** The
@@ -43,7 +43,7 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
 - **Reaching the component instance through the service is removed.** 2.x
   registered each `forService` modal as a property on the service, so
   `this.remodal.get('my-modal')`, `modal.setProperties({ … })`, `modal.set('text',
-  …)`, `modal.open()` and `this.set('remodal.my-modal.text', …)` all worked. The
+…)`, `modal.open()` and `this.set('remodal.my-modal.text', …)` all worked. The
   registry is now private. Use `service.open(name, opts)` /
   `service.close(name)`.
 - **The `modal` property is removed.** It exposed the wrapped jQuery remodal
@@ -166,7 +166,7 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
   (WCAG 2.1.1).
 - The `<dialog>` **overflowed the viewport by 20px** on both axes and left the
   card 10px off centre: `inset: 0` plus `width/height: 100%` plus `padding:
-  10px` under the UA default `content-box`. The dialog is explicitly
+10px` under the UA default `content-box`. The dialog is explicitly
   `border-box` now. Apps with a global `* { box-sizing: border-box }` reset
   never saw this.
 - Confirm and cancel **failed WCAG 1.4.3 AA**: upstream's `#81c784` / `#e57373`

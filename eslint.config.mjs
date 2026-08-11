@@ -34,7 +34,21 @@ const tsParserOptions = {
 };
 
 export default defineConfig([
-  globalIgnores(['dist/', 'dist-*/', 'declarations/', 'coverage/', '!**/.*']),
+  globalIgnores([
+    'dist/',
+    'dist-*/',
+    'declarations/',
+    'coverage/',
+    // Sources for the throwaway consumer project that
+    // `scripts/verify-published-package.mjs` builds. They are compiled and run
+    // THERE, against the packed tarball, where `ember-remodal` resolves to
+    // `dist/`. Linting them here judges them against this repo's tsconfig,
+    // which maps those same specifiers back to `src/` — so the rules that fire
+    // ("do not import test-support into production code") are answering a
+    // question about a file that is not part of this package.
+    'scripts/publish-gate/',
+    '!**/.*',
+  ]),
   js.configs.recommended,
   prettier,
   ember.configs.base,

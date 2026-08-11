@@ -11,6 +11,14 @@ concurrency:
   group: ci-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+# Least privilege, declared rather than inherited: no job here touches the API,
+# so `contents: read` (what `actions/checkout` needs, and nothing else) is the
+# whole requirement. `pull_request` runs execute contributor code, which is
+# reason enough not to let the default token scope be whatever the repository
+# settings happen to say.
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: "Lints"
@@ -33,6 +41,27 @@ jobs:
       # committed map has gone stale, this is where we find out.
       - name: Verify committed package.json matches a fresh build
         run: git diff --exit-code package.json
+
+  published-package:
+    name: "Published Package"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+      # `npm pack`, install the tarball into a throwaway project outside the
+      # repo, then type-check (with skipLibCheck: false) and import every entry
+      # point `package.json#exports` publishes. This is the only check that
+      # treats the artifact — rather than its inputs — as the unit under test.
+      - name: Verify the packed tarball is consumable
+        run: pnpm verify:published-package
 
   test:
     name: "Tests"
@@ -97,7 +126,14 @@ jobs:
       - name: Install Scenario Dependencies
         run: pnpm install --no-lockfile
       - name: Run Tests
-        run: |
-          pnpm test
-          
+        run: pnpm test
+        env: ${{ matrix.env }}
+      # `pnpm test` builds with SKIP_DECLARATIONS, so nothing in the matrix
+      # type-checks against the scenario's ember-source — and the types the
+      # published `.d.ts` reference (`@ember/owner`, `@ember/service`, Glint's
+      # `WithBoundArgs`) move across the 5.8 → 7.x span this addon claims. The
+      # ends of that span are where a break would show first.
+      - name: Type-check against this scenario's ember-source
+        if: matrix.name == 'ember-lts-5.8' || matrix.name == 'ember-alpha'
+        run: pnpm lint:types
         env: ${{ matrix.env }}

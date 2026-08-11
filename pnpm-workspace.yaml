@@ -14,3 +14,23 @@ autoInstallPeers: false
 # we want true isolation,
 # if a dependency is not declared, we want an error
 resolvePeersFromWorkspaceRoot: false
+
+# `pnpm lint` runs `pnpm audit --audit-level=high` (see `lint:audit`). These are
+# the high advisories that were already open when that gate was added; each is
+# accepted here EXPLICITLY so that a *new* high or critical advisory fails the
+# build instead of joining a pile nobody reads. Re-check the list whenever the
+# lockfile moves — an entry that no longer applies is dead weight.
+auditConfig:
+  ignoreGhsas:
+    # tmp — path traversal. broccoli/ember-cli build chain, dev-only.
+    - GHSA-ph9p-34f9-6g65
+    # brace-expansion — DoS, two advisories. Reaches the PUBLISHED closure via
+    # @ember/test-waiters > @embroider/addon-shim > … > minimatch, but only
+    # runs at build time. Fixable with a pnpm override; not taken here because
+    # that changes the resolved tree for every consumer of this lockfile.
+    - GHSA-mh99-v99m-4gvg
+    - GHSA-rgw5-rvv9-x895
+    # js-yaml — quadratic CPU in 3.x. broccoli/ember-cli chain, dev-only.
+    - GHSA-5p4m-2wfm-xmqj
+    # nanoid — infinite loop in a custom generator. vite > postcss, dev-only.
+    - GHSA-2v37-7h3g-55p8

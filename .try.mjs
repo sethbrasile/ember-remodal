@@ -26,6 +26,28 @@ const compatDeps = {
 export default {
   scenarios: [
     {
+      /**
+       * The `@glimmer/component >= 1.1.2` floor in `package.json`.
+       *
+       * Every other scenario varies only `ember-source` and leaves
+       * `@glimmer/component` at the repo's `^2.0.0`, which left the declared
+       * floor proven by nothing. Paired with the oldest supported Ember,
+       * because 1.1.2 is what an app on 5.8 actually has.
+       */
+      name: 'glimmer-component-1.1.2',
+      npm: {
+        devDependencies: {
+          'ember-source': '~5.8.0',
+          '@glimmer/component': '~1.1.2',
+          ...compatDeps,
+        },
+      },
+      env: {
+        ENABLE_COMPAT_BUILD: true,
+      },
+      files: compatFiles,
+    },
+    {
       name: 'ember-lts-5.8',
       npm: {
         devDependencies: {

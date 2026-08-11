@@ -16,8 +16,16 @@ node_modules/
 .eslintcache
 .prettiercache
 
-# potentially containing secrets
+# potentially containing secrets.
+#
+# `.env*` is denied by default rather than named file by file. The blueprint's
+# `.env.development` used to be tracked here; it existed to force NODE_ENV for
+# `vite build --mode=test`, a mode this repo never runs, and removing it leaves
+# the suite at 136/136. Whatever lands next to it would have been committed by
+# default — hence the wildcard. Add an explicit `!` exception, with a reason,
+# if a committed env file ever earns its place.
 *.local
+.env*
 
 # OS cruft
 .DS_Store

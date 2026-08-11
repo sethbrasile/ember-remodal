@@ -5,6 +5,7 @@ import {
   mkdir,
   readdir,
   readFile,
+  rm,
   writeFile,
 } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -63,6 +64,29 @@ function rewriteDeclarationSpecifier(specifier) {
 
   // Anything with an extension already (`.js`, `.css`) is left alone.
   return basename(specifier).includes('.') ? specifier : `${specifier}.js`;
+}
+
+/**
+ * Empties `declarations/` before the emit.
+ *
+ * `addon.clean()` prunes `dist/`, but nothing pruned `declarations/` — and
+ * `package.json#files` publishes that directory wholesale. A `.d.ts` left over
+ * from a renamed or deleted source therefore survived every rebuild and shipped:
+ * `attw`, `publint` and `check-declaration-deps` all pass, because a stale
+ * declaration nobody imports is not a resolution failure. Verified before the
+ * fix by dropping a file into `declarations/`, rebuilding, and finding it in
+ * `npm pack --dry-run`.
+ *
+ * `buildStart` runs before `addon.declarations()` invokes `ember-tsc` in its
+ * `writeBundle` hook, so the emit refills the directory from scratch.
+ */
+function pruneDeclarations() {
+  return {
+    name: 'prune-declarations',
+    async buildStart() {
+      await rm(declarationsDir, { recursive: true, force: true });
+    },
+  };
 }
 
 /**
@@ -189,12 +213,13 @@ export default {
     // Ensure that .gjs files are properly integrated as Javascript
     addon.gjs(),
 
-    // Emit .d.ts declaration files, then make them resolvable: copy
+    // Empty `declarations/`, emit .d.ts files, then make them resolvable: copy
     // hand-written .d.ts files across and give relative import specifiers real
     // `.js` extensions.
     ...(skipDeclarations
       ? []
       : [
+          pruneDeclarations(),
           addon.declarations(
             declarationsDir,
             `pnpm ember-tsc --declaration --project ${tsConfig}`,

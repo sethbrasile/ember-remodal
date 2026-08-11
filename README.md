@@ -39,9 +39,9 @@ is preserved. Upgrading from 2.x? Read the
 
 ## Compatibility
 
-| ember-remodal | Ember                                                                        |
-| ------------- | ---------------------------------------------------------------------------- |
-| 3.x           | Ember >= 5.8 — any Embroider/Vite app, or classic builds via `@embroider/compat` |
+| ember-remodal | Ember                                                                             |
+| ------------- | --------------------------------------------------------------------------------- |
+| 3.x           | Ember >= 5.8 — any Embroider/Vite app, or classic builds via `@embroider/compat`  |
 | 2.x           | Legacy line for older Ember (classic builds, jQuery-based) — no longer maintained |
 
 The 5.8 floor is exercised in CI: the `@embroider/try` matrix runs 5.8, 5.12,
@@ -113,7 +113,7 @@ import EmberRemodal from 'ember-remodal/components/ember-remodal';
 ```
 
 - `m.open` — a trigger component. Even though it is declared inside the block, it
-  renders *outside* the `<dialog>` (it is portaled next to the component), so it
+  renders _outside_ the `<dialog>` (it is portaled next to the component), so it
   is always visible and clickable.
 - `m.confirm` / `m.cancel` — close the modal with reason `'confirmation'` /
   `'cancellation'` and fire `@onConfirm` / `@onCancel`.
@@ -199,12 +199,12 @@ work.
 
 ### Content
 
-| Option             | Default          | Description                                                                                        |
-| ------------------ | ---------------- | -------------------------------------------------------------------------------------------------- |
-| `title`            | —                | Renders an `<h2>`, and names the dialog via `aria-labelledby`                                       |
-| `text`             | —                | Renders a `<p>`                                                                                     |
-| `ariaLabel`        | —                | Accessible name for a modal with no visible `@title`. Wins over `@title` when both are given         |
-| `closeButtonLabel` | `'Close Modal'`  | `aria-label` and `title` for the built-in close button. An option so it can be translated            |
+| Option             | Default         | Description                                                                                  |
+| ------------------ | --------------- | -------------------------------------------------------------------------------------------- |
+| `title`            | —               | Renders an `<h2>`, and names the dialog via `aria-labelledby`                                |
+| `text`             | —               | Renders a `<p>`                                                                              |
+| `ariaLabel`        | —               | Accessible name for a modal with no visible `@title`. Wins over `@title` when both are given |
+| `closeButtonLabel` | `'Close Modal'` | `aria-label` and `title` for the built-in close button. An option so it can be translated    |
 
 ### Triggers and buttons
 
@@ -212,7 +212,7 @@ work.
 | --------------- | ------- | ----------------------------------------------------------------------- |
 | `openButton`    | —       | Label; renders a `<button>` trigger                                     |
 | `openLink`      | —       | Label; renders an `<a>` trigger                                         |
-| `linkButton`    | —       | Legacy alias for an `<a>` trigger (takes precedence over the other two)  |
+| `linkButton`    | —       | Legacy alias for an `<a>` trigger (takes precedence over the other two) |
 | `confirmButton` | —       | Label; renders a confirm button (`remodal-confirm`)                     |
 | `cancelButton`  | —       | Label; renders a cancel button (`remodal-cancel`)                       |
 
@@ -226,29 +226,29 @@ work.
 
 ### Class hooks
 
-| Option                 | Default | Description                                                          |
-| ---------------------- | ------- | -------------------------------------------------------------------- |
+| Option                 | Default | Description                                                              |
+| ---------------------- | ------- | ------------------------------------------------------------------------ |
 | `modifier`             | `''`    | Extra class on both the `<dialog>` and the card — remodal's theming hook |
-| `modalClasses`         | —       | Extra classes for the modal card                                     |
-| `buttonClasses`        | —       | Extra classes for **all** rendered buttons                           |
-| `outerButtonClasses`   | —       | Extra classes for trigger (outside) buttons and links                |
-| `innerButtonClasses`   | —       | Extra classes for confirm/cancel (inside) buttons                    |
-| `openButtonClasses`    | —       | Extra classes for the `openButton`                                   |
-| `openLinkClasses`      | —       | Extra classes for the `openLink`                                     |
-| `confirmButtonClasses` | —       | Extra classes for the confirm button                                 |
-| `cancelButtonClasses`  | —       | Extra classes for the cancel button                                  |
+| `modalClasses`         | —       | Extra classes for the modal card                                         |
+| `buttonClasses`        | —       | Extra classes for **all** rendered buttons                               |
+| `outerButtonClasses`   | —       | Extra classes for trigger (outside) buttons and links                    |
+| `innerButtonClasses`   | —       | Extra classes for confirm/cancel (inside) buttons                        |
+| `openButtonClasses`    | —       | Extra classes for the `openButton`                                       |
+| `openLinkClasses`      | —       | Extra classes for the `openLink`                                         |
+| `confirmButtonClasses` | —       | Extra classes for the confirm button                                     |
+| `cancelButtonClasses`  | —       | Extra classes for the cancel button                                      |
 
 ### Behavior
 
-| Option                | Default                      | Description                                                                                                 |
-| --------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Option                | Default                      | Description                                                                                                                              |
+| --------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `closeOnEscape`       | `true`                       | Close when Escape is pressed. `false` is honored only while the modal contains a focusable control — see [Accessibility](#accessibility) |
-| `closeOnOutsideClick` | `true`                       | Close when the backdrop (outside the card) is clicked. Requires the press *and* the release to land there    |
-| `closeOnConfirm`      | `true`                       | Close when confirm fires (`false` keeps it open, `@onConfirm` still fires)                                   |
-| `closeOnCancel`       | `true`                       | Close when cancel fires                                                                                     |
-| `disableForeground`   | `false`                      | Removes the card styling so content floats on the backdrop (lightbox style). Pass `@ariaLabel` with it       |
-| `disableNativeClose`  | value of `disableForeground` | Hides the built-in × close button                                                                           |
-| `disableAnimation`    | `false`                      | Skips the open/close animations                                                                             |
+| `closeOnOutsideClick` | `true`                       | Close when the backdrop (outside the card) is clicked. Requires the press _and_ the release to land there                                |
+| `closeOnConfirm`      | `true`                       | Close when confirm fires (`false` keeps it open, `@onConfirm` still fires)                                                               |
+| `closeOnCancel`       | `true`                       | Close when cancel fires                                                                                                                  |
+| `disableForeground`   | `false`                      | Removes the card styling so content floats on the backdrop (lightbox style). Pass `@ariaLabel` with it                                   |
+| `disableNativeClose`  | value of `disableForeground` | Hides the built-in × close button                                                                                                        |
+| `disableAnimation`    | `false`                      | Skips the open/close animations                                                                                                          |
 
 ## Callbacks
 
@@ -258,9 +258,9 @@ Function arguments (in 2.x these were string action names):
 | --------------- | ---------------------------------------------------------------------------------------- |
 | `@onBeforeOpen` | Before opening; return `false` to veto the open                                          |
 | `@onOpen`       | After the opening animation completes                                                    |
-| `@onClose`      | After closing; receives `'confirmation'`, `'cancellation'`, or `undefined` as the reason  |
-| `@onConfirm`    | When the confirm button (or `m.confirm` / `m.confirmAction`) fires                        |
-| `@onCancel`     | When the cancel button (or `m.cancel` / `m.cancelAction`) fires                           |
+| `@onClose`      | After closing; receives `'confirmation'`, `'cancellation'`, or `undefined` as the reason |
+| `@onConfirm`    | When the confirm button (or `m.confirm` / `m.confirmAction`) fires                       |
+| `@onCancel`     | When the cancel button (or `m.cancel` / `m.cancelAction`) fires                          |
 
 `@onClose` also fires when a modal is destroyed while open — a route transition,
 an `{{#if}}` flipping — so cleanup keyed on it runs in that case too.
@@ -289,22 +289,22 @@ descendants and would blur the modal along with the page.
 Every part of the modal is addressable, and every one of these selectors carried
 over from 2.x unchanged:
 
-| Part                                | Selector                             |
-| ----------------------------------- | ------------------------------------ |
-| Modal card (the "window")           | `.ember-remodal.window`              |
-| A named modal's card                | `.ember-remodal.<name>.window`       |
-| Open button                         | `.ember-remodal.open.button`         |
-| Open link / link button             | `.ember-remodal.link.text`           |
-| Confirm button                      | `.ember-remodal.confirm.button`      |
-| Cancel button                       | `.ember-remodal.cancel.button`       |
-| Built-in close button               | `.ember-remodal.native.close`        |
-| Title                               | `.ember-remodal.title.text`          |
-| Text                                | `.ember-remodal.paragraph.text`      |
-| Content yielded in block form       | `.ember-remodal.yielded.content`     |
-| All rendered buttons                | `.ember-remodal.button`              |
-| Buttons inside the modal            | `.ember-remodal.inner.button`        |
-| Buttons outside the modal           | `.ember-remodal.outer.button`        |
-| Overlay (2.x: `.remodal-overlay`)   | `dialog.remodal-wrapper::backdrop`   |
+| Part                              | Selector                           |
+| --------------------------------- | ---------------------------------- |
+| Modal card (the "window")         | `.ember-remodal.window`            |
+| A named modal's card              | `.ember-remodal.<name>.window`     |
+| Open button                       | `.ember-remodal.open.button`       |
+| Open link / link button           | `.ember-remodal.link.text`         |
+| Confirm button                    | `.ember-remodal.confirm.button`    |
+| Cancel button                     | `.ember-remodal.cancel.button`     |
+| Built-in close button             | `.ember-remodal.native.close`      |
+| Title                             | `.ember-remodal.title.text`        |
+| Text                              | `.ember-remodal.paragraph.text`    |
+| Content yielded in block form     | `.ember-remodal.yielded.content`   |
+| All rendered buttons              | `.ember-remodal.button`            |
+| Buttons inside the modal          | `.ember-remodal.inner.button`      |
+| Buttons outside the modal         | `.ember-remodal.outer.button`      |
+| Overlay (2.x: `.remodal-overlay`) | `dialog.remodal-wrapper::backdrop` |
 
 The one change is the last row: the overlay is now the dialog's `::backdrop`
 pseudo-element, so there is no `.remodal-overlay` element to select. Note also
@@ -320,21 +320,21 @@ side-effect import whose position in your bundle the addon cannot control. It is
 also the only route to `::backdrop` from a class on the card: `@modalClasses`
 lands inside the dialog, and `::backdrop` inherits only from the dialog itself.
 
-| Property                                    | Default                   |
-| ------------------------------------------- | ------------------------- |
-| `--ember-remodal-background`                | `#fff`                    |
-| `--ember-remodal-color`                     | `#2b2e38`                 |
-| `--ember-remodal-color-scheme`              | `light`                   |
-| `--ember-remodal-overlay`                   | `rgba(43, 46, 56, 0.9)`   |
-| `--ember-remodal-close-color`               | `#767981`                 |
-| `--ember-remodal-close-color-hover`         | `#2b2e38`                 |
-| `--ember-remodal-button-color`              | `#fff`                    |
-| `--ember-remodal-confirm-background`        | `#2e7d32`                 |
-| `--ember-remodal-confirm-background-hover`  | `#1b5e20`                 |
-| `--ember-remodal-cancel-background`         | `#c62828`                 |
-| `--ember-remodal-cancel-background-hover`   | `#b71c1c`                 |
-| `--ember-remodal-focus-ring`                | `#2b2e38`                 |
-| `--ember-remodal-focus-ring-inverse`        | `#fff`                    |
+| Property                                   | Default                 |
+| ------------------------------------------ | ----------------------- |
+| `--ember-remodal-background`               | `#fff`                  |
+| `--ember-remodal-color`                    | `#2b2e38`               |
+| `--ember-remodal-color-scheme`             | `light`                 |
+| `--ember-remodal-overlay`                  | `rgba(43, 46, 56, 0.9)` |
+| `--ember-remodal-close-color`              | `#767981`               |
+| `--ember-remodal-close-color-hover`        | `#2b2e38`               |
+| `--ember-remodal-button-color`             | `#fff`                  |
+| `--ember-remodal-confirm-background`       | `#2e7d32`               |
+| `--ember-remodal-confirm-background-hover` | `#1b5e20`               |
+| `--ember-remodal-cancel-background`        | `#c62828`               |
+| `--ember-remodal-cancel-background-hover`  | `#b71c1c`               |
+| `--ember-remodal-focus-ring`               | `#2b2e38`               |
+| `--ember-remodal-focus-ring-inverse`       | `#fff`                  |
 
 `--ember-remodal-color-scheme` sets `color-scheme` on the card, so form controls,
 selects and scrollbars inside a dark modal render dark.
@@ -443,13 +443,13 @@ test that ends with a transition still in flight leaks a locked document into
 every test that follows. `setupRemodal` force-resets it before and after each
 test, and fails the test that leaked rather than letting the failure cascade.
 
-| Export                                 | Purpose                                                                                                          |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `setupRemodal(hooks, options?)`        | Installs the reset/leak-detection hooks. `options.disableAnimation` turns animations off for the module            |
-| `resetRemodalScrollLock()`             | Force-releases the scroll lock. Only needed if you manage QUnit hooks yourself                                    |
-| `setRemodalAnimationDisabled(flag)`    | Turns animations off (or back on) process-wide. Prefer the `setupRemodal` option, which also unwinds it            |
-| `remodalDialog(scope?)`                | The one rendered modal `<dialog>`. Throws when there is none, or when several are rendered and no scope was given  |
-| `remodalDialogs(scope?)`               | Every rendered modal `<dialog>`, in document order — the helper to reach for with stacked modals                   |
+| Export                              | Purpose                                                                                                           |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `setupRemodal(hooks, options?)`     | Installs the reset/leak-detection hooks. `options.disableAnimation` turns animations off for the module           |
+| `resetRemodalScrollLock()`          | Force-releases the scroll lock. Only needed if you manage QUnit hooks yourself                                    |
+| `setRemodalAnimationDisabled(flag)` | Turns animations off (or back on) process-wide. Prefer the `setupRemodal` option, which also unwinds it           |
+| `remodalDialog(scope?)`             | The one rendered modal `<dialog>`. Throws when there is none, or when several are rendered and no scope was given |
+| `remodalDialogs(scope?)`            | Every rendered modal `<dialog>`, in document order — the helper to reach for with stacked modals                  |
 
 The exported types are `RemodalTestHooks`, `RemodalTestAssert` and
 `SetupRemodalOptions`. The module deliberately imports neither `qunit` nor
@@ -523,10 +523,10 @@ disableAnimation: true })` works in both kinds of app and is the supported path.
 - **Escape can force-close a modal regardless of `@closeOnEscape={{false}}`.**
   The addon calls `preventDefault()` on the dialog's `cancel` event, but in
   browsers implementing the HTML close-watcher algorithm that event is
-  dispatched *non-cancelable* when the window has no history-action activation.
+  dispatched _non-cancelable_ when the window has no history-action activation.
   For a modal the user opened by clicking, that means a quick second Escape can
   force-close it; for a modal opened programmatically with no preceding user
-  gesture, the *first* Escape can. This is a platform behavior, not addon
+  gesture, the _first_ Escape can. This is a platform behavior, not addon
   behavior, and the modal's state stays consistent either way — `@onClose`
   still fires.
 - The default confirm and cancel colours meet WCAG 1.4.3 AA against their white
@@ -544,13 +544,13 @@ disableAnimation: true })` works in both kinds of app and is the supported path.
 These are `@ember/debug` warnings, stripped from production builds. Each can be
 filtered by id with `registerWarnHandler`.
 
-| Id                                                  | Fires when                                                                                     |
-| --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `ember-remodal.modal-without-accessible-name`        | A modal is opened with neither `@title` nor `@ariaLabel`                                        |
-| `ember-remodal.no-keyboard-exit`                     | A modal is opened with `@closeOnEscape={{false}}` and contains no focusable control              |
-| `ember-remodal.er-button-without-focusable-content`  | An `<m.open>` / `<m.confirm>` / `<m.cancel>` block contains no focusable control                 |
-| `ember-remodal.duplicate-service-name`               | Two `@forService` modals register under the same `@name` (the newest wins until it is destroyed) |
-| `ember-remodal.close-called-on-uninitialized-modal`  | `close()` is called on a modal that has never been opened. Harmless; the promise resolves         |
+| Id                                                  | Fires when                                                                                       |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `ember-remodal.modal-without-accessible-name`       | A modal is opened with neither `@title` nor `@ariaLabel`                                         |
+| `ember-remodal.no-keyboard-exit`                    | A modal is opened with `@closeOnEscape={{false}}` and contains no focusable control              |
+| `ember-remodal.er-button-without-focusable-content` | An `<m.open>` / `<m.confirm>` / `<m.cancel>` block contains no focusable control                 |
+| `ember-remodal.duplicate-service-name`              | Two `@forService` modals register under the same `@name` (the newest wins until it is destroyed) |
+| `ember-remodal.close-called-on-uninitialized-modal` | `close()` is called on a modal that has never been opened. Harmless; the promise resolves        |
 
 ## Contributing
 
