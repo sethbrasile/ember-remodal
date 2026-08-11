@@ -10,9 +10,7 @@ import { modifier } from 'ember-modifier';
 import type Owner from '@ember/owner';
 import type { WithBoundArgs } from '@glint/template';
 import type RemodalService from '../services/remodal.ts';
-import ErButton, {
-  hasFocusableDescendant,
-} from './ember-remodal/er-button.gts';
+import ErButton from './ember-remodal/er-button.gts';
 import '../styles/ember-remodal.css';
 
 export type ModalState = 'closed' | 'opening' | 'opened' | 'closing';
@@ -26,6 +24,12 @@ export interface EmberRemodalOptions {
   // escape hatch for a modal with no visible title (a @disableForeground
   // overlay, or a block whose heading is consumer markup we cannot reference).
   ariaLabel?: string;
+  // Id (or space-separated ids) of consumer-authored markup that names the
+  // dialog — a heading inside the block, typically. Without it a block-only
+  // modal can only be named by duplicating its own heading text into
+  // `ariaLabel`. Outranks `ariaLabel` and `title`, matching the accname
+  // algorithm's own precedence.
+  ariaLabelledBy?: string;
   // Accessible name of the built-in close button. An option (rather than a
   // hardcoded string) so it can be translated.
   closeButtonLabel?: string;
@@ -47,6 +51,13 @@ export interface EmberRemodalOptions {
   cancelButtonClasses?: string;
   confirmButtonClasses?: string;
   closeOnEscape?: boolean;
+  // Declares that the block content provides a keyboard-operable way out (a
+  // button wired to `m.closeAction`, a `<form method="dialog">` submit, …).
+  // The addon enumerates the exits IT renders; it cannot tell a real exit from
+  // an `<input type="hidden">` by looking at the consumer's DOM, so a
+  // block-provided exit has to be declared. Only consulted alongside
+  // `closeOnEscape: false`; absent, Escape is never suppressed.
+  hasCustomKeyboardExit?: boolean;
   closeOnCancel?: boolean;
   closeOnConfirm?: boolean;
   closeOnOutsideClick?: boolean;
@@ -236,6 +247,22 @@ function releaseScrollLock(holder: object): void {
   }
 }
 
+// The accname algorithm trims and collapses whitespace, so " " names nothing:
+// it produces an <h2> with no perceivable text, an aria-labelledby pointing at
+// it, and a guard cheerfully reporting the dialog as named. Every string that
+// can become a name goes through here, so "present" means the same thing at
+// every one of them.
+function presentString(value: string | undefined): string | undefined {
+  return value !== undefined && value.trim() !== '' ? value : undefined;
+}
+
+// One way a modal can be dismissed. `keyboard` is what the WCAG 2.1.2 gate
+// asks about: a pointer-only exit is not a way out of a keyboard trap.
+interface ModalExit {
+  id: string;
+  keyboard: boolean;
+}
+
 function createOpenButtonTarget(): HTMLSpanElement | null {
   if (typeof document === 'undefined') {
     return null;
@@ -376,25 +403,65 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     return `${guidFor(this)}-title`;
   }
 
-  // Falsy strings are treated as absent: `aria-label=""` names nothing and an
-  // empty @title renders no <h2> for aria-labelledby to reference.
-  get ariaLabel(): string | undefined {
-    return this.opt('ariaLabel') || undefined;
+  // Blank strings are treated as absent: `aria-label=" "` names nothing, and a
+  // blank @title renders no <h2> worth pointing aria-labelledby at.
+  get title(): string | undefined {
+    return presentString(this.opt('title'));
   }
 
-  // aria-labelledby only when the <h2> actually renders AND the consumer has
-  // not overridden the name with @ariaLabel. Emitting both would be harmless
-  // (aria-labelledby wins in the accname algorithm) but silently ignoring an
+  get ariaLabel(): string | undefined {
+    return presentString(this.opt('ariaLabel'));
+  }
+
+  get ariaLabelledBy(): string | undefined {
+    return presentString(this.opt('ariaLabelledBy'));
+  }
+
+  // Exactly one naming attribute is ever emitted, in the accname algorithm's
+  // own order: aria-labelledby, then aria-label, then the generated <h2> id.
+  // Emitting two would be harmless to a screen reader but would leave the DOM
+  // claiming a name that is not the one in effect — and silently ignoring an
   // explicitly-passed @ariaLabel is worse than honoring it.
   get labelledById(): string | undefined {
+    if (this.ariaLabelledBy) {
+      return this.ariaLabelledBy;
+    }
     if (this.ariaLabel) {
       return undefined;
     }
-    return this.opt('title') ? this.titleId : undefined;
+    return this.title ? this.titleId : undefined;
   }
 
+  get labelAttribute(): string | undefined {
+    return this.ariaLabelledBy ? undefined : this.ariaLabel;
+  }
+
+  // Whether the dialog actually resolves to a name — not whether a naming
+  // attribute is present. A consumer-supplied @ariaLabelledBy can point at an
+  // id that does not exist (a typo, a heading behind an {{#if}} that did not
+  // render), which names nothing at all; trusting the attribute would be the
+  // same "the platform handles it" assumption this guard exists to catch.
+  // Read only from auditAccessibility, i.e. with the dialog open and its
+  // subtree in the document.
   get hasAccessibleName(): boolean {
-    return Boolean(this.ariaLabel) || Boolean(this.opt('title'));
+    if (this.ariaLabelledBy) {
+      return this.labelledByResolves;
+    }
+    return Boolean(this.ariaLabel) || Boolean(this.title);
+  }
+
+  private get labelledByResolves(): boolean {
+    const idref = this.ariaLabelledBy;
+    if (!idref || typeof document === 'undefined') {
+      return false;
+    }
+    return idref
+      .split(/\s+/)
+      .filter(Boolean)
+      .some((id) => {
+        const target = document.getElementById(id);
+        return (target?.textContent ?? '').trim() !== '';
+      });
   }
 
   get closeButtonLabel(): string {
@@ -423,6 +490,10 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
 
   get disableNativeClose(): boolean {
     return this.opt('disableNativeClose') ?? this.disableForeground;
+  }
+
+  get hasCustomKeyboardExit(): boolean {
+    return this.opt('hasCustomKeyboardExit') ?? false;
   }
 
   get legacyClassNames(): boolean {
@@ -700,14 +771,17 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     // native `close` event then re-syncs state through handleDialogClose.)
     event.preventDefault();
     if (this.closeOnEscape || !this.hasKeyboardExit()) {
-      // `@closeOnEscape={{false}}` is honored only while the user has some
-      // other way out. Under the old jQuery implementation the modal was a
-      // plain <div> a keyboard user could simply Tab out of; showModal() makes
-      // focus containment real, so suppressing Escape in a modal with no
-      // focusable control at all is an inescapable keyboard trap (WCAG 2.1.2,
-      // Level A). Escape wins in exactly that configuration — a dev warning at
-      // open time says so, and this behavior is NOT dev-only: dev and
-      // production must not disagree about whether a modal can be escaped.
+      // `@closeOnEscape={{false}}` is honored only while `exits` contains some
+      // other keyboard-operable way out. Under the old jQuery implementation
+      // the modal was a plain <div> a keyboard user could simply Tab out of;
+      // showModal() makes focus containment real, so suppressing Escape in a
+      // modal nothing else can close is an inescapable keyboard trap (WCAG
+      // 2.1.2, Level A). Escape wins in exactly that configuration — a dev
+      // warning at open time says so, and this behavior is NOT dev-only: dev
+      // and production must not disagree about whether a modal can be escaped.
+      // The gate is deliberately fail-safe: an exit the addon does not render
+      // has to be declared with @hasCustomKeyboardExit, because the cost of
+      // guessing wrong here is a user who cannot leave.
       this.close().catch(this.reportError);
     }
   };
@@ -732,29 +806,60 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
 
   // --- internals ---
 
-  // The `.remodal` card: everything the user can interact with lives inside it.
-  private get cardElement(): Element | null {
-    return this.dialogElement?.querySelector('.remodal') ?? null;
+  // Every way out of this modal OTHER than Escape, enumerated from the
+  // configuration that produces it. Escape itself is deliberately absent: this
+  // list exists to adjudicate whether suppressing Escape leaves the user
+  // stranded, so including it would answer its own question.
+  //
+  // This is an enumeration and not a DOM query on purpose. The obvious
+  // implementation — "does the card contain something focusable?" — was the
+  // round-1 shape, and it is wrong in both directions. It says yes to an
+  // `<input type="hidden">`, a `<button disabled>` and a `[tabindex="-1"]`
+  // container (none of which a keyboard user can operate, let alone leave
+  // through), and it says yes to a cancel button under
+  // `@closeOnCancel={{false}}` (operable, but it does not close anything).
+  // "Contains something focusable" is simply a different question from
+  // "contains a way out"; only the component knows the second one, because only
+  // the component knows what each control it renders is wired to.
+  private get exits(): readonly ModalExit[] {
+    const exits: ModalExit[] = [];
+    if (!this.disableNativeClose) {
+      exits.push({ id: 'native-close-button', keyboard: true });
+    }
+    if (this.opt('cancelButton') && this.closeOnCancel) {
+      exits.push({ id: 'cancel-button', keyboard: true });
+    }
+    if (this.opt('confirmButton') && this.closeOnConfirm) {
+      exits.push({ id: 'confirm-button', keyboard: true });
+    }
+    if (this.hasCustomKeyboardExit) {
+      exits.push({ id: 'custom-keyboard-exit', keyboard: true });
+    }
+    // A backdrop click is a real exit, and enumerated as one, but it is not a
+    // keyboard exit — WCAG 2.1.2 is about the keyboard interface, and the
+    // backdrop is not focusable or activatable from it. It also defaults to
+    // true, so counting it would suppress Escape on very nearly every modal.
+    if (this.closeOnOutsideClick) {
+      exits.push({ id: 'backdrop-click', keyboard: false });
+    }
+    return exits;
   }
 
-  // Whether a keyboard user can leave the modal without Escape. Measured off
-  // the live DOM rather than inferred from options, because the built-in close
-  // button, the cancel/confirm buttons and anything in the consumer's block all
-  // count, and only the DOM knows about the last one.
+  // Whether a keyboard user can leave the modal without pressing Escape.
   private hasKeyboardExit(): boolean {
-    return hasFocusableDescendant(this.cardElement);
+    return this.exits.some((exit) => exit.keyboard);
   }
 
   // Dev-only accessibility audit, run once per open. Both `warn` calls are
   // stripped from production builds along with their condition arguments.
   private auditAccessibility(): void {
     warn(
-      `ember-remodal: the modal "${this.name}" was opened with neither @title nor @ariaLabel, so its <dialog> has no accessible name — screen readers announce it only as "dialog" (WCAG 4.1.2). Pass @ariaLabel="…" when the modal has no visible title.`,
+      `ember-remodal: the modal "${this.name}" was opened without a resolvable accessible name, so its <dialog> is announced only as "dialog" (WCAG 4.1.2). Pass @title, @ariaLabel="…", or @ariaLabelledBy pointing at an element that exists and has text.`,
       this.hasAccessibleName,
       { id: 'ember-remodal.modal-without-accessible-name' },
     );
     warn(
-      `ember-remodal: the modal "${this.name}" was opened with @closeOnEscape={{false}} and contains no focusable control, so a keyboard user would have no way out (WCAG 2.1.2). Escape will close it anyway. Render the built-in close button (drop @disableNativeClose / @disableForeground) or put a focusable control inside the modal.`,
+      `ember-remodal: the modal "${this.name}" was opened with @closeOnEscape={{false}} and renders no control that closes it, so a keyboard user would have no way out (WCAG 2.1.2). Escape will close it anyway. Render the built-in close button (drop @disableNativeClose / @disableForeground), add a @cancelButton or @confirmButton that closes, or — if your own block content provides the way out — declare it with @hasCustomKeyboardExit={{true}}.`,
       this.closeOnEscape || this.hasKeyboardExit(),
       { id: 'ember-remodal.no-keyboard-exit' },
     );
@@ -891,6 +996,15 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
   }
 
   <template>
+    {{! ...attributes stays on this outer span, and Element stays
+        HTMLSpanElement. Splatting onto the <dialog> instead was considered as
+        a way to let a consumer set aria-labelledby themselves: rejected,
+        because every attribute on that element is addon-owned and
+        load-bearing — the state classes, the naming attributes chosen by
+        labelledById/labelAttribute, data-test-id, and five event modifiers —
+        and splattribute merging would let a consumer silently replace any of
+        them. @ariaLabelledBy is the supported way to name the dialog from
+        consumer markup. }}
     <span
       class="remodal-component"
       data-test-id={{this.opt "dataTestId"}}
@@ -959,7 +1073,7 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
           {{this.animationState}}"
         data-test-id="modalWrapper"
         aria-labelledby={{this.labelledById}}
-        aria-label={{this.ariaLabel}}
+        aria-label={{this.labelAttribute}}
         {{on "mousedown" this.handleWrapperMouseDown}}
         {{on "click" this.handleWrapperClick}}
         {{on "cancel" this.handleNativeCancel}}
@@ -1013,13 +1127,13 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
             ></button>
           {{/unless}}
 
-          {{#if (this.opt "title")}}
+          {{#if this.title}}
             <h2
               id={{this.titleId}}
               class="ember-remodal ember-remodal-inner ember-remodal-title ember-remodal-text
                 {{if this.legacyClassNames 'inner title text'}}"
               data-test-id="title"
-            >{{this.opt "title"}}</h2>
+            >{{this.title}}</h2>
           {{/if}}
 
           {{#if (this.opt "text")}}

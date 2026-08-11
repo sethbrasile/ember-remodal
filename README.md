@@ -184,6 +184,13 @@ Options passed to `open()` override the rendered arguments and `@options`, and
 merge into — rather than replace — the options set by a previous `open()` call,
 so they persist until replaced.
 
+The one exception is the naming group — `title`, `ariaLabel` and
+`ariaLabelledBy`. Those are mutually exclusive (the dialog carries exactly one
+naming attribute), so supplying any of them to `open()` clears the overrides for
+the other two. Without that, `open('x', { ariaLabel: 'Session expired' })`
+followed by `open('x', { title: 'Delete record?' })` would leave the dialog
+displaying one thing and announcing another.
+
 The component exposes a tracked `state` property:
 `'closed' | 'opening' | 'opened' | 'closing'`. It is the replacement for 2.x's
 `modal.getState()`, and `m.isOpen` is the same information yielded into the
@@ -200,12 +207,25 @@ work.
 
 ### Content
 
-| Option             | Default         | Description                                                                                  |
-| ------------------ | --------------- | -------------------------------------------------------------------------------------------- |
-| `title`            | —               | Renders an `<h2>`, and names the dialog via `aria-labelledby`                                |
-| `text`             | —               | Renders a `<p>`                                                                              |
-| `ariaLabel`        | —               | Accessible name for a modal with no visible `@title`. Wins over `@title` when both are given |
-| `closeButtonLabel` | `'Close Modal'` | `aria-label` and `title` for the built-in close button. An option so it can be translated    |
+| Option             | Default         | Description                                                                                                                                                                        |
+| ------------------ | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`            | —               | Renders an `<h2>`, and names the dialog via `aria-labelledby`                                                                                                                      |
+| `text`             | —               | Renders a `<p>`                                                                                                                                                                    |
+| `ariaLabel`        | —               | Accessible name for a modal with no visible `@title`. Wins over `@title` when both are given                                                                                       |
+| `ariaLabelledBy`   | —               | Id (or space-separated ids) of your own markup that names the dialog — a heading in the block, typically. Wins over both `@ariaLabel` and `@title`, matching the accname algorithm |
+| `closeButtonLabel` | `'Close Modal'` | `aria-label` and `title` for the built-in close button. An option so it can be translated                                                                                          |
+
+Exactly one naming attribute is ever emitted, and a blank string (`@title=" "`)
+counts as absent — the accname algorithm trims it to nothing, so pretending
+otherwise would produce a dialog the guard reports as named and a screen reader
+announces as "dialog".
+
+```hbs
+{{! Name the dialog from your own heading instead of duplicating its text }}
+<EmberRemodal @openButton="Edit" @ariaLabelledBy="edit-heading">
+  <h2 id="edit-heading">Edit your profile</h2>
+</EmberRemodal>
+```
 
 ### Triggers and buttons
 
@@ -242,15 +262,16 @@ work.
 
 ### Behavior
 
-| Option                | Default                      | Description                                                                                                                              |
-| --------------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `closeOnEscape`       | `true`                       | Close when Escape is pressed. `false` is honored only while the modal contains a focusable control — see [Accessibility](#accessibility) |
-| `closeOnOutsideClick` | `true`                       | Close when the backdrop (outside the card) is clicked. Requires the press _and_ the release to land there                                |
-| `closeOnConfirm`      | `true`                       | Close when confirm fires (`false` keeps it open, `@onConfirm` still fires)                                                               |
-| `closeOnCancel`       | `true`                       | Close when cancel fires                                                                                                                  |
-| `disableForeground`   | `false`                      | Removes the card styling so content floats on the backdrop (lightbox style). Pass `@ariaLabel` with it                                   |
-| `disableNativeClose`  | value of `disableForeground` | Hides the built-in × close button                                                                                                        |
-| `disableAnimation`    | `false`                      | Skips the open/close animations                                                                                                          |
+| Option                  | Default                      | Description                                                                                                                                           |
+| ----------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `closeOnEscape`         | `true`                       | Close when Escape is pressed. `false` is honored only while the modal renders some other control that closes it — see [Accessibility](#accessibility) |
+| `hasCustomKeyboardExit` | `false`                      | Declares that your block content provides a keyboard-operable way out, so `@closeOnEscape={{false}}` is honored. Only consulted alongside it          |
+| `closeOnOutsideClick`   | `true`                       | Close when the backdrop (outside the card) is clicked. Requires the press _and_ the release to land there                                             |
+| `closeOnConfirm`        | `true`                       | Close when confirm fires (`false` keeps it open, `@onConfirm` still fires)                                                                            |
+| `closeOnCancel`         | `true`                       | Close when cancel fires                                                                                                                               |
+| `disableForeground`     | `false`                      | Removes the card styling so content floats on the backdrop (lightbox style). Pass `@ariaLabel` with it                                                |
+| `disableNativeClose`    | value of `disableForeground` | Hides the built-in × close button                                                                                                                     |
+| `disableAnimation`      | `false`                      | Skips the open/close animations                                                                                                                       |
 
 ## Callbacks
 
@@ -593,8 +614,12 @@ disableAnimation: true })` works in both kinds of app and is the supported path.
 - **The dialog needs an accessible name.** `showModal()` supplies
   `role="dialog"` and implicit `aria-modal` but no name. `@title` provides one
   (the `<h2>` gets a generated id and the dialog an `aria-labelledby`); when
-  there is no visible title — a `@disableForeground` overlay, a block-only modal
-  — pass `@ariaLabel`. Opening with neither warns in development.
+  there is no visible title — a `@disableForeground` overlay — pass
+  `@ariaLabel`; when the name is already on screen as your own markup, pass
+  `@ariaLabelledBy` with its id rather than duplicating the text. Opening with
+  no name that actually resolves warns in development — including an
+  `@ariaLabelledBy` whose idref points at nothing, which is an attribute that is
+  present and names nothing at all.
 - **The built-in close button** is a real `<button>` carrying both `aria-label`
   and `title`, defaulting to `'Close Modal'` and settable with
   `@closeButtonLabel`. The `title` alone was not enough: the visible × comes
@@ -607,12 +632,38 @@ disableAnimation: true })` works in both kinds of app and is the supported path.
   focusable control** — they render a click-delegating `<span>`. See
   [Block form](#block-form-with-yielded-buttons).
 - **`@closeOnEscape={{false}}` is conditional.** It is honored only while the
-  modal contains some focusable control. With none — no close button, nothing
-  focusable in your content — Escape closes the modal anyway, because
-  `showModal()` makes focus containment real and the alternative is an
-  inescapable keyboard trap (WCAG 2.1.2, Level A). A development warning
-  explains it at open time. This is not dev-only behavior: development and
-  production must not disagree about whether a modal can be escaped.
+  modal has some other way out, and the addon works that out by **enumerating
+  the exits it renders** rather than by looking for something focusable in the
+  DOM. The exits are: the built-in close button; a `@cancelButton` with
+  `@closeOnCancel`; a `@confirmButton` with `@closeOnConfirm`; and
+  `@hasCustomKeyboardExit={{true}}`, which is how you declare that your own
+  block content provides the way out. With none of those, Escape closes the
+  modal anyway, because `showModal()` makes focus containment real and the
+  alternative is an inescapable keyboard trap (WCAG 2.1.2, Level A). A
+  development warning explains it at open time. This is not dev-only behavior:
+  development and production must not disagree about whether a modal can be
+  escaped.
+
+  Two things deliberately do **not** count. A backdrop click is not a keyboard
+  exit (and `@closeOnOutsideClick` defaults to `true`, so counting it would
+  suppress Escape almost everywhere). And "the block contains something
+  focusable" is not an exit either: an `<input type="hidden">`, a
+  `<button disabled>` and a cancel button under `@closeOnCancel={{false}}` are
+  all focusable-ish and none of them lets anyone leave. Declaring your exit is
+  one argument, and the fail-safe direction is the default:
+
+  ```hbs
+  <EmberRemodal
+    @closeOnEscape={{false}}
+    @disableNativeClose={{true}}
+    @hasCustomKeyboardExit={{true}}
+    @ariaLabel="Terms of service"
+    as |m|
+  >
+    <button type="button" {{on "click" m.closeAction}}>I agree</button>
+  </EmberRemodal>
+  ```
+
 - **Escape can force-close a modal regardless of `@closeOnEscape={{false}}`.**
   The addon calls `preventDefault()` on the dialog's `cancel` event, but in
   browsers implementing the HTML close-watcher algorithm that event is
@@ -637,13 +688,13 @@ disableAnimation: true })` works in both kinds of app and is the supported path.
 These are `@ember/debug` warnings, stripped from production builds. Each can be
 filtered by id with `registerWarnHandler`.
 
-| Id                                                  | Fires when                                                                                       |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `ember-remodal.modal-without-accessible-name`       | A modal is opened with neither `@title` nor `@ariaLabel`                                         |
-| `ember-remodal.no-keyboard-exit`                    | A modal is opened with `@closeOnEscape={{false}}` and contains no focusable control              |
-| `ember-remodal.er-button-without-focusable-content` | An `<m.open>` / `<m.confirm>` / `<m.cancel>` block contains no focusable control                 |
-| `ember-remodal.duplicate-service-name`              | Two `@forService` modals register under the same `@name` (the newest wins until it is destroyed) |
-| `ember-remodal.close-called-on-uninitialized-modal` | `close()` is called on a modal that has never been opened. Harmless; the promise resolves        |
+| Id                                                  | Fires when                                                                                                                             |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `ember-remodal.modal-without-accessible-name`       | A modal is opened with no resolvable name — no `@title`, no `@ariaLabel`, and no `@ariaLabelledBy` that points at an element with text |
+| `ember-remodal.no-keyboard-exit`                    | A modal is opened with `@closeOnEscape={{false}}` and renders no control that closes it                                                |
+| `ember-remodal.er-button-without-focusable-content` | An `<m.open>` / `<m.confirm>` / `<m.cancel>` block contains no focusable control                                                       |
+| `ember-remodal.duplicate-service-name`              | Two `@forService` modals register under the same `@name` (the newest wins until it is destroyed)                                       |
+| `ember-remodal.close-called-on-uninitialized-modal` | `close()` is called on a modal that has never been opened. Harmless; the promise resolves                                              |
 
 ## Contributing
 

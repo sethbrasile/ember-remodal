@@ -18,6 +18,13 @@ export interface ErButtonSignature {
 // controls, `tabindex="-1"` and programmatically-focused containers all count,
 // because a false "your trigger is keyboard-unreachable" warning is worse than
 // a missed one. `<button>` alone covers the overwhelmingly common case.
+//
+// That error bias is correct HERE and nowhere else. This predicate is for the
+// trigger-reachability warning below, full stop. It used to back the modal's
+// "does this have a way out?" gate too, where the bias inverts: a false
+// positive there suppressed Escape and left the user trapped. The modal now
+// enumerates its exits instead (see `exits` in ember-remodal.gts) — do not
+// wire this back into that decision.
 const FOCUSABLE_SELECTOR = [
   'a[href]',
   'area[href]',

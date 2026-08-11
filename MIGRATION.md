@@ -256,18 +256,31 @@ like.
 
 ### `@closeOnEscape={{false}}` is conditional now
 
-It is honored only while the modal contains a focusable control. With none,
-Escape closes the modal anyway, and a dev-mode warning
+It is honored only while the modal has some other way out. With none, Escape
+closes the modal anyway, and a dev-mode warning
 (`ember-remodal.no-keyboard-exit`) explains why. Under 1.x/2.x the modal was a
 plain `<div>` a keyboard user could Tab out of; `showModal()` makes focus
-containment real, so "Escape suppressed, nothing focusable inside" is now an
+containment real, so "Escape suppressed and nothing else closes this" is now an
 inescapable keyboard trap (WCAG 2.1.2, Level A). This is deliberately not
 dev-only — development and production must not disagree about whether a modal
 can be escaped.
 
-To keep Escape suppressed, render the built-in close button (drop
-`@disableNativeClose` / `@disableForeground`) or put any focusable control
-inside the modal.
+The addon decides this by **enumerating the exits it renders**, not by looking
+for something focusable in your DOM. To keep Escape suppressed, do one of:
+
+- render the built-in close button (drop `@disableNativeClose` /
+  `@disableForeground`);
+- render a `@cancelButton` or `@confirmButton` that actually closes (i.e. leave
+  `@closeOnCancel` / `@closeOnConfirm` at their `true` default);
+- pass `@hasCustomKeyboardExit={{true}}` to declare that your own block content
+  provides the way out.
+
+A focusable control in your block is **not** enough on its own, and that is a
+deliberate change from the first 3.0 beta: an `<input type="hidden">`, a
+`<button disabled>`, a `[tabindex="-1"]` container and a cancel button under
+`@closeOnCancel={{false}}` all look focusable to a DOM query while letting
+nobody leave. Getting that wrong in the permissive direction traps the user, so
+an exit the addon did not render has to be declared.
 
 ### Escape can force-close regardless of `@closeOnEscape={{false}}`
 

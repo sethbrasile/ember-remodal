@@ -4,6 +4,15 @@ import { waitForPromise } from '@ember/test-waiters';
 import type EmberRemodal from '../components/ember-remodal.gts';
 import type { EmberRemodalOptions } from '../components/ember-remodal.gts';
 
+// The three options that name the dialog. They are mutually exclusive — the
+// component emits exactly one naming attribute, in accname's own precedence
+// order — so they are also mutually exclusive ACROSS opens: a later
+// `open(name, { title })` must not leave the previous call's `ariaLabel`
+// winning, or the dialog announces one thing while displaying another
+// (WCAG 4.1.2, 1.3.1). Everything else still merges, which is 2.x's
+// setProperties parity and is covered by its own regression tests.
+const NAMING_KEYS = ['title', 'ariaLabel', 'ariaLabelledBy'] as const;
+
 function missingModalMessage(name: string): string {
   return `The requested modal, "${name}" can not be opened because it is not rendered in the current route. In order to use ember-remodal as a service, an instance of {{ember-remodal}} must currently be rendered, with "forService=true". Try putting it in your application template.`;
 }
@@ -90,7 +99,19 @@ export default class RemodalService extends Service {
     }
     // Matches the old addon's setProperties behavior: overrides merge into
     // any previous ones and persist across subsequent opens until replaced.
-    modal.serviceOverrides = { ...modal.serviceOverrides, ...opts };
+    const merged: EmberRemodalOptions = { ...modal.serviceOverrides, ...opts };
+    // …except within the naming group, where merging is what produces the
+    // mismatch. Supplying any one naming key clears the overrides for the
+    // others, so they fall back to @options/args rather than to whatever the
+    // previous open happened to set.
+    if (NAMING_KEYS.some((key) => key in opts)) {
+      for (const key of NAMING_KEYS) {
+        if (!(key in opts)) {
+          delete merged[key];
+        }
+      }
+    }
+    modal.serviceOverrides = merged;
     return modal.open();
   }
 }
