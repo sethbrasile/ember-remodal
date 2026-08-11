@@ -883,6 +883,15 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
         {{on "close" this.handleDialogClose}}
         {{this.registerDialog}}
       >
+        {{! `remodal-is-initialized` has no rule behind it: upstream used it to
+            unwind a display:none anti-FOUC rule, which the dialog element makes
+            unnecessary. It is still emitted because 1.x/2.x consumer CSS and
+            test selectors may key off it.
+
+            `invisible` is likewise emitted only for back-compat. Bootstrap owns
+            that class name (visibility:hidden !important), so the addon's own
+            @disableForeground styling hangs off the namespaced
+            `ember-remodal-invisible` beside it. }}
         <div
           class="remodal remodal-is-initialized
             {{this.stateClass}}
@@ -891,7 +900,7 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
             {{this.modifier}}
             {{this.animationState}}
             window
-            {{if this.disableForeground 'invisible'}}
+            {{if this.disableForeground 'invisible ember-remodal-invisible'}}
             {{this.opt 'modalClasses'}}"
           data-test-id="modalWindow"
         >

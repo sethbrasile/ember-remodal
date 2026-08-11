@@ -12,6 +12,10 @@
   --demo-border: #e3e5ea;
 }
 
+/* The demo's own layout convenience. The addon must never depend on it: this
+   reset is what hid the wrapper's missing `box-sizing: border-box` (the dialog
+   box overflowed the viewport by 20px in an app without a reset). The test app
+   ships no reset at all, which is where that is now measured. */
 * {
   box-sizing: border-box;
 }
@@ -161,21 +165,22 @@ code {
   opacity: 0.7;
 }
 
-/* a custom remodal theme, applied via @modifier="demo-midnight" */
+/* A custom remodal theme, applied via @modifier="demo-midnight".
+   Colours go through the addon's custom properties — the supported override
+   path, which needs no specificity fight — and only `border-radius`, which has
+   no variable, is declared directly. `--ember-remodal-color-scheme` is what
+   keeps form controls inside a dark card dark. */
 
 .remodal.demo-midnight {
-  background: #1b1f2a;
-  color: #e8eaf2;
+  --ember-remodal-background: #1b1f2a;
+  --ember-remodal-color: #e8eaf2;
+  --ember-remodal-color-scheme: dark;
+  --ember-remodal-close-color: #8b91a5;
+  --ember-remodal-close-color-hover: #e8eaf2;
+  --ember-remodal-focus-ring: #e8eaf2;
+  --ember-remodal-focus-ring-inverse: #10131a;
+
   border-radius: 12px;
-}
-
-.remodal.demo-midnight .remodal-close {
-  color: #8b91a5;
-}
-
-.remodal.demo-midnight .remodal-close:hover,
-.remodal.demo-midnight .remodal-close:focus {
-  color: #e8eaf2;
 }
 
 dialog.remodal-wrapper.demo-midnight::backdrop {
