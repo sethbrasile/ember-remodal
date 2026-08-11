@@ -18,14 +18,21 @@ node_modules/
 
 # potentially containing secrets.
 #
-# `.env*` is denied by default rather than named file by file. The blueprint's
-# `.env.development` used to be tracked here; it existed to force NODE_ENV for
-# `vite build --mode=test`, a mode this repo never runs, and removing it leaves
-# the suite at 136/136. Whatever lands next to it would have been committed by
-# default — hence the wildcard. Add an explicit `!` exception, with a reason,
-# if a committed env file ever earns its place.
+# `.env*` is denied by default rather than named file by file: whatever lands
+# next to a tracked env file would otherwise be committed without anyone
+# deciding to, and `package.json#files` publishes `src/` wholesale.
+#
+# `.env.development` is the one exception, and it is load-bearing, not
+# blueprint residue. It sets NODE_ENV=development for `vite build
+# --mode=development` (what `pnpm test` runs); without it `@embroider/macros`
+# resolves `isTesting` to false at compile time and the build dies on
+# `tests/test-helper.ts`: "setTesting(true) cannot change the testing state in
+# compile-time mode". A local run can mask this — an inherited NODE_ENV or a
+# warm Vite cache hides it — but CI fails outright. Anything else added here
+# needs the same kind of reason written down.
 *.local
 .env*
+!.env.development
 
 # OS cruft
 .DS_Store
