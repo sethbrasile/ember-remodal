@@ -540,6 +540,118 @@ module('Rendering | ember-remodal theme', function (hooks) {
       }
     });
 
+    test('an unlayered consumer rule beats the addon at equal specificity, layer-first or not', async function (assert) {
+      // The addon's whole sheet is inside `@layer ember-remodal`. Unlayered
+      // author CSS beats layered author CSS regardless of specificity OR source
+      // order, so `.remodal { background }` — a straight tie with the addon's
+      // own `.remodal`, loaded FIRST, which before the layer lost to the
+      // addon's later sheet — now wins. This covers what the custom properties
+      // cannot: geometry and layout, not just colour.
+      const dispose = addStyleSheet(
+        '.remodal { background: rgb(255, 0, 0); padding: 1px }',
+        'first',
+      );
+      try {
+        await render(
+          <template>
+            <EmberRemodal
+              @openButton="Open"
+              @title="Layered"
+              @disableAnimation={{true}}
+            />
+          </template>,
+        );
+        await click('[data-test-id="openButton"]');
+
+        const style = getComputedStyle(find('[data-test-id="modalWindow"]')!);
+        assert.strictEqual(
+          style.backgroundColor,
+          'rgb(255, 0, 0)',
+          'the unlayered consumer colour wins over the layered default',
+        );
+        assert.strictEqual(
+          style.paddingTop,
+          '1px',
+          'and so does a non-colour declaration, which no custom property could carry',
+        );
+      } finally {
+        dispose();
+      }
+    });
+
+    test('the same rule inside the addon layer does not win', async function (assert) {
+      // The control for the test above: identical selector, identical
+      // declarations, identical position — but inside `@layer ember-remodal`,
+      // so it is ordered by the layer rather than ahead of it. Earlier in the
+      // same layer loses to the addon's own rule. If the `@layer` wrapper ever
+      // came off the stylesheet, THIS rule would win (it would be a plain tie
+      // decided by source order, and the addon's sheet is loaded later), so
+      // this assertion is what proves the layer is really there.
+      const dispose = addStyleSheet(
+        '@layer ember-remodal { .remodal { background: rgb(255, 0, 0); padding: 1px } }',
+        'first',
+      );
+      try {
+        await render(
+          <template>
+            <EmberRemodal
+              @openButton="Open"
+              @title="Layered"
+              @disableAnimation={{true}}
+            />
+          </template>,
+        );
+        await click('[data-test-id="openButton"]');
+
+        const style = getComputedStyle(find('[data-test-id="modalWindow"]')!);
+        assert.strictEqual(
+          style.backgroundColor,
+          'rgb(255, 255, 255)',
+          'the addon default still applies',
+        );
+        assert.strictEqual(style.paddingTop, '35px', 'and so does its padding');
+      } finally {
+        dispose();
+      }
+    });
+
+    test('the stylesheet ships inside @layer ember-remodal', function (assert) {
+      // A source-level guard on the wrapper itself, so removing it is a test
+      // failure rather than a silent loss of the override contract.
+      // Both the `#src` copy and the built `dist` copy are in the document
+      // (published-package-test imports the package specifier), so assert per
+      // sheet rather than over the flattened list.
+      const sheets = addonSheets();
+      assert.ok(sheets.length > 0, 'the addon sheet is in the document');
+      for (const sheet of sheets) {
+        const layers = [...sheet.cssRules].filter(
+          (rule): rule is CSSLayerBlockRule =>
+            rule instanceof CSSLayerBlockRule,
+        );
+        assert.deepEqual(
+          layers.map((layer) => layer.name),
+          ['ember-remodal'],
+          'exactly one layer block, named ember-remodal',
+        );
+        assert.ok(
+          layers[0]!.cssRules.length > 20,
+          `the theme rules are inside it (${layers[0]!.cssRules.length} rules)`,
+        );
+        // Scoped to the addon's own selectors: the dev build bundles this
+        // stylesheet together with the test harness's, whose rules legitimately
+        // sit outside any layer.
+        const strays = [...sheet.cssRules].filter(
+          (rule): rule is CSSStyleRule =>
+            rule instanceof CSSStyleRule && /remodal/.test(rule.selectorText),
+        );
+        assert.deepEqual(
+          strays.map((rule) => rule.selectorText),
+          [],
+          'no addon style rule sits outside the layer',
+        );
+      }
+    });
+
     test('@modalClasses can retheme the card even though it ties on specificity', async function (assert) {
       // `.my-theme` (0,1,0) ties with `.remodal` (0,1,0), so who wins used to
       // depend on bundle order. Setting the variables sidesteps the cascade
@@ -714,8 +826,11 @@ module('Rendering | ember-remodal theme', function (hooks) {
       const card = find('[data-test-id="modalWindow"]')!;
       assert
         .dom(card)
-        .hasClass('invisible', 'the back-compat class is still emitted')
-        .hasClass('ember-remodal-invisible', 'and the namespaced one');
+        .hasClass('ember-remodal-invisible', 'the namespaced class is emitted')
+        .doesNotHaveClass(
+          'invisible',
+          'and the bare Bootstrap-owned one is retired (@legacyClassNames restores it)',
+        );
 
       const style = getComputedStyle(card);
       assert.strictEqual(
@@ -735,7 +850,12 @@ module('Rendering | ember-remodal theme', function (hooks) {
       // Bootstrap 3, 4 and 5 all ship `.invisible { visibility: hidden
       // !important }`. Against the old `.invisible.remodal.window` rules that
       // won outright, so @disableForeground rendered a fully hidden modal that
-      // still held the top layer and trapped focus.
+      // still held the top layer and trapped focus. Two independent defences
+      // now: the card does not carry the bare class at all unless the consumer
+      // opts in, and `@layer` inverts `!important` precedence so the addon's
+      // layered `visibility: visible !important` outranks an unlayered one.
+      // Opted INTO the legacy classes here, so the second defence is the one
+      // under test.
       const dispose = addStyleSheet(
         '.invisible { visibility: hidden !important }',
         'last',
@@ -747,6 +867,7 @@ module('Rendering | ember-remodal theme', function (hooks) {
               @openButton="Open"
               @ariaLabel="Ghost"
               @disableForeground={{true}}
+              @legacyClassNames={{true}}
               @disableAnimation={{true}}
             >
               <p data-test-ghost>Frameless content</p>
@@ -855,10 +976,23 @@ module('Rendering | ember-remodal theme', function (hooks) {
   });
 });
 
+/**
+ * A sheet's rules with `@layer` blocks flattened away. The addon's whole
+ * stylesheet lives inside `@layer ember-remodal`, so its top level is a single
+ * `CSSLayerBlockRule`; every helper here wants what is inside it. Nested
+ * because a layer block may contain another. Media blocks are deliberately NOT
+ * flattened — `mediaBlock()` addresses those by condition.
+ */
+function unlayered(rules: Iterable<CSSRule>): CSSRule[] {
+  return [...rules].flatMap((rule) =>
+    rule instanceof CSSLayerBlockRule ? unlayered(rule.cssRules) : [rule],
+  );
+}
+
 /** Every top-level style rule in the addon's own stylesheet. */
 function ownStyleRules(): CSSStyleRule[] {
   return addonSheets().flatMap((sheet) =>
-    [...sheet.cssRules].filter(
+    unlayered(sheet.cssRules).filter(
       (rule): rule is CSSStyleRule => rule instanceof CSSStyleRule,
     ),
   );
@@ -867,7 +1001,7 @@ function ownStyleRules(): CSSStyleRule[] {
 /** The style rules inside a given media block of the addon's stylesheet. */
 function mediaBlock(condition: string): CSSStyleRule[] {
   return addonSheets()
-    .flatMap((sheet) => [...sheet.cssRules])
+    .flatMap((sheet) => unlayered(sheet.cssRules))
     .filter(
       (rule): rule is CSSMediaRule =>
         rule instanceof CSSMediaRule &&
@@ -916,7 +1050,7 @@ function matchingSelectors(selector: string): CSSStyleRule[] {
 function addonSheets(): CSSStyleSheet[] {
   return [...document.styleSheets].filter((sheet) => {
     try {
-      return [...sheet.cssRules].some(
+      return unlayered(sheet.cssRules).some(
         (rule) =>
           rule instanceof CSSStyleRule &&
           rule.selectorText.includes('.remodal-wrapper'),

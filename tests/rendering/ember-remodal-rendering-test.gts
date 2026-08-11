@@ -85,13 +85,214 @@ module('Rendering | ember-remodal', function (hooks) {
       .hasClass('ember-remodal')
       .hasClass('my-name')
       .hasClass('with-red-theme')
-      .hasClass('window')
+      .hasClass('ember-remodal-window')
       .hasClass('extra-class')
       .hasClass('remodal-is-closed');
     assert
       .dom('[data-test-id="modalWrapper"]')
       .hasClass('remodal-wrapper')
       .hasClass('with-red-theme');
+  });
+
+  /**
+   * Pattern-3 regression guard. 1.x/2.x emitted a bare single-word class token
+   * beside every namespaced one, and every addon rule backing them sits at
+   * specificity (0,1,0) — so Bootstrap's `.close`/`.invisible` and
+   * Bulma/Foundation's `.button` tie or beat them, with bundle order (which the
+   * addon cannot control) deciding the winner. Round 1 namespaced exactly the
+   * one token that had been reported (`invisible`); this asserts the whole
+   * population is gone rather than one member of it.
+   */
+  const RETIRED_BARE_CLASSES = [
+    'window',
+    'close',
+    'button',
+    'title',
+    'text',
+    'content',
+    'invisible',
+    'open',
+    'link',
+    'native',
+    'inner',
+    'outer',
+    'confirm',
+    'cancel',
+    'paragraph',
+    'yielded',
+  ];
+
+  /** Every class token on every element the rendered components emit. */
+  function emittedClasses(): string[] {
+    const roots = [...document.querySelectorAll('.remodal-component')];
+    if (roots.length === 0) {
+      throw new Error('the component did not render');
+    }
+    const tokens = new Set<string>();
+    for (const root of roots) {
+      for (const element of [root, ...root.querySelectorAll('*')]) {
+        for (const token of element.classList) {
+          tokens.add(token);
+        }
+      }
+    }
+    return [...tokens];
+  }
+
+  test('no rendered element carries a bare single-word class token', async function (assert) {
+    await render(
+      <template>
+        <EmberRemodal
+          @openButton="Open"
+          @title="Titled"
+          @text="Texted"
+          @confirmButton="Yes"
+          @cancelButton="No"
+          @disableAnimation={{true}}
+          as |m|
+        >
+          <m.open><button type="button">Trigger</button></m.open>
+          <p>Block content</p>
+        </EmberRemodal>
+        {{! the two link trigger variants, which render different markup }}
+        <EmberRemodal @openLink="Open link" />
+        <EmberRemodal @linkButton="Legacy link" />
+      </template>,
+    );
+    await click('[data-test-id="openButton"]');
+
+    const emitted = emittedClasses();
+    assert.true(emitted.length > 10, `collected classes: ${emitted.join(' ')}`);
+
+    for (const bare of RETIRED_BARE_CLASSES) {
+      assert.false(
+        emitted.includes(bare),
+        `the bare \`${bare}\` token is not emitted`,
+      );
+    }
+
+    // And the positive form of the same rule, so a NEW bare token cannot be
+    // added without failing here: every token is namespaced. `er-button` is the
+    // yielded trigger's own hook and `disable-animation` the animation
+    // kill-switch; both are hyphenated compounds, not framework-owned nouns.
+    for (const token of emitted) {
+      assert.true(
+        /^(remodal-|remodal$|ember-remodal|er-button$|disable-animation$)/.test(
+          token,
+        ),
+        `\`${token}\` is namespaced`,
+      );
+    }
+  });
+
+  test('@legacyClassNames brings the 2.x bare tokens back', async function (assert) {
+    await render(
+      <template>
+        <EmberRemodal
+          @openButton="Open"
+          @title="Titled"
+          @text="Texted"
+          @confirmButton="Yes"
+          @cancelButton="No"
+          @disableForeground={{true}}
+          @disableNativeClose={{false}}
+          @legacyClassNames={{true}}
+          @disableAnimation={{true}}
+          as |m|
+        >
+          <m.open><button type="button">Trigger</button></m.open>
+          <p>Block content</p>
+        </EmberRemodal>
+        <EmberRemodal @openLink="Open link" @legacyClassNames={{true}} />
+      </template>,
+    );
+    await click('[data-test-id="openButton"]');
+
+    const emitted = emittedClasses();
+    for (const bare of RETIRED_BARE_CLASSES) {
+      assert.true(
+        emitted.includes(bare),
+        `the opt-in restores \`${bare}\` (${emitted.join(' ')})`,
+      );
+    }
+    // The namespaced hooks stay put alongside them.
+    assert.dom('[data-test-id="modalWindow"]').hasClass('ember-remodal-window');
+  });
+
+  test('every styling hook documented in the README resolves against the rendered DOM', async function (assert) {
+    // One row per line of README's "Styling hooks" table (plus the two
+    // footnoted forms). Renaming a hook without updating the table — or the
+    // table without the markup — fails here.
+    await render(
+      <template>
+        <EmberRemodal
+          @name="my-name"
+          @openButton="Open"
+          @title="Titled"
+          @text="Texted"
+          @confirmButton="Yes"
+          @cancelButton="No"
+          @disableAnimation={{true}}
+        >
+          <p>Block content</p>
+        </EmberRemodal>
+        <EmberRemodal @openLink="Open link" />
+        <EmberRemodal @linkButton="Legacy link" />
+        <EmberRemodal @ariaLabel="Ghost" @disableForeground={{true}} />
+      </template>,
+    );
+    await click('[data-test-id="openButton"]');
+
+    const hooks = [
+      '.ember-remodal.ember-remodal-window',
+      '.ember-remodal.my-name.ember-remodal-window',
+      '.ember-remodal.ember-remodal-open.ember-remodal-button',
+      '.ember-remodal.ember-remodal-link.ember-remodal-text',
+      '.ember-remodal.ember-remodal-confirm.ember-remodal-button',
+      '.ember-remodal.ember-remodal-cancel.ember-remodal-button',
+      '.ember-remodal.ember-remodal-native.ember-remodal-close',
+      '.ember-remodal.ember-remodal-title.ember-remodal-text',
+      '.ember-remodal.ember-remodal-paragraph.ember-remodal-text',
+      '.ember-remodal.ember-remodal-yielded.ember-remodal-content',
+      '.ember-remodal.ember-remodal-button',
+      '.ember-remodal.ember-remodal-inner.ember-remodal-button',
+      '.ember-remodal.ember-remodal-outer.ember-remodal-button',
+      '.ember-remodal.ember-remodal-outer.ember-remodal-link.ember-remodal-text',
+      '.ember-remodal-invisible.remodal',
+      // The overlay row: a ::backdrop cannot be selected, so assert its
+      // originating element instead.
+      'dialog.remodal-wrapper',
+    ];
+
+    for (const hook of hooks) {
+      assert.dom(hook).exists(`${hook} matches`);
+    }
+    // The table's note that the outer-button hook does NOT match the link
+    // forms, which render as `.ember-remodal-outer.ember-remodal-link`.
+    assert
+      .dom('[data-test-id="openLink"]')
+      .doesNotHaveClass('ember-remodal-button');
+    assert
+      .dom('[data-test-id="linkButton"]')
+      .doesNotHaveClass('ember-remodal-button');
+  });
+
+  test('the link trigger variants carry the namespaced hooks', async function (assert) {
+    await render(
+      <template>
+        <EmberRemodal @openLink="Open link" />
+        <EmberRemodal @linkButton="Legacy link" />
+      </template>,
+    );
+
+    for (const id of ['openLink', 'linkButton']) {
+      assert
+        .dom(`[data-test-id="${id}"]`)
+        .hasClass('ember-remodal')
+        .hasClass('ember-remodal-outer')
+        .hasClass('ember-remodal-link')
+        .hasClass('ember-remodal-text');
+    }
   });
 
   test('options can be provided via the @options object', async function (assert) {
@@ -209,7 +410,13 @@ module('Rendering | ember-remodal', function (hooks) {
     );
 
     assert.dom('[data-test-id="nativeClose"]').doesNotExist();
-    assert.dom('[data-test-id="modalWindow"]').hasClass('invisible');
+    assert
+      .dom('[data-test-id="modalWindow"]')
+      .hasClass('ember-remodal-invisible')
+      .doesNotHaveClass(
+        'invisible',
+        'the bare Bootstrap-colliding token is retired',
+      );
   });
 
   test('@disableForeground with @disableNativeClose={{false}} keeps the close button', async function (assert) {
@@ -228,7 +435,9 @@ module('Rendering | ember-remodal', function (hooks) {
     );
 
     assert.dom('[data-test-id="nativeClose"]').exists();
-    assert.dom('[data-test-id="modalWindow"]').hasClass('invisible');
+    assert
+      .dom('[data-test-id="modalWindow"]')
+      .hasClass('ember-remodal-invisible');
   });
 
   test('the outer trigger classes land on the button and the link variants', async function (assert) {

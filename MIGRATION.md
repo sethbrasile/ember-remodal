@@ -316,12 +316,109 @@ development (`ember-remodal.modal-without-accessible-name`).
 
 ## Theme changes
 
-Every 2.x class hook still exists — see the
-[styling table in the README](README.md#styling-hooks) — and all of the
-`remodal-*` names are preserved. The ported theme does deviate from upstream
-Remodal in nine places, each for a WCAG or correctness reason, and each
-revertible. They are listed in [CHANGELOG.md](CHANGELOG.md#fixed); the ones
-most likely to be visible in a 2.x app:
+### Breaking: the bare single-word class hooks are retired
+
+**This is a change to the addon's public CSS contract — read it before you
+upgrade if you have any styling keyed on the modal's markup.**
+
+1.x and 2.x emitted a bare single-word class token beside every namespaced one.
+The card carried `window`, the built-in close button carried `native` and
+`close`, confirm and cancel carried `button`, and the title, text and yielded
+wrapper carried `title`, `text`, `paragraph`, `yielded` and `content` — plus
+`open`, `link`, `inner`, `outer`, `confirm`, `cancel` and (under
+`@disableForeground`) `invisible`.
+
+Every one of those is gone in 3.0. They were unwinnable collisions: Bootstrap
+3/4/5 own `.close` and `.invisible`, Bulma and Foundation own `.button`, and an
+app can own `.window` or `.content`. Every addon rule backing them sits at
+specificity (0,1,0), which ties those frameworks exactly, so which one won was
+decided by bundle order — something the addon explicitly cannot control, since
+its stylesheet ships as a side-effect import of the component module. Round one
+of this rewrite namespaced only `invisible`, after Bootstrap's
+`visibility: hidden !important` was found rendering a fully hidden modal that
+still held the top layer and trapped focus. 3.0 finishes the job.
+
+Each has an `ember-remodal-`-prefixed replacement, matching the
+`ember-remodal-invisible` hook 2.x users may already have seen:
+
+| 2.x compound hook                | 3.0 replacement                                              |
+| -------------------------------- | ------------------------------------------------------------ |
+| `.ember-remodal.window`          | `.ember-remodal.ember-remodal-window`                        |
+| `.ember-remodal.<name>.window`   | `.ember-remodal.<name>.ember-remodal-window`                 |
+| `.ember-remodal.open.button`     | `.ember-remodal.ember-remodal-open.ember-remodal-button`     |
+| `.ember-remodal.link.text`       | `.ember-remodal.ember-remodal-link.ember-remodal-text`       |
+| `.ember-remodal.confirm.button`  | `.ember-remodal.ember-remodal-confirm.ember-remodal-button`  |
+| `.ember-remodal.cancel.button`   | `.ember-remodal.ember-remodal-cancel.ember-remodal-button`   |
+| `.ember-remodal.native.close`    | `.ember-remodal.ember-remodal-native.ember-remodal-close`    |
+| `.ember-remodal.title.text`      | `.ember-remodal.ember-remodal-title.ember-remodal-text`      |
+| `.ember-remodal.paragraph.text`  | `.ember-remodal.ember-remodal-paragraph.ember-remodal-text`  |
+| `.ember-remodal.yielded.content` | `.ember-remodal.ember-remodal-yielded.ember-remodal-content` |
+| `.ember-remodal.button`          | `.ember-remodal.ember-remodal-button`                        |
+| `.ember-remodal.inner.button`    | `.ember-remodal.ember-remodal-inner.ember-remodal-button`    |
+| `.ember-remodal.outer.button`    | `.ember-remodal.ember-remodal-outer.ember-remodal-button`    |
+| `.invisible.remodal`             | `.ember-remodal-invisible.remodal`                           |
+
+The `remodal-*` names are all untouched: `.remodal`, `.remodal-wrapper`,
+`.remodal-close`, `.remodal-confirm`, `.remodal-cancel`, `.remodal-bg`,
+`.remodal-is-locked`, `.remodal-is-initialized` and the `remodal-is-*` state
+classes. Most 2.x styling keys off those and needs no change at all.
+
+**The bridge.** `@legacyClassNames={{true}}` re-emits every retired token
+alongside the namespaced hooks, so 2.x CSS keeps matching:
+
+```hbs
+<EmberRemodal @title="Legacy CSS" @legacyClassNames={{true}} />
+```
+
+It also works through `@options` and `service.open(name, opts)`
+(`legacyClassNames: true`). It is opt-in per modal and it re-opens exactly the
+collisions it exists to work around — a Bootstrap app that turns it on gets
+`.close { opacity: .5 }` on the close glyph back. Treat it as a bridge while
+you rename selectors, not as a setting to leave on.
+
+### Breaking: the stylesheet ships inside `@layer ember-remodal`
+
+The whole theme is wrapped in a cascade layer. Unlayered author CSS beats
+layered author CSS regardless of specificity **or** source order, so the
+override promise the 3.0 docs make is now stronger than the custom properties
+alone could make it: `.remodal { padding: 0 }` in your stylesheet wins outright,
+and the guarantee covers geometry and layout rather than only colour.
+
+Two consequences, recorded as deliberate deviations ten and eleven:
+
+1. **`!important` precedence is inverted inside a layer.** A layered
+   `!important` beats an unlayered one, so the stylesheet's two deliberate
+   `!important` declarations — the close glyph's `font-family`, and
+   `visibility: visible` on the `@disableForeground` card — can no longer be
+   overridden by a plain `!important` of yours. For the `visibility` one that is
+   the point: it exists to survive Bootstrap's
+   `.invisible { visibility: hidden !important }`. If you need to win either,
+   declare your own `@layer` after `ember-remodal`:
+
+   ```css
+   @layer ember-remodal, my-overrides;
+
+   @layer my-overrides {
+     .remodal-close::before {
+       font-family: system-ui;
+     }
+   }
+   ```
+
+2. **Engines without `@layer` support keep the old behaviour** — plain
+   specificity and source order, and the bare-class collisions with it. The
+   addon already requires `dialog.showModal()` and `Element.getAnimations()`,
+   both of which shipped later than `@layer`, so no supported engine is
+   affected.
+
+### The rest of the theme
+
+Every `remodal-*` class hook still exists — see the
+[styling table in the README](README.md#styling-hooks). The ported theme does
+deviate from upstream Remodal in eleven places, each for a WCAG, correctness or
+cascade-safety reason, and each revertible. They are listed in
+[CHANGELOG.md](CHANGELOG.md#fixed); the ones most likely to be visible in a 2.x
+app:
 
 - Confirm and cancel are darker (`#2e7d32` / `#c62828`) so white label text
   reaches AA contrast. Set `--ember-remodal-confirm-background` and
@@ -333,9 +430,13 @@ most likely to be visible in a 2.x app:
 - The dialog, card and buttons draw `:focus-visible` rings; upstream set
   `outline: none` on all of them.
 - `@disableForeground`'s styling hangs off `ember-remodal-invisible` rather than
-  the bare `invisible` class, which Bootstrap owns. `invisible` is still
-  emitted, so 1.x/2.x CSS keyed on it still applies — but the addon's own rules
-  no longer do.
+  the bare `invisible` class, which Bootstrap owns — and the bare class is no
+  longer emitted at all unless you pass `@legacyClassNames={{true}}` (see
+  above). Its foreground and close glyph are themable now
+  (`--ember-remodal-frameless-color`,
+  `--ember-remodal-frameless-close-color`), because they sit on the overlay
+  rather than on a card background: lighten `--ember-remodal-overlay` and you
+  need to set them too.
 - `.remodal-bg` blurring works again, as
   `html.remodal-is-locked .remodal-bg { filter: blur(3px) }`. One caveat that is
   new in 3.0: the `<dialog>` renders in place rather than being moved to the
@@ -384,6 +485,10 @@ drop their manual waits.
 
 ### Selector updates in tests
 
+- Any bare single-word class selector — `.window`, `.close`, `.button`,
+  `.title`, `.text`, `.content`, `.invisible` and the rest — →
+  the `ember-remodal-` prefixed form (`.ember-remodal-window`, …). See
+  [the table above](#breaking-the-bare-single-word-class-hooks-are-retired).
 - `.remodal-overlay` → `dialog.remodal-wrapper::backdrop` (there is no element
   to select; assert on the dialog instead).
 - `[data-remodal-id=…]` → `[data-test-id="modalWindow"]` or your own
@@ -419,7 +524,9 @@ drop their manual waits.
   _type_ changed; see [RSVP](#rsvp-promises--native-promises) above.
 - **CSS class names**: `remodal`, `remodal-wrapper`, the `remodal-is-*` state
   classes, `remodal-is-initialized`, `remodal-close`, `remodal-is-locked`,
-  `remodal-bg`, and every `ember-remodal …` utility class.
+  `remodal-bg`, and the `ember-remodal` class itself. (The bare single-word
+  tokens beside them are **not** preserved — see
+  [Theme changes](#breaking-the-bare-single-word-class-hooks-are-retired).)
 - **`data-test-id` hooks**: `modalWindow`, `openButton`, `openLink`,
   `linkButton`, `confirmButton`, `cancelButton`, `nativeClose`, `title`, `text`,
   `yielded` — plus `modalWrapper`, which is new (2.x had no test hook on the
@@ -431,6 +538,8 @@ drop their manual waits.
   `m.confirmAction` / `m.cancelAction` for `{{on}}` on your own elements.
 - `@onBeforeOpen` — return `false` to veto opening.
 - `@ariaLabel` and `@closeButtonLabel`.
+- `@legacyClassNames` — the opt-in bridge that re-emits the retired bare class
+  tokens.
 - A public tracked `state` property.
 - **Stacked modals**: opening a modal from within another modal works naturally
   via the top layer, and the scroll lock is reference-counted across them.

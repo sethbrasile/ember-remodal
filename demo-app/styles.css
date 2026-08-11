@@ -151,10 +151,13 @@ code {
   font-size: 0.85rem;
 }
 
-/* frameless (disableForeground) modal content */
+/* frameless (disableForeground) modal content.
+   The addon's frameless card exposes its foreground as a custom property
+   (it sits on the themable overlay, not on the card background), so the demo's
+   own content follows the same token rather than hardcoding white. */
 
 .demo-frameless {
-  color: #fff;
+  color: var(--ember-remodal-frameless-color, #fff);
   font-size: 1.3rem;
   max-width: 28rem;
   margin: 0 auto;

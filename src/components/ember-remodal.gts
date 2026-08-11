@@ -53,6 +53,14 @@ export interface EmberRemodalOptions {
   disableForeground?: boolean;
   disableNativeClose?: boolean;
   disableAnimation?: boolean;
+  // Opt back in to the bare single-word class tokens 1.x/2.x emitted
+  // (`window`, `close`, `button`, `title`, `text`, `content`, `open`, `link`,
+  // `native`, `inner`, `outer`, `confirm`, `cancel`, `paragraph`, `yielded`,
+  // `invisible`). They are off by default in 3.0 because CSS frameworks own
+  // those names — Bootstrap's `.close` and `.invisible`, Bulma/Foundation's
+  // `.button` — and a bare token is a collision the addon cannot win from a
+  // stylesheet whose bundle position it does not control. See MIGRATION.md.
+  legacyClassNames?: boolean;
   // Callbacks live here (rather than only on the args) so they can be passed
   // through `@options` or `service.open(name, opts)` as well as directly,
   // which is what 2.x's setProperties-based option merge allowed.
@@ -415,6 +423,10 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
 
   get disableNativeClose(): boolean {
     return this.opt('disableNativeClose') ?? this.disableForeground;
+  }
+
+  get legacyClassNames(): boolean {
+    return this.opt('legacyClassNames') ?? false;
   }
 
   get disableAnimation(): boolean {
@@ -884,10 +896,18 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
       data-test-id={{this.opt "dataTestId"}}
       ...attributes
     >
+      {{! Every class token the addon emits is namespaced: remodal-* or
+          ember-remodal-*. 1.x/2.x also emitted bare single-word tokens beside
+          them — outer, link, text, open, button, window, close, … — which CSS
+          frameworks own (Bootstrap's .close, Bulma's .button) and which the
+          addon cannot outrank from a stylesheet whose bundle position it does
+          not control. They are retired; the @legacyClassNames argument emits
+          them alongside the namespaced ones. }}
       {{#if (this.opt "linkButton")}}
         <a
           href="#"
-          class="ember-remodal outer link text
+          class="ember-remodal ember-remodal-outer ember-remodal-link ember-remodal-text
+            {{if this.legacyClassNames 'outer link text'}}
             {{this.opt 'buttonClasses'}}
             {{this.opt 'outerButtonClasses'}}"
           data-test-id="linkButton"
@@ -896,7 +916,8 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
       {{else if (this.opt "openLink")}}
         <a
           href="#"
-          class="ember-remodal outer link text
+          class="ember-remodal ember-remodal-outer ember-remodal-link ember-remodal-text
+            {{if this.legacyClassNames 'outer link text'}}
             {{this.opt 'buttonClasses'}}
             {{this.opt 'outerButtonClasses'}}
             {{this.opt 'openLinkClasses'}}"
@@ -906,7 +927,8 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
       {{else if (this.opt "openButton")}}
         <button
           type="button"
-          class="ember-remodal outer open button
+          class="ember-remodal ember-remodal-outer ember-remodal-open ember-remodal-button
+            {{if this.legacyClassNames 'outer open button'}}
             {{this.opt 'buttonClasses'}}
             {{this.opt 'outerButtonClasses'}}
             {{this.opt 'openButtonClasses'}}"
@@ -949,10 +971,12 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
             unnecessary. It is still emitted because 1.x/2.x consumer CSS and
             test selectors may key off it.
 
-            `invisible` is likewise emitted only for back-compat. Bootstrap owns
-            that class name (visibility:hidden !important), so the addon's own
-            @disableForeground styling hangs off the namespaced
-            `ember-remodal-invisible` beside it. }}
+            The bare "invisible" token is the sharpest case for retiring the
+            aliases: Bootstrap 3/4/5 own it as visibility:hidden !important,
+            which rendered a fully hidden modal that still held the top layer
+            and trapped focus. The addon's @disableForeground styling hangs off
+            the namespaced ember-remodal-invisible; the bare name comes back
+            only under @legacyClassNames. }}
         <div
           class="remodal remodal-is-initialized
             {{this.stateClass}}
@@ -960,8 +984,16 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
             {{this.name}}
             {{this.modifier}}
             {{this.animationState}}
-            window
-            {{if this.disableForeground 'invisible ember-remodal-invisible'}}
+            ember-remodal-window
+            {{if this.legacyClassNames 'window'}}
+            {{if
+              this.disableForeground
+              (if
+                this.legacyClassNames
+                'ember-remodal-invisible invisible'
+                'ember-remodal-invisible'
+              )
+            }}
             {{this.opt 'modalClasses'}}"
           data-test-id="modalWindow"
         >
@@ -974,7 +1006,8 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
               type="button"
               aria-label={{this.closeButtonLabel}}
               title={{this.closeButtonLabel}}
-              class="remodal-close ember-remodal inner native close"
+              class="remodal-close ember-remodal ember-remodal-inner ember-remodal-native ember-remodal-close
+                {{if this.legacyClassNames 'inner native close'}}"
               data-test-id="nativeClose"
               {{on "click" this.closeAction}}
             ></button>
@@ -983,21 +1016,24 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
           {{#if (this.opt "title")}}
             <h2
               id={{this.titleId}}
-              class="ember-remodal inner title text"
+              class="ember-remodal ember-remodal-inner ember-remodal-title ember-remodal-text
+                {{if this.legacyClassNames 'inner title text'}}"
               data-test-id="title"
             >{{this.opt "title"}}</h2>
           {{/if}}
 
           {{#if (this.opt "text")}}
             <p
-              class="ember-remodal inner paragraph text"
+              class="ember-remodal ember-remodal-inner ember-remodal-paragraph ember-remodal-text
+                {{if this.legacyClassNames 'inner paragraph text'}}"
               data-test-id="text"
             >{{this.opt "text"}}</p>
           {{/if}}
 
           {{#if (has-block)}}
             <div
-              class="ember-remodal inner yielded content"
+              class="ember-remodal ember-remodal-inner ember-remodal-yielded ember-remodal-content
+                {{if this.legacyClassNames 'inner yielded content'}}"
               data-test-id="yielded"
             >
               {{yield
@@ -1022,7 +1058,8 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
           {{#if (this.opt "cancelButton")}}
             <button
               type="button"
-              class="remodal-cancel ember-remodal inner cancel button
+              class="remodal-cancel ember-remodal ember-remodal-inner ember-remodal-cancel ember-remodal-button
+                {{if this.legacyClassNames 'inner cancel button'}}
                 {{this.opt 'buttonClasses'}}
                 {{this.opt 'innerButtonClasses'}}
                 {{this.opt 'cancelButtonClasses'}}"
@@ -1034,7 +1071,8 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
           {{#if (this.opt "confirmButton")}}
             <button
               type="button"
-              class="remodal-confirm ember-remodal inner confirm button
+              class="remodal-confirm ember-remodal ember-remodal-inner ember-remodal-confirm ember-remodal-button
+                {{if this.legacyClassNames 'inner confirm button'}}
                 {{this.opt 'buttonClasses'}}
                 {{this.opt 'innerButtonClasses'}}
                 {{this.opt 'confirmButtonClasses'}}"

@@ -15,379 +15,451 @@
  *     translate3d(0,0,0)` dropped from the card
  *   - the `invisible` (@disableForeground) styles moved to a namespaced
  *     `ember-remodal-invisible` class
+ *   - every rule below sits in `@layer ember-remodal` (deviation ten)
+ *   - engines without `@layer` support get no layer protection (deviation
+ *     eleven)
+ *
+ * Cascade contract: every rule below is inside `@layer ember-remodal`.
+ * Unlayered CSS beats layered CSS in the same origin regardless of specificity
+ * OR source order, so ANY consumer declaration — `.remodal`, `.remodal-close`,
+ * even a bare element selector — wins over these defaults without a
+ * specificity fight and without the addon having to control its position in
+ * the bundle (which it cannot: the sheet ships as a side-effect import of the
+ * component module, and its bundle position is bundler-determined). That is
+ * stronger than the custom-property route alone, which can only defend
+ * colours: it now covers geometry, layout and typography too.
+ *
+ * Two accepted costs, both recorded in the CHANGELOG and MIGRATION.md:
+ *   1. `@layer` INVERTS `!important` precedence. A layered `!important` beats
+ *      an unlayered one, so the two deliberate `!important`s here
+ *      (`.remodal-close::before`'s font-family, and the @disableForeground
+ *      `visibility`) can no longer be overridden by a plain consumer
+ *      `!important`. For the `visibility` declaration that is exactly the
+ *      point — it exists to survive Bootstrap's
+ *      `.invisible { visibility: hidden !important }`.
+ *   2. An engine with no `@layer` support ignores the at-rule's cascade
+ *      semantics entirely and falls back to plain specificity + order. The
+ *      addon already requires `dialog.showModal()` and
+ *      `Element.getAnimations()`, both of which land later than `@layer`, so
+ *      that floor is not the binding constraint.
  *
  * Theming: every colour is a custom property, declared on `:where(html)` so it
- * carries ZERO specificity. That means any consumer declaration — `:root`,
- * `html`, `.my-theme`, or a class applied to the card via `@modalClasses` —
- * wins over these defaults regardless of stylesheet order, which the addon
- * cannot control (its CSS is imported from the component module and its
- * position in the bundle is bundler-determined). Each `var()` below also
- * carries the same value as an inline fallback, so the defaults still apply if
- * the declarations below are never reached — notably inside `::backdrop`, which
- * only inherits from its originating element in Chrome 122+.
+ * carries ZERO specificity even before the layer is taken into account. Each
+ * `var()` below also carries the same value as an inline fallback, so the
+ * defaults still apply if the declarations below are never reached — notably
+ * inside `::backdrop`, which per its own spec history only inherits from its
+ * originating element in newer engines (Chrome 122+ is where the addon has
+ * confirmed it; the browser matrix beyond that has not been measured here,
+ * hence the belt-and-braces fallbacks).
+ *
+ * There is no automatic dark mode. `color-scheme` below swaps native control
+ * and scrollbar rendering only — it changes no author colour — so the default
+ * palette is light until a consumer sets the custom properties (optionally
+ * inside their own `prefers-color-scheme: dark` block; see the README).
  */
 
-:where(html) {
-  --ember-remodal-background: #fff;
-  --ember-remodal-color: #2b2e38;
-  --ember-remodal-color-scheme: light;
-  --ember-remodal-overlay: rgba(43, 46, 56, 0.9);
-  /* #767981 measures 4.35:1 against the white card; upstream's #95979c measured
-     2.92:1 and fails WCAG 1.4.11 for the × glyph (a graphical object, since the
-     alt-text `content` form keeps it out of the accessible name). Set this back
-     to #95979c for pixel fidelity at the cost of the contrast failure. */
-  --ember-remodal-close-color: #767981;
-  --ember-remodal-close-color-hover: #2b2e38;
-  --ember-remodal-button-color: #fff;
+@layer ember-remodal {
+  :where(html) {
+    --ember-remodal-background: #fff;
+    --ember-remodal-color: #2b2e38;
+    --ember-remodal-color-scheme: light;
+    --ember-remodal-overlay: rgba(43, 46, 56, 0.9);
+    /* #767981 measures 4.35:1 against the white card; upstream's #95979c
+       measured 2.92:1 and fails WCAG 1.4.11 for the × glyph (a graphical
+       object, since the alt-text `content` form keeps it out of the accessible
+       name). Set this back to #95979c for pixel fidelity at the cost of the
+       contrast failure. */
+    --ember-remodal-close-color: #767981;
+    --ember-remodal-close-color-hover: #2b2e38;
+    --ember-remodal-button-color: #fff;
 
-  /* #2e7d32 / #c62828 give 5.13:1 and 5.62:1 against white text; upstream's
-     #81c784 / #e57373 measured 2.01:1 and 2.99:1 and fail WCAG 1.4.3 AA at the
-     inherited ~16px. Set these two back to the upstream values for pixel
-     fidelity at the cost of the contrast failure. */
-  --ember-remodal-confirm-background: #2e7d32;
-  --ember-remodal-confirm-background-hover: #1b5e20;
-  --ember-remodal-cancel-background: #c62828;
-  --ember-remodal-cancel-background-hover: #b71c1c;
+    /* @disableForeground: the card is transparent, so its text and close glyph
+       sit directly on --ember-remodal-overlay. They are tokens rather than a
+       hardcoded #fff so that lightening the overlay does not leave white on
+       light with no way to fix it. */
+    --ember-remodal-frameless-color: #fff;
+    --ember-remodal-frameless-close-color: #fff;
+    --ember-remodal-frameless-close-color-hover: #fff;
 
-  /* Focus rings are drawn as a pair — an ink outline plus a light halo — so at
-     least one of them clears 3:1 against the surface behind it whether the card
-     is light (ink ring: 13.5:1) or dark (halo: 16.5:1 on #1b1f2a). */
-  --ember-remodal-focus-ring: #2b2e38;
-  --ember-remodal-focus-ring-inverse: #fff;
-}
+    /* #2e7d32 / #c62828 give 5.13:1 and 5.62:1 against white text; upstream's
+       #81c784 / #e57373 measured 2.01:1 and 2.99:1 and fail WCAG 1.4.3 AA at
+       the inherited ~16px. Set these two back to the upstream values for pixel
+       fidelity at the cost of the contrast failure. */
+    --ember-remodal-confirm-background: #2e7d32;
+    --ember-remodal-confirm-background-hover: #1b5e20;
+    --ember-remodal-cancel-background: #c62828;
+    --ember-remodal-cancel-background-hover: #b71c1c;
 
-/* scroll lock.
-   `touch-action: none` used to be set here as well. Effective touch-action is
-   the intersection of an element's value with all of its ancestors', and a
-   descendant cannot re-enable what an ancestor disabled — and a top-layer
-   <dialog> is still a DOM descendant of <html>. It therefore made a modal
-   taller than the viewport impossible to pan on a touch screen (WCAG 2.1.1,
-   1.4.10). `overflow: hidden` already does the scroll-lock work; the component
-   compensates for the scrollbar width in JS. */
-html.remodal-is-locked {
-  overflow: hidden;
-}
-
-/* Page blur while a modal is open — upstream's `.remodal-bg` hook, restored.
-   Apply `remodal-bg` to the page content you want blurred. Keep the modal
-   itself outside that subtree: ancestor filters can apply to top-layer
-   descendants, which would blur the modal along with the page. */
-html.remodal-is-locked .remodal-bg {
-  filter: blur(3px);
-}
-
-/* wrapper = the <dialog> itself, full-viewport, transparent; card centers via flex */
-dialog.remodal-wrapper {
-  position: fixed;
-  inset: 0;
-
-  /* Load-bearing: `inset: 0` already sizes the box to the viewport, and
-     `width/height: 100%` restate it, so under the UA default `content-box` the
-     10px padding pushed the box 20px past the viewport on both axes — an
-     overflow that was not even scrollable (scrollWidth === clientWidth), left
-     the card 10px off-centre, and clipped its right edge on narrow screens
-     where the card resolves to 100vw. */
-  box-sizing: border-box;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  max-height: none;
-  margin: 0;
-  border: 0;
-  padding: 10px;
-  background: transparent;
-  color: inherit;
-  overflow: auto;
-  overscroll-behavior: contain;
-  text-align: center;
-}
-
-dialog.remodal-wrapper[open] {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* overlay = ::backdrop, remodal's dark slate at 90% */
-dialog.remodal-wrapper::backdrop {
-  background: var(--ember-remodal-overlay, rgba(43, 46, 56, 0.9));
-}
-
-/* Focus visibility. Upstream set `outline: none`/`outline: 0` on the wrapper,
-   the card and all three buttons, which left a background swap as the only
-   focus cue (measured 1.18:1 and 1.17:1 — imperceptible) and left nothing at
-   all in the @disableForeground/@disableNativeClose path, where showModal()
-   focuses the <dialog> itself. The dialog fills the viewport, so its ring has
-   to be inset or it would be drawn off-screen. */
-dialog.remodal-wrapper:focus-visible {
-  outline: 3px solid var(--ember-remodal-focus-ring-inverse, #fff);
-  outline-offset: -3px;
-}
-
-.remodal:focus-visible,
-.remodal-close:focus-visible,
-.remodal-confirm:focus-visible,
-.remodal-cancel:focus-visible {
-  outline: 2px solid var(--ember-remodal-focus-ring, #2b2e38);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 2px var(--ember-remodal-focus-ring-inverse, #fff);
-}
-
-/* the dialog card — ported from remodal-default-theme */
-.remodal {
-  position: relative;
-
-  /* WebKit implements only the prefixed form, so the unprefixed declaration
-     alone was a no-op on exactly the platform (Safari/iOS) whose text
-     inflation it exists to suppress. */
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-  box-sizing: border-box;
-  width: 100%;
-  margin: auto;
-  padding: 35px;
-
-  /* Tracks --ember-remodal-background so form controls rendered inside the
-     modal follow the card, not the app: a consumer who themes the card dark
-     sets this to `dark` and gets dark selects, inputs and scrollbars. */
-  color-scheme: var(--ember-remodal-color-scheme, light);
-  color: var(--ember-remodal-color, #2b2e38);
-  background: var(--ember-remodal-background, #fff);
-}
-
-@media only screen and (min-width: 641px) {
-  .remodal {
-    max-width: 700px;
-  }
-}
-
-/* animations — remodal's exact keyframes, 0.3s fill forwards.
-   Every @keyframes name here must stay prefixed with `remodal-` and must only
-   be applied to the <dialog> (or its ::backdrop) or to `.remodal`: the
-   component's `ownAnimations()` filter identifies its own animations by exactly
-   that pair of conditions, and an animation it cannot recognise is one that
-   open()/close() will not wait for. */
-.remodal.remodal-is-opening {
-  animation: remodal-opening-keyframes 0.3s ease forwards;
-}
-
-.remodal.remodal-is-closing {
-  animation: remodal-closing-keyframes 0.3s ease forwards;
-}
-
-@keyframes remodal-opening-keyframes {
-  from {
-    transform: scale(1.05);
-    opacity: 0;
+    /* Focus rings are drawn as a pair — an ink outline plus a light halo — so
+       at least one of them clears 3:1 against the surface behind it whether
+       the card is light (ink ring: 13.5:1) or dark (halo: 16.5:1 on #1b1f2a). */
+    --ember-remodal-focus-ring: #2b2e38;
+    --ember-remodal-focus-ring-inverse: #fff;
   }
 
-  to {
-    transform: none;
-    opacity: 1;
-  }
-}
-
-@keyframes remodal-closing-keyframes {
-  from {
-    transform: scale(1);
-    opacity: 1;
-  }
-
-  to {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-}
-
-dialog.remodal-wrapper.remodal-is-opening::backdrop {
-  animation: remodal-overlay-opening-keyframes 0.3s ease forwards;
-}
-
-dialog.remodal-wrapper.remodal-is-closing::backdrop {
-  animation: remodal-overlay-closing-keyframes 0.3s ease forwards;
-}
-
-@keyframes remodal-overlay-opening-keyframes {
-  from {
-    opacity: 0;
+  /* scroll lock.
+     `touch-action: none` used to be set here as well. Effective touch-action is
+     the intersection of an element's value with all of its ancestors', and a
+     descendant cannot re-enable what an ancestor disabled — and a top-layer
+     <dialog> is still a DOM descendant of <html>. It therefore made a modal
+     taller than the viewport impossible to pan on a touch screen (WCAG 2.1.1,
+     1.4.10). `overflow: hidden` already does the scroll-lock work; the component
+     compensates for the scrollbar width in JS. */
+  html.remodal-is-locked {
+    overflow: hidden;
   }
 
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes remodal-overlay-closing-keyframes {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 0;
-  }
-}
-
-/* close button — remodal's, top-left 35x35 with × glyph */
-.remodal-close {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: block;
-  overflow: visible;
-  width: 35px;
-  height: 35px;
-  margin: 0;
-  padding: 0;
-  cursor: pointer;
-  transition: color 0.2s;
-  text-decoration: none;
-  color: var(--ember-remodal-close-color, #767981);
-  border: 0;
-  background: transparent;
-}
-
-.remodal-close:hover,
-.remodal-close:focus {
-  color: var(--ember-remodal-close-color-hover, #2b2e38);
-}
-
-.remodal-close::before {
-  font-family: Arial, "Helvetica CY", "Nimbus Sans L", sans-serif !important;
-  font-size: 25px;
-  line-height: 35px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: block;
-  width: 35px;
-
-  /* Pseudo-element content participates in the accessible-name computation via
-     name-from-contents, which outranks `title`, so the bare glyph made the
-     close button announce as "times" / "multiplication sign". The button now
-     carries an aria-label (which outranks both), and the alt-text form
-     (`content: "…" / ""`) keeps the glyph out of the name entirely.
-
-     Declared twice on purpose: a browser without alt-text support drops the
-     second declaration as invalid and still paints the glyph from the first. */
-  content: "\00d7";
-  content: "\00d7" / "";
-  text-align: center;
-}
-
-/* confirm/cancel buttons — remodal default theme */
-.remodal-confirm,
-.remodal-cancel {
-  font: inherit;
-  display: inline-block;
-  overflow: visible;
-  min-width: 110px;
-  margin: 0;
-  padding: 12px 0;
-  cursor: pointer;
-  transition: background 0.2s;
-  text-align: center;
-  vertical-align: middle;
-  text-decoration: none;
-  border: 0;
-  color: var(--ember-remodal-button-color, #fff);
-}
-
-.remodal-confirm {
-  background: var(--ember-remodal-confirm-background, #2e7d32);
-}
-
-.remodal-confirm:hover,
-.remodal-confirm:focus {
-  background: var(--ember-remodal-confirm-background-hover, #1b5e20);
-}
-
-.remodal-cancel {
-  background: var(--ember-remodal-cancel-background, #c62828);
-}
-
-.remodal-cancel:hover,
-.remodal-cancel:focus {
-  background: var(--ember-remodal-cancel-background-hover, #b71c1c);
-}
-
-/* @disableForeground — the frameless modal.
-
-   The card also carries the bare `invisible` class for back-compat with 1.x/2.x
-   consumer CSS, but nothing here targets it: `invisible` is a name Bootstrap 3,
-   4 and 5 all own as `.invisible { visibility: hidden !important }`, which beat
-   these rules and rendered a fully hidden modal that still held the top layer
-   and trapped focus. The `visibility` declaration below is `!important` on
-   purpose — that is the only way to outrank a third-party `!important` we do
-   not control, and this compound selector (0,2,0) beats Bootstrap's (0,1,0). */
-.ember-remodal-invisible.remodal {
-  visibility: visible !important;
-  background: transparent;
-  color: #fff;
-  padding: 0;
-
-  /* The invisible card still spans the full width; let clicks fall through
-     the empty area to the backdrop (closeOnOutsideClick), while its actual
-     content stays interactive. */
-  pointer-events: none;
-}
-
-.ember-remodal-invisible.remodal > * {
-  pointer-events: auto;
-}
-
-.ember-remodal-invisible.remodal .remodal-close {
-  color: #fff;
-}
-
-/* Windows High Contrast / forced-colors: every background above is overridden,
-   so confirm and cancel would be indistinguishable — a destructive-action
-   hazard. Give them borders that differ in style rather than in colour. */
-@media (forced-colors: active) {
-  .remodal {
-    border: 1px solid CanvasText;
+  /* Page blur while a modal is open — upstream's `.remodal-bg` hook, restored.
+     Apply `remodal-bg` to the page content you want blurred. Keep the modal
+     itself outside that subtree: ancestor filters can apply to top-layer
+     descendants, which would blur the modal along with the page. A filter also
+     makes `.remodal-bg` a containing block for its own `position: fixed`
+     descendants for as long as a modal is open — see the README. */
+  html.remodal-is-locked .remodal-bg {
+    filter: blur(3px);
   }
 
-  .remodal-close,
-  .remodal-confirm,
-  .remodal-cancel {
-    border: 2px solid ButtonBorder;
+  /* wrapper = the <dialog> itself, full-viewport, transparent; card centers via flex */
+  dialog.remodal-wrapper {
+    position: fixed;
+    inset: 0;
+
+    /* All four of these are load-bearing, for two different reasons.
+
+       `width`/`height` override the UA stylesheet's `width: fit-content;
+       height: fit-content` on <dialog>. `inset: 0` alone does NOT size the box
+       when a used width is already resolved: the box would be over-constrained
+       and `right`/`bottom` ignored, leaving a shrink-to-fit dialog rather than
+       a full-viewport one. (Verified by deleting them: the geometry test's
+       "dialog width matches the viewport" assertion fails.) `max-width`/
+       `max-height` likewise override the UA's `calc(100% - 6px - 2em)` caps.
+
+       `box-sizing` is what keeps the 10px padding inside that box. Under the
+       UA default `content-box` it pushed the box 20px past the viewport on
+       both axes — an overflow that was not even scrollable
+       (scrollWidth === clientWidth), left the card 10px off-centre, and
+       clipped its right edge on narrow screens where the card resolves to
+       100vw. */
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    border: 0;
+    padding: 10px;
+    background: transparent;
+    color: inherit;
+    overflow: auto;
+    overscroll-behavior: contain;
+    text-align: center;
   }
 
-  .remodal-cancel {
-    border-style: dashed;
+  dialog.remodal-wrapper[open] {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  /* box-shadow is dropped in forced-colors, so the halo half of the focus ring
-     disappears; a system-colour outline is what remains visible. */
-  dialog.remodal-wrapper:focus-visible,
+  /* overlay = ::backdrop, remodal's dark slate at 90% */
+  dialog.remodal-wrapper::backdrop {
+    background: var(--ember-remodal-overlay, rgba(43, 46, 56, 0.9));
+  }
+
+  /* Focus visibility. Upstream set `outline: none`/`outline: 0` on the wrapper,
+     the card and all three buttons, which left a background swap as the only
+     focus cue (measured 1.18:1 and 1.17:1 — imperceptible) and left nothing at
+     all in the @disableForeground/@disableNativeClose path, where showModal()
+     focuses the <dialog> itself. The dialog fills the viewport, so its ring has
+     to be inset or it would be drawn off-screen. */
+  dialog.remodal-wrapper:focus-visible {
+    outline: 3px solid var(--ember-remodal-focus-ring-inverse, #fff);
+    outline-offset: -3px;
+  }
+
   .remodal:focus-visible,
   .remodal-close:focus-visible,
   .remodal-confirm:focus-visible,
   .remodal-cancel:focus-visible {
-    outline: 3px solid Highlight;
+    outline: 2px solid var(--ember-remodal-focus-ring, #2b2e38);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--ember-remodal-focus-ring-inverse, #fff);
   }
-}
 
-/* animation kill-switch (disableAnimation / disableAnimationWhileTesting) */
-.disable-animation.remodal.remodal-is-opening,
-.disable-animation.remodal.remodal-is-closing,
-dialog.disable-animation.remodal-wrapper.remodal-is-opening::backdrop,
-dialog.disable-animation.remodal-wrapper.remodal-is-closing::backdrop {
-  animation: none;
-}
+  /* the dialog card — ported from remodal-default-theme */
+  .remodal {
+    position: relative;
 
-@media (prefers-reduced-motion: reduce) {
-  .remodal.remodal-is-opening,
-  .remodal.remodal-is-closing,
-  dialog.remodal-wrapper.remodal-is-opening::backdrop,
+    /* WebKit implements only the prefixed form, so the unprefixed declaration
+       alone was a no-op on exactly the platform (Safari/iOS) whose text
+       inflation it exists to suppress. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    box-sizing: border-box;
+    width: 100%;
+    margin: auto;
+    padding: 35px;
+
+    /* Tracks --ember-remodal-background so form controls rendered inside the
+       modal follow the card, not the app: a consumer who themes the card dark
+       sets this to `dark` and gets dark selects, inputs and scrollbars. It
+       swaps no author colour and is NOT a dark mode on its own — the card's
+       own background/foreground come from the two custom properties above. */
+    color-scheme: var(--ember-remodal-color-scheme, light);
+    color: var(--ember-remodal-color, #2b2e38);
+    background: var(--ember-remodal-background, #fff);
+  }
+
+  @media only screen and (min-width: 641px) {
+    .remodal {
+      max-width: 700px;
+    }
+  }
+
+  /* animations — remodal's exact keyframes, 0.3s fill forwards.
+     Every @keyframes name here must stay prefixed with `remodal-` and must only
+     be applied to the <dialog> (or its ::backdrop) or to `.remodal`: the
+     component's `ownAnimations()` filter identifies its own animations by exactly
+     that pair of conditions, and an animation it cannot recognise is one that
+     open()/close() will not wait for.
+
+     Caveat for consumer content: `transform: scale()` in the card keyframes
+     below makes `.remodal` a containing block for `position: fixed`
+     descendants for the 0.3s the animation runs. Fixed content inside a modal
+     therefore positions against the card while it opens or closes, and against
+     the viewport the rest of the time. This is the same class of problem as
+     upstream's permanent `transform: translate3d(0,0,0)`, which was removed —
+     but transient rather than permanent, and unavoidable without giving up the
+     scale animation. `@disableAnimation` (or `prefers-reduced-motion: reduce`)
+     removes the window entirely. */
+  .remodal.remodal-is-opening {
+    animation: remodal-opening-keyframes 0.3s ease forwards;
+  }
+
+  .remodal.remodal-is-closing {
+    animation: remodal-closing-keyframes 0.3s ease forwards;
+  }
+
+  @keyframes remodal-opening-keyframes {
+    from {
+      transform: scale(1.05);
+      opacity: 0;
+    }
+
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+
+  @keyframes remodal-closing-keyframes {
+    from {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    to {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+  }
+
+  dialog.remodal-wrapper.remodal-is-opening::backdrop {
+    animation: remodal-overlay-opening-keyframes 0.3s ease forwards;
+  }
+
   dialog.remodal-wrapper.remodal-is-closing::backdrop {
+    animation: remodal-overlay-closing-keyframes 0.3s ease forwards;
+  }
+
+  @keyframes remodal-overlay-opening-keyframes {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes remodal-overlay-closing-keyframes {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+    }
+  }
+
+  /* close button — remodal's, top-left 35x35 with × glyph */
+  .remodal-close {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    overflow: visible;
+    width: 35px;
+    height: 35px;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    transition: color 0.2s;
+    text-decoration: none;
+    color: var(--ember-remodal-close-color, #767981);
+    border: 0;
+    background: transparent;
+  }
+
+  .remodal-close:hover,
+  .remodal-close:focus {
+    color: var(--ember-remodal-close-color-hover, #2b2e38);
+  }
+
+  .remodal-close::before {
+    font-family: Arial, "Helvetica CY", "Nimbus Sans L", sans-serif !important;
+    font-size: 25px;
+    line-height: 35px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    width: 35px;
+
+    /* Pseudo-element content participates in the accessible-name computation via
+       name-from-contents, which outranks `title`, so the bare glyph made the
+       close button announce as "times" / "multiplication sign". The button now
+       carries an aria-label (which outranks both), and the alt-text form
+       (`content: "…" / ""`) keeps the glyph out of the name entirely.
+
+       Declared twice on purpose: a browser without alt-text support drops the
+       second declaration as invalid and still paints the glyph from the first. */
+    content: "\00d7";
+    content: "\00d7" / "";
+    text-align: center;
+  }
+
+  /* confirm/cancel buttons — remodal default theme */
+  .remodal-confirm,
+  .remodal-cancel {
+    font: inherit;
+    display: inline-block;
+    overflow: visible;
+    min-width: 110px;
+    margin: 0;
+    padding: 12px 0;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-align: center;
+    vertical-align: middle;
+    text-decoration: none;
+    border: 0;
+    color: var(--ember-remodal-button-color, #fff);
+  }
+
+  .remodal-confirm {
+    background: var(--ember-remodal-confirm-background, #2e7d32);
+  }
+
+  .remodal-confirm:hover,
+  .remodal-confirm:focus {
+    background: var(--ember-remodal-confirm-background-hover, #1b5e20);
+  }
+
+  .remodal-cancel {
+    background: var(--ember-remodal-cancel-background, #c62828);
+  }
+
+  .remodal-cancel:hover,
+  .remodal-cancel:focus {
+    background: var(--ember-remodal-cancel-background-hover, #b71c1c);
+  }
+
+  /* @disableForeground — the frameless modal.
+
+     The bare `invisible` class this used to hang off is a name Bootstrap 3, 4
+     and 5 all own as `.invisible { visibility: hidden !important }`, which beat
+     these rules and rendered a fully hidden modal that still held the top layer
+     and trapped focus. The component no longer emits it at all by default (see
+     @legacyClassNames), and the addon's own styling hangs off the namespaced
+     class. The `visibility` declaration below is still `!important`: inside a
+     layer that now outranks an unlayered consumer `!important`, which is
+     precisely the third-party declaration it exists to survive. */
+  .ember-remodal-invisible.remodal {
+    visibility: visible !important;
+    background: transparent;
+    color: var(--ember-remodal-frameless-color, #fff);
+    padding: 0;
+
+    /* The invisible card still spans the full width; let clicks fall through
+       the empty area to the backdrop (closeOnOutsideClick), while its actual
+       content stays interactive. */
+    pointer-events: none;
+  }
+
+  .ember-remodal-invisible.remodal > * {
+    pointer-events: auto;
+  }
+
+  .ember-remodal-invisible.remodal .remodal-close {
+    color: var(--ember-remodal-frameless-close-color, #fff);
+  }
+
+  .ember-remodal-invisible.remodal .remodal-close:hover,
+  .ember-remodal-invisible.remodal .remodal-close:focus {
+    color: var(--ember-remodal-frameless-close-color-hover, #fff);
+  }
+
+  /* Windows High Contrast / forced-colors: every background above is overridden,
+     so confirm and cancel would be indistinguishable — a destructive-action
+     hazard. Give them borders that differ in style rather than in colour. */
+  @media (forced-colors: active) {
+    .remodal {
+      border: 1px solid CanvasText;
+    }
+
+    .remodal-close,
+    .remodal-confirm,
+    .remodal-cancel {
+      border: 2px solid ButtonBorder;
+    }
+
+    .remodal-cancel {
+      border-style: dashed;
+    }
+
+    /* box-shadow is dropped in forced-colors, so the halo half of the focus ring
+       disappears; a system-colour outline is what remains visible. */
+    dialog.remodal-wrapper:focus-visible,
+    .remodal:focus-visible,
+    .remodal-close:focus-visible,
+    .remodal-confirm:focus-visible,
+    .remodal-cancel:focus-visible {
+      outline: 3px solid Highlight;
+    }
+  }
+
+  /* animation kill-switch (disableAnimation / disableAnimationWhileTesting) */
+  .disable-animation.remodal.remodal-is-opening,
+  .disable-animation.remodal.remodal-is-closing,
+  dialog.disable-animation.remodal-wrapper.remodal-is-opening::backdrop,
+  dialog.disable-animation.remodal-wrapper.remodal-is-closing::backdrop {
     animation: none;
   }
 
-  .remodal-close,
-  .remodal-confirm,
-  .remodal-cancel {
-    transition: none;
+  @media (prefers-reduced-motion: reduce) {
+    .remodal.remodal-is-opening,
+    .remodal.remodal-is-closing,
+    dialog.remodal-wrapper.remodal-is-opening::backdrop,
+    dialog.remodal-wrapper.remodal-is-closing::backdrop {
+      animation: none;
+    }
+
+    .remodal-close,
+    .remodal-confirm,
+    .remodal-cancel {
+      transition: none;
+    }
   }
 }
 

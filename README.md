@@ -27,6 +27,7 @@ is preserved. Upgrading from 2.x? Read the
 - [Options](#options)
 - [Callbacks](#callbacks)
 - [Styling and theming](#styling-and-theming)
+  - [The cascade contract: `@layer ember-remodal`](#the-cascade-contract-layer-ember-remodal)
   - [Styling hooks](#styling-hooks)
   - [Theming with custom properties](#theming-with-custom-properties)
   - [Per-modal themes with `@modifier`](#per-modal-themes-with-modifier)
@@ -226,17 +227,18 @@ work.
 
 ### Class hooks
 
-| Option                 | Default | Description                                                              |
-| ---------------------- | ------- | ------------------------------------------------------------------------ |
-| `modifier`             | `''`    | Extra class on both the `<dialog>` and the card — remodal's theming hook |
-| `modalClasses`         | —       | Extra classes for the modal card                                         |
-| `buttonClasses`        | —       | Extra classes for **all** rendered buttons                               |
-| `outerButtonClasses`   | —       | Extra classes for trigger (outside) buttons and links                    |
-| `innerButtonClasses`   | —       | Extra classes for confirm/cancel (inside) buttons                        |
-| `openButtonClasses`    | —       | Extra classes for the `openButton`                                       |
-| `openLinkClasses`      | —       | Extra classes for the `openLink`                                         |
-| `confirmButtonClasses` | —       | Extra classes for the confirm button                                     |
-| `cancelButtonClasses`  | —       | Extra classes for the cancel button                                      |
+| Option                 | Default | Description                                                                          |
+| ---------------------- | ------- | ------------------------------------------------------------------------------------ |
+| `modifier`             | `''`    | Extra class on both the `<dialog>` and the card — remodal's theming hook             |
+| `modalClasses`         | —       | Extra classes for the modal card                                                     |
+| `buttonClasses`        | —       | Extra classes for **all** rendered buttons                                           |
+| `outerButtonClasses`   | —       | Extra classes for trigger (outside) buttons and links                                |
+| `innerButtonClasses`   | —       | Extra classes for confirm/cancel (inside) buttons                                    |
+| `openButtonClasses`    | —       | Extra classes for the `openButton`                                                   |
+| `openLinkClasses`      | —       | Extra classes for the `openLink`                                                     |
+| `confirmButtonClasses` | —       | Extra classes for the confirm button                                                 |
+| `cancelButtonClasses`  | —       | Extra classes for the cancel button                                                  |
+| `legacyClassNames`     | `false` | Re-emits the bare 2.x single-word class tokens — see [Styling hooks](#styling-hooks) |
 
 ### Behavior
 
@@ -273,43 +275,91 @@ The classic remodal class names are all preserved: `remodal`, `remodal-wrapper`,
 `remodal-is-opening` / `-opened` / `-closing` / `-closed`. The default theme
 (ported from Remodal v1.1.1, MIT) ships with the addon and is applied
 automatically. It is not a pixel-for-pixel copy: it deviates from upstream in
-eight places, all for accessibility or layout correctness, and each one is
-revertible from your own stylesheet. They are listed in
+eleven places, all for accessibility, layout correctness or cascade safety, and
+each one is revertible from your own stylesheet. They are listed in
 [CHANGELOG.md](CHANGELOG.md#fixed) and in the header comment of
 `src/styles/ember-remodal.css`.
 
 Apply `remodal-bg` to the page content you want blurred while a modal is open.
-One caveat that is new in 3.0: the `<dialog>` renders where you invoke the
+Two caveats, both new in 3.0. The `<dialog>` renders where you invoke the
 component rather than being moved to the application root, so keep the modal
 outside the `.remodal-bg` subtree — an ancestor filter can apply to top-layer
-descendants and would blur the modal along with the page.
+descendants and would blur the modal along with the page. And a filter makes
+`.remodal-bg` a containing block for its own `position: fixed` descendants for
+as long as any modal is open, so a fixed nav or chat widget inside that subtree
+repositions and clips against it until the last modal closes. Scope
+`remodal-bg` to the content you actually want blurred rather than to `<body>`
+if that matters to you.
+
+### The cascade contract: `@layer ember-remodal`
+
+The whole stylesheet ships inside `@layer ember-remodal`. Unlayered author CSS
+beats layered author CSS **regardless of specificity or source order**, so any
+declaration of yours wins over the addon's without a specificity fight — which
+matters because the theme ships as a side-effect import whose bundle position
+the addon cannot control. `.remodal { padding: 0 }` in your own stylesheet
+simply wins, wherever it lands in the bundle. That covers geometry, layout and
+typography, not only the colours the custom properties expose.
+
+Two consequences worth knowing:
+
+- **`!important` precedence is inverted inside a layer.** A layered
+  `!important` beats an unlayered one, so the stylesheet's two deliberate
+  `!important` declarations (the close glyph's `font-family`, and
+  `visibility: visible` on the `@disableForeground` card) are not overridable
+  by a plain `!important` of yours. Put your override in a layer of your own
+  declared after `ember-remodal` if you need to win one of those two.
+- **An engine with no `@layer` support** falls back to plain specificity and
+  source order. The addon already requires `dialog.showModal()` and
+  `Element.getAnimations()`, both newer than `@layer`, so this is not a
+  practical floor.
 
 ### Styling hooks
 
-Every part of the modal is addressable, and every one of these selectors carried
-over from 2.x unchanged:
+Every part of the modal is addressable. **Changed in 3.0:** the bare
+single-word tokens 1.x/2.x emitted beside the namespaced ones (`window`,
+`close`, `button`, `title`, `text`, `content`, `open`, `link`, `native`,
+`inner`, `outer`, `confirm`, `cancel`, `paragraph`, `yielded`, `invisible`) are
+retired, because CSS frameworks own those names — Bootstrap's `.close` and
+`.invisible`, Bulma/Foundation's `.button` — and a bare token is a collision
+the addon cannot reliably win. Each has an `ember-remodal-`-prefixed
+replacement, matching the `ember-remodal-invisible` hook:
 
-| Part                              | Selector                           |
-| --------------------------------- | ---------------------------------- |
-| Modal card (the "window")         | `.ember-remodal.window`            |
-| A named modal's card              | `.ember-remodal.<name>.window`     |
-| Open button                       | `.ember-remodal.open.button`       |
-| Open link / link button           | `.ember-remodal.link.text`         |
-| Confirm button                    | `.ember-remodal.confirm.button`    |
-| Cancel button                     | `.ember-remodal.cancel.button`     |
-| Built-in close button             | `.ember-remodal.native.close`      |
-| Title                             | `.ember-remodal.title.text`        |
-| Text                              | `.ember-remodal.paragraph.text`    |
-| Content yielded in block form     | `.ember-remodal.yielded.content`   |
-| All rendered buttons              | `.ember-remodal.button`            |
-| Buttons inside the modal          | `.ember-remodal.inner.button`      |
-| Buttons outside the modal         | `.ember-remodal.outer.button`      |
-| Overlay (2.x: `.remodal-overlay`) | `dialog.remodal-wrapper::backdrop` |
+| Part                                  | Selector                                                     |
+| ------------------------------------- | ------------------------------------------------------------ |
+| Modal card (the "window")             | `.ember-remodal.ember-remodal-window`                        |
+| A named modal's card                  | `.ember-remodal.<name>.ember-remodal-window`                 |
+| Open button                           | `.ember-remodal.ember-remodal-open.ember-remodal-button`     |
+| Open link / link button               | `.ember-remodal.ember-remodal-link.ember-remodal-text`       |
+| Confirm button                        | `.ember-remodal.ember-remodal-confirm.ember-remodal-button`  |
+| Cancel button                         | `.ember-remodal.ember-remodal-cancel.ember-remodal-button`   |
+| Built-in close button                 | `.ember-remodal.ember-remodal-native.ember-remodal-close`    |
+| Title                                 | `.ember-remodal.ember-remodal-title.ember-remodal-text`      |
+| Text                                  | `.ember-remodal.ember-remodal-paragraph.ember-remodal-text`  |
+| Content yielded in block form         | `.ember-remodal.ember-remodal-yielded.ember-remodal-content` |
+| All rendered buttons                  | `.ember-remodal.ember-remodal-button`                        |
+| Buttons inside the modal              | `.ember-remodal.ember-remodal-inner.ember-remodal-button`    |
+| Buttons outside the modal             | `.ember-remodal.ember-remodal-outer.ember-remodal-button`    |
+| Frameless card (`@disableForeground`) | `.ember-remodal-invisible.remodal`                           |
+| Overlay (2.x: `.remodal-overlay`)     | `dialog.remodal-wrapper::backdrop`                           |
 
-The one change is the last row: the overlay is now the dialog's `::backdrop`
-pseudo-element, so there is no `.remodal-overlay` element to select. Note also
-that `.ember-remodal.outer.button` matches the `@openButton` only — the `@openLink`
-and `@linkButton` forms render as `.ember-remodal.outer.link.text`.
+The `remodal-*` hooks are unchanged: `.remodal`, `.remodal-wrapper`,
+`.remodal-close`, `.remodal-confirm`, `.remodal-cancel`, `.remodal-bg`,
+`.remodal-is-locked`, `.remodal-is-initialized` and the `remodal-is-*` state
+classes.
+
+Two notes on the table. The overlay is now the dialog's `::backdrop`
+pseudo-element, so there is no `.remodal-overlay` element to select. And
+`.ember-remodal.ember-remodal-outer.ember-remodal-button` matches the
+`@openButton` only — the `@openLink` and `@linkButton` forms render as
+`.ember-remodal.ember-remodal-outer.ember-remodal-link.ember-remodal-text`.
+
+If you have 2.x CSS keyed on the bare tokens and cannot update it right now,
+`@legacyClassNames={{true}}` (or `legacyClassNames: true` in `@options` /
+`service.open()`) re-emits every one of them alongside the namespaced hooks.
+It is opt-in per modal, and it re-opens the collisions it exists to work
+around, so treat it as a migration bridge rather than a setting. See
+[MIGRATION.md](MIGRATION.md#theme-changes).
 
 ### Theming with custom properties
 
@@ -320,24 +370,67 @@ side-effect import whose position in your bundle the addon cannot control. It is
 also the only route to `::backdrop` from a class on the card: `@modalClasses`
 lands inside the dialog, and `::backdrop` inherits only from the dialog itself.
 
-| Property                                   | Default                 |
-| ------------------------------------------ | ----------------------- |
-| `--ember-remodal-background`               | `#fff`                  |
-| `--ember-remodal-color`                    | `#2b2e38`               |
-| `--ember-remodal-color-scheme`             | `light`                 |
-| `--ember-remodal-overlay`                  | `rgba(43, 46, 56, 0.9)` |
-| `--ember-remodal-close-color`              | `#767981`               |
-| `--ember-remodal-close-color-hover`        | `#2b2e38`               |
-| `--ember-remodal-button-color`             | `#fff`                  |
-| `--ember-remodal-confirm-background`       | `#2e7d32`               |
-| `--ember-remodal-confirm-background-hover` | `#1b5e20`               |
-| `--ember-remodal-cancel-background`        | `#c62828`               |
-| `--ember-remodal-cancel-background-hover`  | `#b71c1c`               |
-| `--ember-remodal-focus-ring`               | `#2b2e38`               |
-| `--ember-remodal-focus-ring-inverse`       | `#fff`                  |
+| Property                                      | Default                 |
+| --------------------------------------------- | ----------------------- |
+| `--ember-remodal-background`                  | `#fff`                  |
+| `--ember-remodal-color`                       | `#2b2e38`               |
+| `--ember-remodal-color-scheme`                | `light`                 |
+| `--ember-remodal-overlay`                     | `rgba(43, 46, 56, 0.9)` |
+| `--ember-remodal-close-color`                 | `#767981`               |
+| `--ember-remodal-close-color-hover`           | `#2b2e38`               |
+| `--ember-remodal-button-color`                | `#fff`                  |
+| `--ember-remodal-confirm-background`          | `#2e7d32`               |
+| `--ember-remodal-confirm-background-hover`    | `#1b5e20`               |
+| `--ember-remodal-cancel-background`           | `#c62828`               |
+| `--ember-remodal-cancel-background-hover`     | `#b71c1c`               |
+| `--ember-remodal-focus-ring`                  | `#2b2e38`               |
+| `--ember-remodal-focus-ring-inverse`          | `#fff`                  |
+| `--ember-remodal-frameless-color`             | `#fff`                  |
+| `--ember-remodal-frameless-close-color`       | `#fff`                  |
+| `--ember-remodal-frameless-close-color-hover` | `#fff`                  |
+
+**`--ember-remodal-overlay` is the one property with a caveat.** It is consumed
+inside `dialog.remodal-wrapper::backdrop`, and a `::backdrop` inherits from its
+originating element only in newer engines — the stylesheet records Chrome 122+
+as where the addon confirmed it, and the browser matrix beyond that has not
+been measured here. Every `var()` in the sheet therefore carries its default as
+an inline fallback, so an engine that does not inherit into `::backdrop` still
+paints the built-in overlay colour; what it will not pick up is _your_ override.
+If you must be certain of the overlay colour everywhere, declare it on the
+dialog directly — that is what `demo-app/styles.css` does for `demo-midnight`:
+
+```css
+dialog.remodal-wrapper.my-theme::backdrop {
+  background: rgba(10, 12, 20, 0.85);
+}
+```
+
+The three `frameless` properties are the `@disableForeground` card, whose text
+and close glyph sit directly on `--ember-remodal-overlay` rather than on a card
+background. Lighten the overlay and you must set these too, or you get white on
+light.
 
 `--ember-remodal-color-scheme` sets `color-scheme` on the card, so form controls,
-selects and scrollbars inside a dark modal render dark.
+selects and scrollbars inside a dark modal render dark. **It is not a dark
+mode**: `color-scheme` changes how the browser paints native widgets and
+scrollbars and swaps no author colour, so the card's own background and text
+stay exactly what the two properties above say they are. The addon ships no
+`prefers-color-scheme` block at all — the default palette is light until you
+say otherwise. Opting in is one media query:
+
+```css
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ember-remodal-background: #1b1f2a;
+    --ember-remodal-color: #e8eaf2;
+    --ember-remodal-color-scheme: dark;
+    --ember-remodal-close-color: #8b91a5;
+    --ember-remodal-close-color-hover: #e8eaf2;
+    --ember-remodal-focus-ring: #e8eaf2;
+    --ember-remodal-focus-ring-inverse: #10131a;
+  }
+}
+```
 
 The card and the three buttons draw their focus ring as a pair — a
 `--ember-remodal-focus-ring` outline plus a `--ember-remodal-focus-ring-inverse`
@@ -347,19 +440,8 @@ control, e.g. under `@disableForeground`) draws an inset ring in the inverse
 colour alone, against the backdrop. Set both properties when you change the
 card's background.
 
-A dark theme applied globally:
-
-```css
-:root {
-  --ember-remodal-background: #1b1f2a;
-  --ember-remodal-color: #e8eaf2;
-  --ember-remodal-color-scheme: dark;
-  --ember-remodal-close-color: #8b91a5;
-  --ember-remodal-close-color-hover: #e8eaf2;
-  --ember-remodal-focus-ring: #e8eaf2;
-  --ember-remodal-focus-ring-inverse: #10131a;
-}
-```
+Drop the `@media` wrapper from that block to apply the dark theme
+unconditionally instead.
 
 To restore upstream Remodal's original confirm/cancel colours (which fail WCAG
 1.4.3 AA against their white labels — that is why they were changed):
@@ -418,6 +500,17 @@ infinite animation cannot hang `open()` / `close()` forever.
 
 All built-in animations and transitions are suppressed under
 `prefers-reduced-motion: reduce`.
+
+**One caveat if your modal content uses `position: fixed`.** The built-in card
+animation is a `transform: scale()`, and a non-`none` transform makes the card
+a containing block for its fixed descendants. So for the 300 ms an open or
+close animation runs, `position: fixed` content inside the modal positions
+against the card rather than the viewport, then snaps back when the animation
+finishes. This is the transient form of the permanent
+`transform: translate3d(0, 0, 0)` that upstream Remodal applied to the card and
+this port removed. `@disableAnimation={{true}}`, `prefers-reduced-motion:
+reduce`, or a custom animation that does not use `transform` all remove the
+window entirely.
 
 ## Testing
 

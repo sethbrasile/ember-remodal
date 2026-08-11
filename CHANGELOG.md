@@ -82,6 +82,23 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
 - **Backdrop dismissal requires the press and the release to land on the
   backdrop**, and ignores presses on the dialog's own scrollbar. Dragging a
   selection out of the card no longer discards the modal.
+- **The bare single-word class hooks are retired.** 1.x/2.x emitted `window`,
+  `close`, `button`, `title`, `text`, `content`, `open`, `link`, `native`,
+  `inner`, `outer`, `confirm`, `cancel`, `paragraph`, `yielded` and
+  `invisible` beside the namespaced hooks. CSS frameworks own those names —
+  Bootstrap's `.close` and `.invisible`, Bulma/Foundation's `.button` — and
+  every addon rule backing them sits at specificity (0,1,0), so bundle order
+  (which the addon cannot control) decided the winner. Each now has an
+  `ember-remodal-` prefixed replacement: `.ember-remodal.window` →
+  `.ember-remodal.ember-remodal-window`, `.ember-remodal.native.close` →
+  `.ember-remodal.ember-remodal-native.ember-remodal-close`, and so on. The
+  `remodal-*` names are all unchanged. `@legacyClassNames={{true}}` re-emits
+  the old tokens as a migration bridge. Full table in
+  [MIGRATION.md](MIGRATION.md#theme-changes).
+- **The stylesheet ships inside `@layer ember-remodal`**, which makes the
+  documented override contract stronger (unlayered consumer CSS beats it
+  regardless of specificity or order, for geometry as well as colour) at the
+  cost of the two deviations below.
 
 ### Added
 
@@ -91,6 +108,9 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
 - `@closeButtonLabel` — accessible name and tooltip for the built-in close
   button, default `'Close Modal'`. An option rather than a hardcoded string so
   it can be translated.
+- `@legacyClassNames` — re-emits the retired bare single-word class tokens
+  beside the namespaced hooks, as a migration bridge for 2.x consumer CSS.
+  Default `false`.
 - A public tracked `state` property on the component:
   `'closed' | 'opening' | 'opened' | 'closing'`.
 - `m.isOpen` — yielded boolean for lazy content: `{{#if m.isOpen}}…{{/if}}`. It
@@ -192,9 +212,30 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
 - `@disableForeground`'s styling **collided with Bootstrap**, which owns
   `.invisible { visibility: hidden !important }` in 3, 4 and 5 — the modal
   rendered fully hidden while still holding the top layer and trapping focus.
-  The styling moved to a namespaced `ember-remodal-invisible` class (the bare
-  `invisible` class is still emitted for 1.x/2.x consumer CSS, but nothing
-  targets it).
+  The styling moved to a namespaced `ember-remodal-invisible` class, and the
+  bare `invisible` class is no longer emitted at all (see the breaking change
+  above). Its foreground and close glyph are custom properties now
+  (`--ember-remodal-frameless-color`, `--ember-remodal-frameless-close-color`,
+  `--ember-remodal-frameless-close-color-hover`) rather than a hardcoded
+  `#fff`: they sit on the themable overlay, not on a card background, so
+  lightening `--ember-remodal-overlay` used to leave white on light with no
+  token to fix it.
+- **Deviation ten: the sheet is wrapped in `@layer ember-remodal`.** Unlayered
+  author CSS beats layered author CSS regardless of specificity or source
+  order, so the "any consumer declaration wins" promise in the stylesheet
+  header and the README now covers geometry and layout, not just the colours
+  the custom properties expose. Accepted cost: `@layer` **inverts** `!important`
+  precedence, so the sheet's two deliberate `!important` declarations
+  (`.remodal-close::before`'s `font-family`, and `visibility: visible` on the
+  `@disableForeground` card) are no longer overridable by a plain consumer
+  `!important` — which is exactly the behaviour the `invisible` fix above
+  wanted. Declare a layer after `ember-remodal` to win either one; see
+  [MIGRATION.md](MIGRATION.md#breaking-the-stylesheet-ships-inside-layer-ember-remodal).
+- **Deviation eleven: engines without `@layer` support keep the collision.**
+  They ignore the at-rule's cascade semantics and fall back to plain
+  specificity and order. Accepted: the addon already requires
+  `dialog.showModal()` and `Element.getAnimations()`, both of which shipped
+  later than `@layer`, so the layer floor is not the binding constraint.
 - **`.remodal-bg` blurring is restored** as
   `html.remodal-is-locked .remodal-bg { filter: blur(3px) }`. Keep the modal
   outside the `.remodal-bg` subtree — an ancestor filter can apply to top-layer
