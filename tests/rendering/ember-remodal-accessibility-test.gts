@@ -11,6 +11,7 @@ import {
   lookupService,
   pressEscape,
 } from '../helpers/remodal-test-helpers.ts';
+import { setupRemodal } from '#src/test-support/index.ts';
 
 function closeButton(): HTMLButtonElement {
   return find('[data-test-id="nativeClose"]') as HTMLButtonElement;
@@ -18,6 +19,7 @@ function closeButton(): HTMLButtonElement {
 
 module('Rendering | ember-remodal | accessibility', function (hooks) {
   setupRenderingTest(hooks);
+  setupRemodal(hooks);
 
   // --- QC-1-03: the <dialog> must have an accessible name ---------------------
 

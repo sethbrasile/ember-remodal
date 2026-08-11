@@ -120,6 +120,9 @@ importers:
       eslint-plugin-n:
         specifier: ^17.15.1
         version: 17.24.0(eslint@9.39.5(jiti@2.6.1)(supports-color@8.1.1))(typescript@5.8.3)
+      eslint-plugin-qunit:
+        specifier: ^8.2.6
+        version: 8.2.6(eslint@9.39.5(jiti@2.6.1)(supports-color@8.1.1))
       globals:
         specifier: ^16.1.0
         version: 16.5.0
@@ -2502,6 +2505,12 @@ packages:
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       eslint: '>=8.23.0'
+
+  eslint-plugin-qunit@8.2.6:
+    resolution: {integrity: sha512-S1jC/DIW9J8VtNX4uG1vlf5FZVrfQFlcuiYmvTHR2IICUhubHqpWA5o+qS1tujh+81Gs39omKV2D4OXfbSJE5g==}
+    engines: {node: ^16.0.0 || ^18.0.0 || >=20.0.0}
+    peerDependencies:
+      eslint: '>=8.38.0'
 
   eslint-scope@5.1.1:
     resolution: {integrity: sha512-2NxwbF/hZ0KpepYN0cNbo+FN6XoK7GaHlQhgx/hIZl6Va0bF45RQOOwhLIy8lQDbuCiadSLCBnH2CFYquit5bw==}
@@ -7671,6 +7680,12 @@ snapshots:
       ts-declaration-location: 1.0.7(typescript@5.8.3)
     transitivePeerDependencies:
       - typescript
+
+  eslint-plugin-qunit@8.2.6(eslint@9.39.5(jiti@2.6.1)(supports-color@8.1.1)):
+    dependencies:
+      '@eslint-community/eslint-utils': 4.9.1(eslint@9.39.5(jiti@2.6.1)(supports-color@8.1.1))
+      eslint: 9.39.5(jiti@2.6.1)(supports-color@8.1.1)
+      requireindex: 1.2.0
 
   eslint-scope@5.1.1:
     dependencies:

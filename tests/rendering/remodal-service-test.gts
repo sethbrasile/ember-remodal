@@ -6,9 +6,11 @@ import type Owner from '@ember/owner';
 import EmberRemodal from '#src/components/ember-remodal.gts';
 import type { CloseReason } from '#src/components/ember-remodal.gts';
 import { dialog, lookupService } from '../helpers/remodal-test-helpers.ts';
+import { setupRemodal } from '#src/test-support/index.ts';
 
 module('Rendering | remodal service', function (hooks) {
   setupRenderingTest(hooks);
+  setupRemodal(hooks);
 
   test('a @forService modal registers under its @name and opens via the service', async function (assert) {
     const service = lookupService(this);
@@ -200,11 +202,21 @@ module('Rendering | remodal service', function (hooks) {
   });
 
   module('promise semantics', function () {
-    test('open() followed by an immediate close() both resolve (#44)', async function (assert) {
+    test('open() followed by an immediate close() both resolve, and the superseded open reports no @onOpen (#44)', async function (assert) {
       const service = lookupService(this);
+      const events: string[] = [];
+      const handleOpen = () => events.push('open');
+      const handleClose = () => events.push('close');
 
       await render(
-        <template><EmberRemodal @forService={{true}} @name="race" /></template>,
+        <template>
+          <EmberRemodal
+            @forService={{true}}
+            @name="race"
+            @onOpen={{handleOpen}}
+            @onClose={{handleClose}}
+          />
+        </template>,
       );
 
       const openPromise = service.open('race');
@@ -222,13 +234,31 @@ module('Rendering | remodal service', function (hooks) {
       );
       assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-closed');
       assert.false(dialog().open, 'the interrupting close wins');
+      // A superseded open must not tell the consumer it opened: an @onOpen that
+      // fires for a modal the user never saw is a spurious analytics event, a
+      // focus steal, or a data load for nothing.
+      assert.deepEqual(
+        events,
+        ['close'],
+        'only the close was reported; the superseded open fired no @onOpen',
+      );
     });
 
-    test('rapid open/close/open settles every promise and ends opened (#16)', async function (assert) {
+    test('rapid open/close/open settles every promise, ends opened, and reports one open (#16)', async function (assert) {
       const service = lookupService(this);
+      const events: string[] = [];
+      const handleOpen = () => events.push('open');
+      const handleClose = () => events.push('close');
 
       await render(
-        <template><EmberRemodal @forService={{true}} @name="race" /></template>,
+        <template>
+          <EmberRemodal
+            @forService={{true}}
+            @name="race"
+            @onOpen={{handleOpen}}
+            @onClose={{handleClose}}
+          />
+        </template>,
       );
 
       const first = service.open('race');
@@ -239,6 +269,14 @@ module('Rendering | remodal service', function (hooks) {
 
       assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
       assert.true(dialog().open, 'the final open wins');
+      // Snapshotted: `events` keeps growing after this assertion (the modal is
+      // still open, so teardown fires @onClose), and QUnit renders a failure's
+      // `actual` at the end of the test rather than at push time.
+      assert.deepEqual(
+        [...events],
+        ['open'],
+        'only the winning open reported; the superseded open fired no @onOpen, and the superseded close never finalized so it fired no @onClose either',
+      );
     });
 
     test('service.open followed by modal.close() in a .then chain works', async function (assert) {

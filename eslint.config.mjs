@@ -19,6 +19,7 @@ import prettier from 'eslint-config-prettier';
 import ember from 'eslint-plugin-ember/recommended';
 import importPlugin from 'eslint-plugin-import';
 import n from 'eslint-plugin-n';
+import qunit from 'eslint-plugin-qunit';
 import globals from 'globals';
 import ts from 'typescript-eslint';
 
@@ -91,6 +92,28 @@ export default defineConfig([
       'import/extensions': ['error', 'always', { ignorePackages: true }],
     },
   },
+  /**
+   * Tests. `eslint-plugin-qunit` catches the failure modes that make a suite
+   * lie: an assertion the test never reaches, an `assert.ok(a && b)` that
+   * reports one result for two facts, a `test.only` left behind, a duplicated
+   * test name that shadows another test.
+   */
+  {
+    files: ['tests/**/*.{js,ts,gjs,gts}'],
+    // `qunit.configs.recommended` is still eslintrc-shaped (`plugins` as an
+    // array of names), so take its rules and register the plugin ourselves.
+    plugins: { qunit },
+    rules: {
+      ...qunit.configs.recommended.rules,
+      // Off deliberately: `setupRemodal`'s teardown pushes an extra assertion
+      // when (and only when) it catches a leaked scroll lock, so a hardcoded
+      // `assert.expect(n)` in every test would turn one real failure into two
+      // confusing ones. The suite has no dynamically-skipped assertions that
+      // `expect` would otherwise be protecting.
+      'qunit/require-expect': 'off',
+    },
+  },
+
   /**
    * CJS node files
    */

@@ -13,6 +13,28 @@
   ],
   "compilerOptions": {
     "rootDir": ".",
+    /**
+      The test suite imports the addon by package name in one place, to exercise
+      `package.json#exports` (the bundler resolves that to `dist/`, which is the
+      point — see tests/rendering/published-package-test.gts).
+
+      Types for those specifiers are mapped back to `src` deliberately: resolving
+      them through `exports` would make `lint:types` — and therefore `pnpm lint`
+      on a fresh clone — depend on `declarations/` having been built first. The
+      published declarations are validated instead by `lint:publish`
+      (`attw --pack .` plus scripts/check-declaration-deps.mjs), which builds
+      before it checks.
+    */
+    "paths": {
+      "ember-remodal": ["./src/index.ts"],
+      "ember-remodal/test-support": ["./src/test-support/index.ts"],
+      "ember-remodal/components/*": ["./src/components/*.gts"],
+      /* The classic app-tree re-exports ship no declarations of their own (they
+         are not a typed public surface), but the test suite imports one to prove
+         the re-export resolves. */
+      "ember-remodal/_app_/components/*": ["./src/components/*.gts"],
+      "ember-remodal/*": ["./src/*.ts"]
+    },
     "types": [
       "ember-source/types",
       "vite/client",

@@ -23,6 +23,10 @@
       "types": "./declarations/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./test-support": {
+      "types": "./declarations/test-support/index.d.ts",
+      "default": "./dist/test-support/index.js"
+    },
     "./addon-main.js": "./addon-main.cjs",
     "./package.json": "./package.json",
     "./*.css": "./dist/*.css",
@@ -42,6 +46,7 @@
   ],
   "scripts": {
     "build": "rollup --config",
+    "build:dist": "rollup --config --environment SKIP_DECLARATIONS:true",
     "format": "prettier . --cache --write",
     "lint": "concurrently \"pnpm:lint:*(!fix)\" --names \"lint:\" --prefixColors auto",
     "lint:fix": "concurrently \"pnpm:lint:*:fix\" --names \"fix:\" --prefixColors auto && pnpm run format",
@@ -50,11 +55,11 @@
     "lint:hbs:fix": "ember-template-lint . --fix --no-error-on-unmatched-pattern",
     "lint:js": "eslint . --cache",
     "lint:js:fix": "eslint . --fix",
-    "lint:publish": "pnpm build && publint run && attw --pack . --profile node16 --ignore-rules cjs-resolves-to-esm --exclude-entrypoints ./addon-main.js",
+    "lint:publish": "pnpm build && publint run && attw --pack . --profile node16 --ignore-rules cjs-resolves-to-esm --exclude-entrypoints ./addon-main.js && node ./scripts/check-declaration-deps.mjs",
     "lint:types": "ember-tsc --noEmit",
     "prepack": "rollup --config",
     "start": "vite dev",
-    "test": "vite build --mode=development --out-dir dist-tests && testem --file testem.cjs ci --port 0"
+    "test": "pnpm build:dist && node ./scripts/link-self.mjs && vite build --mode=development --out-dir dist-tests && testem --file testem.cjs ci --port 0"
   },
   "dependencies": {
     "@ember/test-waiters": "^4.1.1",
@@ -64,6 +69,7 @@
     "ember-modifier": "^4.2.0"
   },
   "peerDependencies": {
+    "@glimmer/component": ">= 1.1.2",
     "ember-source": ">= 5.8.0"
   },
   "devDependencies": {
@@ -99,6 +105,7 @@
     "eslint-plugin-ember": "^12.3.3",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-n": "^17.15.1",
+    "eslint-plugin-qunit": "^8.2.6",
     "globals": "^16.1.0",
     "prettier": "^3.4.2",
     "prettier-plugin-ember-template-tag": "^2.0.4",

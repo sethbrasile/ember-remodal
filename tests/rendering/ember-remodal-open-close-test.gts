@@ -1,12 +1,14 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render, click, find, settled } from '@ember/test-helpers';
+import { render, click, find, settled, waitUntil } from '@ember/test-helpers';
 import { on } from '@ember/modifier';
+import { tracked } from '@glimmer/tracking';
 import Component from '@glimmer/component';
 import type Owner from '@ember/owner';
 import EmberRemodal from '#src/components/ember-remodal.gts';
 import type { CloseReason } from '#src/components/ember-remodal.gts';
 import {
+  captureWarnings,
   dialog,
   hideDocument,
   lookupService,
@@ -14,9 +16,16 @@ import {
   settlesWithin,
   suspendAnimationFrames,
 } from '../helpers/remodal-test-helpers.ts';
+import { setupRemodal } from '#src/test-support/index.ts';
+
+/** A tracked flag a test can flip to tear a modal out of the DOM mid-flight. */
+class Visibility {
+  @tracked value = true;
+}
 
 module('Rendering | ember-remodal | open and close', function (hooks) {
   setupRenderingTest(hooks);
+  setupRemodal(hooks);
 
   test('clicking @openButton opens the modal', async function (assert) {
     await render(
@@ -106,8 +115,13 @@ module('Rendering | ember-remodal | open and close', function (hooks) {
     );
     await click('[data-test-id="openButton"]');
 
-    await pressEscape();
+    const prevented = await pressEscape();
 
+    // The addon owns the closing animation, so it must always cancel the
+    // browser's instant close. A synthetic `cancel` event has no default action
+    // of its own, so without this assertion the test passes with
+    // `handleNativeCancel`'s preventDefault() deleted.
+    assert.true(prevented, 'the native cancel default was prevented');
     assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-closed');
     assert.false(dialog().open);
   });
@@ -120,8 +134,12 @@ module('Rendering | ember-remodal | open and close', function (hooks) {
     );
     await click('[data-test-id="openButton"]');
 
-    await pressEscape();
+    const prevented = await pressEscape();
 
+    assert.true(
+      prevented,
+      'the cancel default is prevented whether or not we go on to close',
+    );
     assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
     assert.true(dialog().open);
   });
@@ -306,11 +324,21 @@ module('Rendering | ember-remodal | open and close', function (hooks) {
       </template>,
     );
 
+    // Spy on the real event rather than sleeping for it: a fixed `setTimeout`
+    // makes the test pass vacuously the day the event stops firing at all,
+    // which is exactly the regression it is supposed to detect.
+    const closeEvents: Event[] = [];
+    dialog().addEventListener('close', (event) => closeEvents.push(event));
+
     const modal = await service.open('reopen');
     await modal.close().then((m) => m.open());
 
-    // Give the queued native `close` event a chance to land before asserting.
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await waitUntil(() => closeEvents.length > 0, { timeout: 2000 });
+    assert.strictEqual(
+      closeEvents.length,
+      1,
+      'the queued native close event really did arrive (late, after the reopen)',
+    );
 
     assert.true(dialog().open, 'dialog element is still natively open');
     assert.strictEqual(modal.state, 'opened');
@@ -548,6 +576,113 @@ module('Rendering | ember-remodal | open and close', function (hooks) {
     assert
       .dom(document.documentElement)
       .doesNotHaveClass('remodal-is-locked', 'scroll lock released');
+  });
+
+  test('destroying a modal mid-transition settles the pending promise, releases the lock and fires @onClose', async function (assert) {
+    // The sibling test above tears the modal down between transitions. This one
+    // pulls it out of the DOM while an open() is still awaiting its animations:
+    // the caller is holding a promise that only willDestroy can settle, and
+    // both the scroll lock and the @onClose callback hang off the same path.
+    const service = lookupService(this);
+    const reasons: (CloseReason | undefined)[] = [];
+    const handleClose = (reason?: CloseReason) => reasons.push(reason);
+    const rendered = new Visibility();
+
+    await render(
+      <template>
+        {{#if rendered.value}}
+          <EmberRemodal
+            @forService={{true}}
+            @name="doomed-in-flight"
+            @title="Doomed"
+            @onClose={{handleClose}}
+          />
+        {{/if}}
+      </template>,
+    );
+
+    // Deliberately not awaited: the open is mid-animation, so its promise is
+    // unsettled and the scroll lock is held at the moment of teardown.
+    const opening = service.open('doomed-in-flight');
+    rendered.value = false;
+
+    assert.strictEqual(
+      await settlesWithin(opening, 2000),
+      'settled',
+      'the pending open() settled instead of dangling forever',
+    );
+    await settled();
+
+    assert.dom('[data-test-id="modalWrapper"]').doesNotExist('torn down');
+    assert.deepEqual(reasons, [undefined], '@onClose fired on destroy');
+    assert
+      .dom(document.documentElement)
+      .doesNotHaveClass('remodal-is-locked', 'the scroll lock was released');
+    assert.strictEqual(
+      document.body.style.paddingRight,
+      '',
+      'and the body padding was restored',
+    );
+  });
+
+  test('a <form method="dialog"> submit inside the block re-syncs state and fires @onClose exactly once', async function (assert) {
+    // The browser closes the <dialog> itself here — close() is never called, so
+    // handleDialogClose is the only thing that can put the state machine (and
+    // the scroll lock) back in sync. Firing @onClose twice, or not at all, are
+    // both live failure modes on this path.
+    const reasons: (CloseReason | undefined)[] = [];
+    const handleClose = (reason?: CloseReason) => reasons.push(reason);
+
+    await render(
+      <template>
+        <EmberRemodal @openButton="Open" @title="Form" @onClose={{handleClose}}>
+          <form method="dialog">
+            <button type="submit" data-test-submit>Done</button>
+          </form>
+        </EmberRemodal>
+      </template>,
+    );
+
+    await click('[data-test-id="openButton"]');
+    assert.true(dialog().open, 'open before the submit');
+
+    await click('[data-test-submit]');
+    await waitUntil(() => reasons.length > 0, { timeout: 2000 });
+    await settled();
+
+    assert.false(dialog().open, 'the browser closed the dialog');
+    assert
+      .dom('[data-test-id="modalWindow"]')
+      .hasClass('remodal-is-closed', 'the component state re-synced');
+    assert.deepEqual(
+      reasons,
+      [undefined],
+      '@onClose fired exactly once, with no reason',
+    );
+    assert
+      .dom(document.documentElement)
+      .doesNotHaveClass('remodal-is-locked', 'the scroll lock was released');
+  });
+
+  test('closing an already-closed modal a second time does not warn', async function (assert) {
+    // The "close before open" warning is scoped by `hasOpened`, so a modal that
+    // has been through one open/close cycle must stay quiet on a redundant
+    // close — a route teardown or a debounced handler closing twice is normal.
+    const service = lookupService(this);
+
+    await render(
+      <template>
+        <EmberRemodal @forService={{true}} @name="twice" @title="Twice" />
+      </template>,
+    );
+
+    await service.open('twice');
+    await service.close('twice');
+
+    const warnings = await captureWarnings(() => service.close('twice'));
+
+    assert.deepEqual(warnings, [], 'the second close is silent');
+    assert.false(dialog().open);
   });
 
   test('a press that starts inside the card and is released over the backdrop does not close', async function (assert) {

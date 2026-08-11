@@ -1,12 +1,21 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render, click } from '@ember/test-helpers';
+import { render, click, settled } from '@ember/test-helpers';
 import { hash } from '@ember/helper';
+import { on } from '@ember/modifier';
+import { tracked } from '@glimmer/tracking';
 import EmberRemodal from '#src/components/ember-remodal.gts';
 import type { CloseReason } from '#src/components/ember-remodal.gts';
+import { setupRemodal } from '#src/test-support/index.ts';
+import { dialog } from '../helpers/remodal-test-helpers.ts';
+
+class Label {
+  @tracked value = 'before';
+}
 
 module('Rendering | ember-remodal', function (hooks) {
   setupRenderingTest(hooks);
+  setupRemodal(hooks);
 
   test('it renders inline content from @title and @text', async function (assert) {
     await render(
@@ -201,6 +210,139 @@ module('Rendering | ember-remodal', function (hooks) {
 
     assert.dom('[data-test-id="nativeClose"]').doesNotExist();
     assert.dom('[data-test-id="modalWindow"]').hasClass('invisible');
+  });
+
+  test('@disableForeground with @disableNativeClose={{false}} keeps the close button', async function (assert) {
+    // @disableNativeClose defaults to @disableForeground rather than to false,
+    // so an explicit `false` is the only way to get the frameless card AND the
+    // built-in close button — and `?? this.disableForeground` makes that a real
+    // branch rather than a formality.
+    await render(
+      <template>
+        <EmberRemodal
+          @title="Ghost with an exit"
+          @disableForeground={{true}}
+          @disableNativeClose={{false}}
+        />
+      </template>,
+    );
+
+    assert.dom('[data-test-id="nativeClose"]').exists();
+    assert.dom('[data-test-id="modalWindow"]').hasClass('invisible');
+  });
+
+  test('the outer trigger classes land on the button and the link variants', async function (assert) {
+    // @outerButtonClasses applies to whichever outer trigger renders;
+    // @openButtonClasses and @openLinkClasses are per-variant.
+    await render(
+      <template>
+        <EmberRemodal
+          @openButton="Open"
+          @buttonClasses="every-button"
+          @outerButtonClasses="outer-only"
+          @openButtonClasses="open-button-only"
+          @openLinkClasses="open-link-only"
+        />
+        <EmberRemodal
+          @openLink="Open link"
+          @outerButtonClasses="outer-only"
+          @openLinkClasses="open-link-only"
+        />
+        <EmberRemodal @linkButton="Legacy" @outerButtonClasses="outer-only" />
+      </template>,
+    );
+
+    assert
+      .dom('[data-test-id="openButton"]')
+      .hasClass('every-button')
+      .hasClass('outer-only')
+      .hasClass('open-button-only')
+      .doesNotHaveClass(
+        'open-link-only',
+        'the link-only class stays off the button',
+      );
+    assert
+      .dom('[data-test-id="openLink"]')
+      .hasClass('outer-only')
+      .hasClass('open-link-only');
+    assert
+      .dom('[data-test-id="linkButton"]')
+      .hasClass('outer-only')
+      .doesNotHaveClass(
+        'open-link-only',
+        '@linkButton is the legacy trigger and takes no openLink classes',
+      );
+  });
+
+  test('the yielded confirmAction and cancelAction work as plain event handlers', async function (assert) {
+    const events: string[] = [];
+    const handleConfirm = () => events.push('confirm');
+    const handleCancel = () => events.push('cancel');
+
+    await render(
+      <template>
+        <EmberRemodal
+          @openButton="Open"
+          @title="Actions"
+          @onConfirm={{handleConfirm}}
+          @onCancel={{handleCancel}}
+          @closeOnConfirm={{false}}
+          @closeOnCancel={{false}}
+          as |m|
+        >
+          <button
+            type="button"
+            data-test-action-confirm
+            {{on "click" m.confirmAction}}
+          >Yes</button>
+          <button
+            type="button"
+            data-test-action-cancel
+            {{on "click" m.cancelAction}}
+          >No</button>
+        </EmberRemodal>
+      </template>,
+    );
+
+    await click('[data-test-id="openButton"]');
+    await click('[data-test-action-confirm]');
+    await click('[data-test-action-cancel]');
+
+    assert.deepEqual(events, ['confirm', 'cancel']);
+    assert
+      .dom('[data-test-id="modalWindow"]')
+      .hasClass('remodal-is-opened', 'neither action closed the modal');
+
+    await click('[data-test-id="nativeClose"]');
+  });
+
+  test('content inside an open modal tracks a mutated @tracked value', async function (assert) {
+    // The most common real usage there was no coverage for at all: the modal
+    // stays open while the app it is showing changes underneath it.
+    const label = new Label();
+
+    await render(
+      <template>
+        <EmberRemodal @openButton="Open" @title={{label.value}}>
+          <p data-test-live>{{label.value}}</p>
+        </EmberRemodal>
+      </template>,
+    );
+
+    await click('[data-test-id="openButton"]');
+    assert.dom('[data-test-live]').hasText('before');
+    assert.dom('[data-test-id="title"]').hasText('before');
+
+    label.value = 'after';
+    await settled();
+
+    assert.dom('[data-test-live]').hasText('after', 'block content updated');
+    assert
+      .dom('[data-test-id="title"]')
+      .hasText('after', 'and so did an inline option read through opt()');
+    assert.true(dialog().open, 'the modal stayed open across the update');
+
+    await click('[data-test-id="nativeClose"]');
   });
 
   test('confirm and cancel buttons carry theme and custom classes', async function (assert) {

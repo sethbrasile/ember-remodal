@@ -31,5 +31,17 @@ export function start() {
   );
   setup(QUnit.assert);
   setupEmberOnerrorValidation();
-  qunitStart();
+
+  // A modal's open/close transition is wrapped in a test waiter, and several of
+  // this addon's failure modes are "the promise never settles". Without a
+  // timeout that is a hung browser and a CI job killed at the job level, with no
+  // indication of which test did it; with one it is a single failing test.
+  QUnit.config.testTimeout = 30_000;
+
+  qunitStart({
+    // Fails the test that finished with a transition (or any other async) still
+    // in flight, instead of letting it settle during the next test — which is
+    // how the scroll lock ends up engaged in a test that never opened a modal.
+    setupTestIsolationValidation: true,
+  });
 }

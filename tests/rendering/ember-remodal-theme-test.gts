@@ -4,6 +4,7 @@ import { render, click, focus, settled, find } from '@ember/test-helpers';
 import EmberRemodal from '#src/components/ember-remodal.gts';
 import cssSource from '../../src/styles/ember-remodal.css?raw';
 import { dialog } from '../helpers/remodal-test-helpers.ts';
+import { setupRemodal } from '#src/test-support/index.ts';
 
 /** The stylesheet with comments stripped — prose about `@keyframes` or about a
  *  dead vendor prefix must not be mistaken for a declaration of one. */
@@ -84,6 +85,7 @@ function rect(selector: string): DOMRect {
 
 module('Rendering | ember-remodal theme', function (hooks) {
   setupRenderingTest(hooks);
+  setupRemodal(hooks);
 
   module('layout', function () {
     test('the open dialog fits the viewport exactly and centers the card', async function (assert) {
@@ -126,9 +128,12 @@ module('Rendering | ember-remodal theme', function (hooks) {
         `dialog height ${dialogRect.height} matches the viewport ${viewportHeight}`,
       );
       assert.ok(
-        dialogRect.right <= viewportWidth &&
-          dialogRect.bottom <= viewportHeight,
-        'the dialog does not extend past the viewport',
+        dialogRect.right <= viewportWidth,
+        `dialog right edge ${dialogRect.right} does not extend past the viewport ${viewportWidth}`,
+      );
+      assert.ok(
+        dialogRect.bottom <= viewportHeight,
+        `dialog bottom edge ${dialogRect.bottom} does not extend past the viewport ${viewportHeight}`,
       );
       assert.strictEqual(
         element.scrollWidth,
@@ -434,21 +439,20 @@ module('Rendering | ember-remodal theme', function (hooks) {
       await settled();
 
       assert.strictEqual(document.activeElement, card, 'the card holds focus');
-      if (card.matches(':focus-visible')) {
-        const style = getComputedStyle(card);
-        assert.notStrictEqual(
-          style.outlineStyle,
-          'none',
-          `the card draws an outline (${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor})`,
-        );
-      } else {
-        // A programmatically focused, non-interactive element is not guaranteed
-        // to match :focus-visible; fall back to checking the rule resolves.
-        assert.ok(
-          matchingSelectors('.remodal:focus-visible').length > 0,
-          'a :focus-visible rule exists for the card',
-        );
-      }
+      // A programmatically focused, non-interactive element is not guaranteed to
+      // match :focus-visible; when it does not, fall back to checking that the
+      // rule resolves at all. Resolved to a value rather than branching around
+      // two different assertions, so the test always reports the same one.
+      const outline = card.matches(':focus-visible')
+        ? getComputedStyle(card).outlineStyle
+        : matchingSelectors('.remodal:focus-visible').length > 0
+          ? 'declared for .remodal:focus-visible'
+          : 'none';
+      assert.notStrictEqual(
+        outline,
+        'none',
+        `the card draws a focus outline (${outline})`,
+      );
     });
   });
 
@@ -618,7 +622,7 @@ module('Rendering | ember-remodal theme', function (hooks) {
 
       const confirm = declarationsFor(forced, '.remodal-confirm');
       const cancel = declarationsFor(forced, '.remodal-cancel');
-      assert.ok(confirm.borderStyle !== '', 'confirm gets a border');
+      assert.notStrictEqual(confirm.borderStyle, '', 'confirm gets a border');
       assert.strictEqual(
         cancel.borderStyle,
         'dashed',
@@ -629,8 +633,9 @@ module('Rendering | ember-remodal theme', function (hooks) {
         cancel.borderStyle,
         `confirm (${confirm.borderStyle}) and cancel (${cancel.borderStyle}) are told apart without colour`,
       );
-      assert.ok(
-        declarationsFor(forced, '.remodal-close').borderStyle !== '',
+      assert.notStrictEqual(
+        declarationsFor(forced, '.remodal-close').borderStyle,
+        '',
         'the close button gets a border too',
       );
     });
@@ -810,9 +815,11 @@ module('Rendering | ember-remodal theme', function (hooks) {
       for (const rule of users) {
         for (const selector of rule.selectorText.split(',')) {
           const trimmed = selector.trim();
-          assert.ok(
+          const targetsDialogOrCard =
             /^dialog\.remodal-wrapper[\w.-]*(::backdrop)?$/.test(trimmed) ||
-              /^\.remodal[\w.-]*$/.test(trimmed),
+            /^\.remodal[\w.-]*$/.test(trimmed);
+          assert.true(
+            targetsDialogOrCard,
             `${trimmed} targets the dialog or the card`,
           );
         }

@@ -152,6 +152,58 @@ const MISSING_DIALOG_MESSAGE =
 const lockHolders = new Set<object>();
 let savedBodyPaddingRight: string | null = null;
 
+// Flipped by `setupRemodal` from `ember-remodal/test-support`. A module-level
+// flag is the only mechanism that works in a strict-resolver v2 app, where
+// `config:environment` is not a resolvable registration at all (see
+// resolveTestingAnimationDisabled, which remains the classic-resolver path).
+let testSupportAnimationDisabled = false;
+
+/**
+ * Not part of the supported API: the seam `ember-remodal/test-support` uses.
+ * Everything below mutates or reads module-level state that lives outside any
+ * component instance (and outside `#ember-testing`), which is precisely why a
+ * test suite needs a way to read and reset it.
+ */
+export function setAnimationDisabledForTesting(disabled: boolean): void {
+  testSupportAnimationDisabled = disabled;
+}
+
+export interface ScrollLockState {
+  /** How many modal instances currently believe they hold the lock. */
+  holders: number;
+  /** Whether the document element is actually carrying the lock class. */
+  locked: boolean;
+  bodyPaddingRight: string;
+}
+
+export function scrollLockStateForTesting(): ScrollLockState {
+  return {
+    holders: lockHolders.size,
+    locked:
+      typeof document !== 'undefined' &&
+      document.documentElement.classList.contains('remodal-is-locked'),
+    bodyPaddingRight:
+      typeof document === 'undefined' ? '' : document.body.style.paddingRight,
+  };
+}
+
+export function resetScrollLockForTesting(): void {
+  const wasHeld = lockHolders.size > 0;
+  lockHolders.clear();
+  if (typeof document === 'undefined') {
+    savedBodyPaddingRight = null;
+    return;
+  }
+  document.documentElement.classList.remove('remodal-is-locked');
+  // Only touch the inline style when this module is the reason it is set:
+  // `savedBodyPaddingRight` is non-null exactly while a lock is (or was
+  // wrongly left) held, and holds whatever the page had before we locked.
+  if (wasHeld || savedBodyPaddingRight !== null) {
+    document.body.style.paddingRight = savedBodyPaddingRight ?? '';
+  }
+  savedBodyPaddingRight = null;
+}
+
 function acquireScrollLock(holder: object): void {
   const wasEmpty = lockHolders.size === 0;
   lockHolders.add(holder);
@@ -256,6 +308,13 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     }
   }
 
+  // `config/environment`'s `ENV['ember-remodal'].disableAnimationWhileTesting`,
+  // kept for classic (`ember-resolver`) apps upgrading from 2.x — that is the
+  // only kind of app in which `config:environment` resolves. A strict-resolver
+  // v2 app registers no such module, so this returns false there and
+  // `setupRemodal({ disableAnimation: true })` from `ember-remodal/test-support`
+  // is the supported switch. Both paths are covered by tests; neither is
+  // allowed to be the only one.
   private resolveTestingAnimationDisabled(owner: Owner): boolean {
     try {
       const resolverOwner = owner as unknown as
@@ -360,7 +419,9 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
 
   get disableAnimation(): boolean {
     return (
-      (this.opt('disableAnimation') ?? false) || this.testingAnimationDisabled
+      (this.opt('disableAnimation') ?? false) ||
+      this.testingAnimationDisabled ||
+      testSupportAnimationDisabled
     );
   }
 

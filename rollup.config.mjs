@@ -18,6 +18,20 @@ const addon = new Addon({
   destDir: 'dist',
 });
 
+/**
+ * `--environment SKIP_DECLARATIONS:true` (what `pnpm test` passes) builds `dist`
+ * without running `ember-tsc` for `declarations`.
+ *
+ * The test suite needs `dist`, because it imports the addon by package name to
+ * exercise `package.json#exports` — but it does not need `declarations`: the
+ * test app's types for those specifiers resolve to `src` through `tsconfig.json`
+ * paths. Skipping the declaration emit keeps a test run fast, and keeps `pnpm
+ * test` from failing a type-check against whichever `ember-source` an
+ * `@embroider/try` scenario installed. `pnpm build` (and therefore
+ * `lint:publish`, `prepack` and CI's packaging checks) still emits them.
+ */
+const skipDeclarations = Boolean(process.env.SKIP_DECLARATIONS);
+
 const rootDirectory = dirname(fileURLToPath(import.meta.url));
 const babelConfig = resolve(rootDirectory, './babel.publish.config.cjs');
 const tsConfig = resolve(rootDirectory, './tsconfig.publish.json');
@@ -175,15 +189,18 @@ export default {
     // Ensure that .gjs files are properly integrated as Javascript
     addon.gjs(),
 
-    // Emit .d.ts declaration files
-    addon.declarations(
-      declarationsDir,
-      `pnpm ember-tsc --declaration --project ${tsConfig}`,
-    ),
-
-    // Make the emitted declarations resolvable: copy hand-written .d.ts files
-    // across and give relative import specifiers real `.js` extensions.
-    finalizeDeclarations(),
+    // Emit .d.ts declaration files, then make them resolvable: copy
+    // hand-written .d.ts files across and give relative import specifiers real
+    // `.js` extensions.
+    ...(skipDeclarations
+      ? []
+      : [
+          addon.declarations(
+            declarationsDir,
+            `pnpm ember-tsc --declaration --project ${tsConfig}`,
+          ),
+          finalizeDeclarations(),
+        ]),
 
     // addons are allowed to contain imports of .css files, which we want rollup
     // to leave alone and keep in the published output.

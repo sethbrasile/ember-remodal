@@ -4,9 +4,11 @@ import { render, click } from '@ember/test-helpers';
 import EmberRemodal from '#src/components/ember-remodal.gts';
 import type { CloseReason } from '#src/components/ember-remodal.gts';
 import { dialog, lookupService } from '../helpers/remodal-test-helpers.ts';
+import { setupRemodal } from '#src/test-support/index.ts';
 
 module('Rendering | ember-remodal | confirm and cancel', function (hooks) {
   setupRenderingTest(hooks);
+  setupRemodal(hooks);
 
   test('@confirmButton fires @onConfirm, closes, and reports the reason to @onClose', async function (assert) {
     let confirmed = 0;

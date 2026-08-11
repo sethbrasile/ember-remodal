@@ -1,10 +1,17 @@
-import { find, settled } from '@ember/test-helpers';
+import { settled } from '@ember/test-helpers';
+import { remodalDialog, remodalDialogs } from '#src/test-support/index.ts';
 import type { TestContext } from '@ember/test-helpers';
 import type RemodalService from '#src/services/remodal.ts';
 
-export function dialog(): HTMLDialogElement {
-  return find('[data-test-id="modalWrapper"]') as HTMLDialogElement;
-}
+/**
+ * The addon's own published helpers, re-exported under the short names this
+ * suite has always used. `dialog()` throws when more than one modal is rendered
+ * and the lookup was not scoped — the previous single-`find()` shape silently
+ * returned the first match, which is why nothing here could test stacked
+ * modals. Pass a scope (`dialog('[data-test-inner]')`) or use `dialogs()`.
+ */
+export const dialog = remodalDialog;
+export const dialogs = remodalDialogs;
 
 export function lookupService(context: TestContext): RemodalService {
   return context.owner.lookup('service:remodal');
@@ -109,10 +116,23 @@ export async function captureWarnings(body: () => unknown): Promise<string[]> {
   return warnings;
 }
 
-export function pressEscape(): Promise<void> {
-  // The native `cancel` event is what the browser fires on Esc inside an open
-  // <dialog>; synthetic keyboard events do not trigger it, so dispatch it
-  // directly.
-  dialog().dispatchEvent(new Event('cancel', { cancelable: true }));
-  return settled();
+/**
+ * Presses Escape inside an open modal and resolves with the event's
+ * `defaultPrevented`.
+ *
+ * The native `cancel` event is what the browser fires on Esc inside an open
+ * <dialog>; synthetic keyboard events do not trigger it, so dispatch it
+ * directly. Returning `defaultPrevented` is load-bearing: a synthetic `cancel`
+ * has no browser default action, so `handleNativeCancel`'s `preventDefault()`
+ * is invisible in a test that only inspects the resulting state — delete the
+ * call and every "Escape" assertion still passes, while the real browser
+ * force-closes the dialog without playing the closing animation.
+ */
+export async function pressEscape(
+  target: HTMLDialogElement = dialog(),
+): Promise<boolean> {
+  const event = new Event('cancel', { cancelable: true });
+  target.dispatchEvent(event);
+  await settled();
+  return event.defaultPrevented;
 }
