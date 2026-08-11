@@ -11,14 +11,17 @@ Version 3 is a ground-up rewrite as a v2 addon in TypeScript. The jQuery
 handling, while the classic remodal theme (dark backdrop, flat white card, 0.3s
 zoom/fade) is ported. The public API — component arguments, yielded buttons, the
 `remodal` service, promise resolution points, and the `remodal-*` CSS classes —
-is preserved. Upgrading from 2.x? Read the
+is preserved, with `.remodal-overlay` the one exception (the overlay is the
+dialog's `::backdrop` now). Upgrading from 2.x? Read the
 [migration guide](MIGRATION.md); changes are listed in the
 [changelog](CHANGELOG.md).
 
 ## Contents
 
 - [Compatibility](#compatibility)
+- [Browser support](#browser-support)
 - [Installation](#installation)
+  - [TypeScript and Glint](#typescript-and-glint)
 - [Usage](#usage)
   - [Inline](#inline)
   - [Block form with yielded buttons](#block-form-with-yielded-buttons)
@@ -46,7 +49,48 @@ is preserved. Upgrading from 2.x? Read the
 | 2.x           | Legacy line for older Ember (classic builds, jQuery-based) — no longer maintained |
 
 The 5.8 floor is exercised in CI: the `@embroider/try` matrix runs 5.8, 5.12,
-6.4, 6.12, `latest`, `beta` and `alpha`, plus a floating-dependency job.
+6.4, 6.12, `latest`, `beta` and `alpha`, plus a `glimmer-component-1.1.2`
+scenario pinning the declared `@glimmer/component` floor against Ember 5.8, and
+a floating-dependency job.
+
+## Browser support
+
+| Engine       | Minimum              |
+| ------------ | -------------------- |
+| Chrome, Edge | 99                   |
+| Firefox      | 98                   |
+| Safari       | 15.4 (macOS and iOS) |
+
+All three landed in the first quarter of 2022. There is no polyfill path and no
+graceful degradation: below these versions the modal does not open.
+
+The floor is set by three hard requirements, and different ones bind on
+different engines:
+
+- **`HTMLDialogElement.prototype.showModal()`** — the top layer, focus
+  containment and the native `cancel`/`close` events. Firefox 98, Safari 15.4.
+- **`@layer`** — the whole stylesheet ships inside `@layer ember-remodal`, and
+  an engine that does not recognise the at-rule discards it together with its
+  block, so it gets no theme at all rather than an unlayered one. Chrome 99,
+  Firefox 97, Safari 15.4. This is what makes Chrome 99 rather than Chrome 37
+  the Chromium floor.
+- **`Element.getAnimations({ subtree: true })` and the `CSSAnimation`
+  interface** — how `open()` and `close()` know when the animation has
+  finished. Chrome 84, Firefox 75, Safari 13.1, so below the floor set by the
+  other two on every engine. (The animation filter uses a bare
+  `instanceof CSSAnimation`, which would be a `ReferenceError` rather than a
+  `false` if the global were absent. It is present everywhere `showModal()` and
+  `@layer` are.)
+
+Two smaller notes. `:focus-visible` (Chrome 86, Firefox 85, Safari 15.4) draws
+the focus rings; without it the addon's focus indication would be gone, since
+upstream's `outline: none` was removed rather than replaced conditionally.
+`::backdrop` inheritance is newer still — see the caveat under
+[Theming](#theming-with-custom-properties) — but it degrades to the built-in
+overlay colour rather than to nothing.
+
+The suite runs in headless Chrome only; Firefox and Safari are supported by
+API-availability reasoning and manual checks, not by CI.
 
 ## Installation
 
@@ -66,6 +110,34 @@ build. If you want to control when it loads, import it yourself:
 ```js
 import 'ember-remodal/styles/ember-remodal.css';
 ```
+
+### TypeScript and Glint
+
+The package ships its own declarations and Glint signatures. `EmberRemodal`,
+`ErButton`, `RemodalService`, `EmberRemodalOptions`, `EmberRemodalArgs`,
+`EmberRemodalSignature`, `EmberRemodalYield`, `ErButtonSignature`, `ModalState`
+and `CloseReason` are all exported from the package root.
+
+In a **strict-mode** (`.gjs` / `.gts`) app, importing the component is all Glint
+needs. In a **loose-mode (classic) template**, where `{{ember-remodal}}`
+resolves by name, add the addon's template registry to your own so Glint knows
+what those names are:
+
+```ts
+// types/glint.d.ts
+import '@glint/environment-ember-loose';
+import type EmberRemodalRegistry from 'ember-remodal/template-registry';
+
+declare module '@glint/environment-ember-loose/registry' {
+  export default interface Registry extends EmberRemodalRegistry {}
+}
+```
+
+That registers `EmberRemodal` / `ember-remodal` and
+`EmberRemodal::ErButton` / `ember-remodal/er-button`. Without it a Glint-enabled
+classic app type-errors on every `{{ember-remodal}}` invocation.
+`ember-remodal/template-registry` is a **types-only** entry point — it emits no
+JavaScript, so import it with `import type`, never as a runtime module.
 
 ## Usage
 
@@ -114,8 +186,10 @@ import EmberRemodal from 'ember-remodal/components/ember-remodal';
 ```
 
 - `m.open` — a trigger component. Even though it is declared inside the block, it
-  renders _outside_ the `<dialog>` (it is portaled next to the component), so it
-  is always visible and clickable.
+  renders _outside_ the `<dialog>` — it is portaled to a target span that is a
+  sibling of the `<dialog>` inside the component's own root element — so it is
+  always visible and clickable, and it lands where you invoked the component
+  rather than at the application root.
 - `m.confirm` / `m.cancel` — close the modal with reason `'confirmation'` /
   `'cancellation'` and fire `@onConfirm` / `@onCancel`.
 - `m.isOpen` — `true` while the modal is opening, open, or closing. Use it to
@@ -303,13 +377,27 @@ an `{{#if}}` flipping — so cleanup keyed on it runs in that case too.
 The classic remodal class names are all preserved: `remodal`, `remodal-wrapper`,
 `remodal-close`, `remodal-confirm`, `remodal-cancel`, `remodal-is-locked`,
 `remodal-bg`, `remodal-is-initialized`, and the state classes
-`remodal-is-opening` / `-opened` / `-closing` / `-closed`. The default theme
-(ported from Remodal v1.1.1, MIT) ships with the addon and is applied
-automatically. It is not a pixel-for-pixel copy: it deviates from upstream in
-eleven places, all for accessibility, layout correctness or cascade safety, and
-each one is revertible from your own stylesheet. They are listed in
-[CHANGELOG.md](CHANGELOG.md#fixed) and in the header comment of
-`src/styles/ember-remodal.css`.
+`remodal-is-opening` / `-opened` / `-closing` / `-closed`.
+
+**The state classes and `remodal-bg` are not related, though.** The
+`remodal-is-*` classes go on the `<dialog>` and on the modal card, and never on
+`.remodal-bg` — so upstream Remodal's documented background hook,
+`.remodal-bg.remodal-is-opened`, matches nothing here. The port re-expresses it
+as `html.remodal-is-locked .remodal-bg`; see
+[the migration note](MIGRATION.md#the-rest-of-the-theme) if you have 2.x CSS
+keyed on the upstream form. `remodal-is-locked` is on `<html>` for as long as
+any modal is open, so it also covers the closing animation, where upstream's
+`remodal-is-opened` had already been swapped for `remodal-is-closing`.
+
+The default theme (ported from Remodal v1.1.1, MIT) ships with the addon and is
+applied automatically. It is not a pixel-for-pixel copy: it deviates from
+upstream in eleven places, all for accessibility, layout correctness or cascade
+safety, and each one is revertible from your own stylesheet. The canonical,
+machine-checked list is the deviation registry in
+[CHANGELOG.md](CHANGELOG.md#deliberate-deviations-from-upstream-remodal) — the
+header comment of `src/styles/ember-remodal.css` summarises it, and
+`pnpm verify:css-deviations` fails if any registry entry has no test that would
+notice its loss.
 
 Apply `remodal-bg` to the page content you want blurred while a modal is open.
 Two caveats, both new in 3.0. The `<dialog>` renders where you invoke the
@@ -340,10 +428,12 @@ Two consequences worth knowing:
   `visibility: visible` on the `@disableForeground` card) are not overridable
   by a plain `!important` of yours. Put your override in a layer of your own
   declared after `ember-remodal` if you need to win one of those two.
-- **An engine with no `@layer` support** falls back to plain specificity and
-  source order. The addon already requires `dialog.showModal()` and
-  `Element.getAnimations()`, both newer than `@layer`, so this is not a
-  practical floor.
+- **An engine with no `@layer` support gets no theme at all** — not an
+  unlayered fallback. An unrecognised at-rule is discarded together with its
+  block, so every rule in the sheet goes with it, and no unlayered copy is
+  shipped. That makes `@layer` part of the addon's browser floor rather than a
+  progressive enhancement; see [Browser support](#browser-support) for why the
+  floor is set by `showModal()` anyway on every engine but one.
 
 ### Styling hooks
 
@@ -368,9 +458,9 @@ replacement, matching the `ember-remodal-invisible` hook:
 | Title                                 | `.ember-remodal.ember-remodal-title.ember-remodal-text`      |
 | Text                                  | `.ember-remodal.ember-remodal-paragraph.ember-remodal-text`  |
 | Content yielded in block form         | `.ember-remodal.ember-remodal-yielded.ember-remodal-content` |
-| All rendered buttons                  | `.ember-remodal.ember-remodal-button`                        |
-| Buttons inside the modal              | `.ember-remodal.ember-remodal-inner.ember-remodal-button`    |
-| Buttons outside the modal             | `.ember-remodal.ember-remodal-outer.ember-remodal-button`    |
+| Open / confirm / cancel buttons       | `.ember-remodal.ember-remodal-button`                        |
+| Confirm and cancel buttons            | `.ember-remodal.ember-remodal-inner.ember-remodal-button`    |
+| Open button (trigger)                 | `.ember-remodal.ember-remodal-outer.ember-remodal-button`    |
 | Frameless card (`@disableForeground`) | `.ember-remodal-invisible.remodal`                           |
 | Overlay (2.x: `.remodal-overlay`)     | `dialog.remodal-wrapper::backdrop`                           |
 
@@ -379,11 +469,16 @@ The `remodal-*` hooks are unchanged: `.remodal`, `.remodal-wrapper`,
 `.remodal-is-locked`, `.remodal-is-initialized` and the `remodal-is-*` state
 classes.
 
-Two notes on the table. The overlay is now the dialog's `::backdrop`
-pseudo-element, so there is no `.remodal-overlay` element to select. And
+Three notes on the table. The overlay is now the dialog's `::backdrop`
+pseudo-element, so there is no `.remodal-overlay` element to select.
 `.ember-remodal.ember-remodal-outer.ember-remodal-button` matches the
 `@openButton` only — the `@openLink` and `@linkButton` forms render as
-`.ember-remodal.ember-remodal-outer.ember-remodal-link.ember-remodal-text`.
+`.ember-remodal.ember-remodal-outer.ember-remodal-link.ember-remodal-text`. And
+`ember-remodal-button` is **not** on the built-in close button, which carries
+`ember-remodal-native ember-remodal-close` instead (as it did in 2.x, where the
+bare `button` token was likewise absent from it) — reach it with
+`.ember-remodal.ember-remodal-native.ember-remodal-close`, or with
+`.remodal-close`.
 
 If you have 2.x CSS keyed on the bare tokens and cannot update it right now,
 `@legacyClassNames={{true}}` (or `legacyClassNames: true` in `@options` /
@@ -459,9 +554,25 @@ say otherwise. Opting in is one media query:
     --ember-remodal-close-color-hover: #e8eaf2;
     --ember-remodal-focus-ring: #e8eaf2;
     --ember-remodal-focus-ring-inverse: #10131a;
+
+    /* Re-pair confirm and cancel. The defaults are dark fills chosen against a
+       WHITE card: on #1b1f2a, #2e7d32 measures 3.21:1 and #c62828 only 2.93:1,
+       under the 3:1 non-text floor (WCAG 1.4.11) that makes a button's shape
+       perceivable at all. Light fills with a dark label invert cleanly — and
+       they are upstream Remodal's own colours. */
+    --ember-remodal-button-color: #10131a;
+    --ember-remodal-confirm-background: #66bb6a; /* 6.96:1 vs card, 7.86:1 label */
+    --ember-remodal-confirm-background-hover: #81c784;
+    --ember-remodal-cancel-background: #ef5350; /* 4.72:1 vs card, 5.33:1 label */
+    --ember-remodal-cancel-background-hover: #ef9a9a;
   }
 }
 ```
+
+**Re-pair the buttons whenever you change `--ember-remodal-background`.** The
+confirm/cancel defaults are picked for contrast against their own white label
+text on a white card; nothing in the addon re-derives them from the card colour,
+so a dark card leaves the fills too close to the surface behind them.
 
 The card and the three buttons draw their focus ring as a pair — a
 `--ember-remodal-focus-ring` outline plus a `--ember-remodal-focus-ring-inverse`
@@ -503,6 +614,14 @@ them to everything inside it:
   --ember-remodal-color-scheme: dark;
   --ember-remodal-focus-ring: #e8eaf2;
   --ember-remodal-focus-ring-inverse: #10131a;
+
+  /* See the note above: the confirm/cancel defaults are chosen against a white
+     card and need re-pairing on a dark one. */
+  --ember-remodal-button-color: #10131a;
+  --ember-remodal-confirm-background: #66bb6a;
+  --ember-remodal-confirm-background-hover: #81c784;
+  --ember-remodal-cancel-background: #ef5350;
+  --ember-remodal-cancel-background-hover: #ef9a9a;
 
   border-radius: 12px;
 }
@@ -567,13 +686,13 @@ test that ends with a transition still in flight leaks a locked document into
 every test that follows. `setupRemodal` force-resets it before and after each
 test, and fails the test that leaked rather than letting the failure cascade.
 
-| Export                              | Purpose                                                                                                           |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `setupRemodal(hooks, options?)`     | Installs the reset/leak-detection hooks. `options.disableAnimation` turns animations off for the module           |
-| `resetRemodalScrollLock()`          | Force-releases the scroll lock. Only needed if you manage QUnit hooks yourself                                    |
-| `setRemodalAnimationDisabled(flag)` | Turns animations off (or back on) process-wide. Prefer the `setupRemodal` option, which also unwinds it           |
-| `remodalDialog(scope?)`             | The one rendered modal `<dialog>`. Throws when there is none, or when several are rendered and no scope was given |
-| `remodalDialogs(scope?)`            | Every rendered modal `<dialog>`, in document order — the helper to reach for with stacked modals                  |
+| Export                              | Purpose                                                                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `setupRemodal(hooks, options?)`     | Installs the reset/leak-detection hooks. `options.disableAnimation` turns animations off for the module                                     |
+| `resetRemodalScrollLock()`          | Force-releases the scroll lock. Only needed if you manage QUnit hooks yourself                                                              |
+| `setRemodalAnimationDisabled(flag)` | Turns animations off (or back on) process-wide. Prefer the `setupRemodal` option, which also unwinds it                                     |
+| `remodalDialog(scope?)`             | The one modal `<dialog>` in scope. Throws when the scope holds none, when it holds more than one, or when a string scope matches no element |
+| `remodalDialogs(scope?)`            | Every modal `<dialog>` in scope, in document order — the helper to reach for with stacked modals                                            |
 
 The exported types are `RemodalTestHooks`, `RemodalTestAssert` and
 `SetupRemodalOptions`. The module deliberately imports neither `qunit` nor
@@ -589,7 +708,9 @@ const dialog = remodalDialog('[data-test-id="confirm-delete"]');
 ```
 
 Any selector or element works as a scope; `@dataTestId="confirm-delete"` on the
-component is the tidiest way to create one.
+component is the tidiest way to create one. A scope that _is_ a modal `<dialog>`
+names that dialog rather than the modals nested inside its content, which is
+what makes a modal-inside-a-modal addressable.
 
 ### The classic-resolver fallback
 

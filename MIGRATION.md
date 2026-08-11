@@ -21,7 +21,12 @@ document assumes you have a working 2.x integration in front of you.
 
 - **Ember >= 5.8.** 3.x works in any Embroider/Vite app, and in classic builds
   via `@embroider/compat`. Older Ember versions must stay on 2.x. The floor is
-  exercised in CI across 5.8, 5.12, 6.4, 6.12, latest, beta and alpha.
+  exercised in CI across 5.8, 5.12, 6.4, 6.12, latest, beta and alpha, plus a
+  scenario that pins the `@glimmer/component >= 1.1.2` floor against 5.8.
+- **The browser floor is Chrome/Edge 99, Firefox 98, Safari 15.4** — the addon
+  needs `dialog.showModal()` and `@layer`, and there is no polyfill path. See
+  [Browser support in the README](README.md#browser-support). 2.x had no such
+  floor: a jQuery-driven `<div>` ran anywhere jQuery did.
 - **jQuery and the `remodal` library are no longer used or installed.** If
   nothing else in your app needs jQuery, you can remove it.
 - **`ember-wormhole` is no longer a dependency.** The yielded `m.open` trigger
@@ -69,9 +74,15 @@ adds a fifth, `onBeforeOpen`):
 2.x returned `rsvp` promises from `open()` and `close()`. 3.0 returns native
 ones. The awaiting/`.then()` shape is unchanged, but:
 
-- `result instanceof RSVP.Promise` is now `false`.
-- RSVP-only methods on the returned value (`.finally()` predates native support,
-  but `RSVP.hash`-style helpers, `.fail()`, and RSVP's `Promise.cast`) are gone.
+- `result instanceof RSVP.Promise` is now `false`. This is the only break at the
+  instance level: RSVP's promise instances expose `then`, `catch` and `finally`
+  and nothing else, all three of which a native promise has too. (`.fail()` is
+  jQuery Deferred, not RSVP, and never worked on the returned value.)
+- The RSVP helpers you may have wrapped the result in are module functions and
+  statics, not methods on the promise — `RSVP.hash({ modal: open('x') })`,
+  `RSVP.all([…])`, `RSVP.Promise.resolve(…)` — so they were never reached
+  through the returned value and all of them accept a native thenable. Nothing
+  to change.
 - RSVP promises resolved inside an autorun, so a `.then()` callback that mutated
   tracked state or scheduled work often happened to land inside a runloop.
   Native promise callbacks do not. If a callback of yours relies on that, wrap it
@@ -187,16 +198,49 @@ angle-bracket invocation, where `class` is an attribute again:
 For the modal itself rather than the outer element, `@modalClasses` and
 `@modifier` are the right hooks.
 
-### The `er-button` deep import path moved
+### `er-button`: the import path moved and both arguments were renamed
+
+You rarely need this component directly — it is yielded as `m.open` /
+`m.confirm` / `m.cancel` with its arguments already bound — but it is a
+documented export, so both changes are public.
+
+The deep import path:
 
 ```diff
 - import ErButton from 'ember-remodal/components/er-button';
 + import ErButton from 'ember-remodal/components/ember-remodal/er-button';
 ```
 
-The loose-mode template name is unchanged (`ember-remodal/er-button`). You
-rarely need either — the component is yielded as `m.open` / `m.confirm` /
-`m.cancel`, and `ErButton` is also re-exported from the package root.
+The loose-mode template name is unchanged (`ember-remodal/er-button`), and
+`ErButton` is also re-exported from the package root.
+
+**Both arguments were renamed, and nothing tells you at build time.** 2.x took
+`modalId=`
+(an `elementId` string, from which it derived a `#open-button-<id>` wormhole
+destination) and `action=` (a `sendAction` string or closure action). 3.0 takes
+`@destination` — an `Element`, not an id string — and `@onClick`:
+
+```hbs
+{{! 2.x }}
+{{#ember-remodal/er-button modalId=someElementId action=(action "confirm")}}
+  <button type="button">Confirm</button>
+{{/ember-remodal/er-button}}
+
+{{! 3.0 — angle-bracket }}
+<ErButton @destination={{this.targetElement}} @onClick={{this.confirm}}>
+  <button type="button">Confirm</button>
+</ErButton>
+```
+
+Because the loose-mode name still resolves, `{{ember-remodal/er-button
+modalId=… action=…}}` keeps compiling and keeps rendering its block. Nothing
+warns at build time; the failure is at runtime, and in two pieces. With no
+`@destination` the block renders **in place** instead of being portaled, which
+for an open trigger inside a modal means the trigger is inside the closed
+`<dialog>` and invisible. And with no `@onClick`, clicking it throws a
+`TypeError` from the wrapper's click handler. So grep for `er-button` before you
+upgrade. The fix is almost always to delete the direct invocation and use the
+yielded `m.open` / `m.confirm` / `m.cancel`, which bind both arguments for you.
 
 ### The `close`-before-`open` warning id is spelled correctly
 
@@ -322,10 +366,26 @@ This was equally true in 2.x; it was simply never diagnosed.
 
 If you snapshot the modal's markup, expect: a generated `id` on the `<h2>`, an
 `aria-labelledby` (or `aria-label`) on the `<dialog>`, and an `aria-label` plus
-`title` on the close button. There is a new `@ariaLabel` option for modals with
-no visible `@title`, and a new `@closeButtonLabel` (default `'Close Modal'`,
-translatable). Opening a modal with neither `@title` nor `@ariaLabel` warns in
-development (`ember-remodal.modal-without-accessible-name`).
+`title` on the close button. Exactly one naming attribute is ever emitted, in
+accname's own precedence order — `@ariaLabelledBy` beats `@ariaLabel` beats
+`@title`.
+
+Three new options take part: `@ariaLabel` (a name for a modal with no visible
+`@title`), `@ariaLabelledBy` (the id of your own on-screen markup, so a
+block-only modal can be named without duplicating its heading text), and
+`@closeButtonLabel` (default `'Close Modal'`, translatable). Opening a modal
+with none of `@title` / `@ariaLabel` / `@ariaLabelledBy` warns in development
+(`ember-remodal.modal-without-accessible-name`), and so does an
+`@ariaLabelledBy` whose idref resolves to no element with text — an attribute
+that is present and names nothing.
+
+One more thing worth knowing if you drive modals from the service: the three
+naming keys are mutually exclusive across `service.open()` calls. Everything
+else merges cumulatively as it did in 2.x, but supplying any one of these
+clears the overrides for the other two, so
+`open('x', { ariaLabel: 'Session expired' })` followed by
+`open('x', { title: 'Delete record?' })` cannot leave the dialog displaying one
+thing and announcing another.
 
 ## Theme changes
 
@@ -418,20 +478,30 @@ Two consequences, recorded as deliberate deviations ten and eleven:
    }
    ```
 
-2. **Engines without `@layer` support keep the old behaviour** — plain
-   specificity and source order, and the bare-class collisions with it. The
-   addon already requires `dialog.showModal()` and `Element.getAnimations()`,
-   both of which shipped later than `@layer`, so no supported engine is
-   affected.
+2. **Engines without `@layer` support get no theme at all.** An unrecognised
+   at-rule is discarded together with its block, so such an engine drops every
+   rule in the stylesheet rather than falling back to an unlayered copy — and
+   no unlayered copy is shipped. That makes `@layer` part of the addon's
+   browser floor. It costs nothing in practice: `@layer` shipped alongside
+   `dialog.showModal()` in Safari (15.4) and ahead of it in Firefox (97 vs 98),
+   so Chrome 84–98 is the only window in which the addon's required APIs exist
+   without it. See
+   [Browser support in the README](README.md#browser-support).
 
 ### The rest of the theme
 
-Every `remodal-*` class hook still exists — see the
-[styling table in the README](README.md#styling-hooks). The ported theme does
-deviate from upstream Remodal in eleven places, each for a WCAG, correctness or
-cascade-safety reason, and each revertible. They are listed in
-[CHANGELOG.md](CHANGELOG.md#fixed); the ones most likely to be visible in a 2.x
-app:
+Every `remodal-*` class hook still exists **with one exception**:
+`.remodal-overlay` is gone, because the overlay is the dialog's `::backdrop`
+now and there is no element to carry the class
+([above](#the-overlay-is-backdrop-not-remodal-overlay)). Everything else — the
+full list is in the
+[styling table in the README](README.md#styling-hooks) — is unchanged.
+
+The ported theme deviates from upstream Remodal in eleven places, each for a
+WCAG, correctness or cascade-safety reason, and each revertible. The canonical
+list is the deviation registry in
+[CHANGELOG.md](CHANGELOG.md#deliberate-deviations-from-upstream-remodal); the
+ones most likely to be visible in a 2.x app:
 
 - Confirm and cancel are darker (`#2e7d32` / `#c62828`) so white label text
   reaches AA contrast. Set `--ember-remodal-confirm-background` and
@@ -450,12 +520,24 @@ app:
   `--ember-remodal-frameless-close-color`), because they sit on the overlay
   rather than on a card background: lighten `--ember-remodal-overlay` and you
   need to set them too.
-- `.remodal-bg` blurring works again, as
-  `html.remodal-is-locked .remodal-bg { filter: blur(3px) }`. One caveat that is
-  new in 3.0: the `<dialog>` renders in place rather than being moved to the
+- **`.remodal-bg` blurring works again, but off a different hook.** Upstream's
+  rule was `.remodal-bg.remodal-is-opened { filter: blur(3px) }`; the port uses
+  `html.remodal-is-locked .remodal-bg`. The reason is that the `remodal-is-*`
+  state classes go on the `<dialog>` and the modal card and never on the page
+  background, so upstream's selector matches nothing here. **If you have 2.x
+  CSS keyed on `.remodal-bg.remodal-is-opened`, or on any other
+  `.remodal-bg.remodal-is-*` combination, it silently stops matching** — move
+  it to `html.remodal-is-locked .remodal-bg`. Two behavioural notes: the lock
+  class is on `<html>` for as long as _any_ modal is open, so the blur now
+  persists through the closing animation (upstream's had already swapped
+  `remodal-is-opened` for `remodal-is-closing` by then) and across stacked
+  modals; and the `<dialog>` renders in place rather than being moved to the
   application root, so keep the modal's own markup **outside** the
   `.remodal-bg` subtree — an ancestor filter can apply to top-layer descendants
-  and would blur the modal along with the page.
+  and would blur the modal along with the page. A filter also makes
+  `.remodal-bg` a containing block for its own `position: fixed` descendants
+  while a modal is open, so scope it to the content you actually want blurred
+  rather than to `<body>` if it contains a fixed nav or widget.
 
 ## Testing your upgrade
 
@@ -550,7 +632,10 @@ drop their manual waits.
 - `m.isOpen` for lazy content, and `m.openAction` / `m.closeAction` /
   `m.confirmAction` / `m.cancelAction` for `{{on}}` on your own elements.
 - `@onBeforeOpen` — return `false` to veto opening.
-- `@ariaLabel` and `@closeButtonLabel`.
+- `@ariaLabel`, `@ariaLabelledBy` and `@closeButtonLabel` — the naming options.
+- `@hasCustomKeyboardExit` — how you declare that your block content provides
+  the way out, which is what makes `@closeOnEscape={{false}}` honorable for a
+  modal whose exit the addon did not render.
 - `@legacyClassNames` — the opt-in bridge that re-emits the retired bare class
   tokens.
 - A public tracked `state` property.

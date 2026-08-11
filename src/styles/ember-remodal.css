@@ -6,18 +6,37 @@
  * Adapted for the native <dialog> element: the wrapper is the <dialog>
  * itself and the overlay is its ::backdrop pseudo-element.
  *
- * Deliberate deviations from upstream fidelity (see CHANGELOG):
- *   - confirm/cancel backgrounds darkened to reach WCAG 1.4.3 AA on white text
- *   - the close glyph darkened to reach WCAG 1.4.11 against the card
- *   - `outline: none` on the dialog/card/buttons replaced with :focus-visible
- *     rings (WCAG 2.4.7)
- *   - `touch-action: none` dropped from the scroll lock, `transform:
- *     translate3d(0,0,0)` dropped from the card
- *   - the `invisible` (@disableForeground) styles moved to a namespaced
- *     `ember-remodal-invisible` class
- *   - every rule below sits in `@layer ember-remodal` (deviation ten)
- *   - engines without `@layer` support get no layer protection (deviation
- *     eleven)
+ * Deliberate deviations from upstream fidelity — ELEVEN of them. This is a
+ * summary; the canonical list is the machine-checked deviation registry in
+ * CHANGELOG.md, between its <!-- deviation-registry --> markers, and
+ * `pnpm verify:css-deviations` fails if any id there has no test that would
+ * notice its loss. The ids below are that registry's:
+ *   1. confirm-cancel-contrast — confirm/cancel backgrounds darkened to reach
+ *      WCAG 1.4.3 AA under their white labels
+ *   2. close-glyph-contrast — the close glyph darkened to reach WCAG 1.4.11
+ *      against the card
+ *   3. focus-visible-rings — `outline: none` on the dialog/card/buttons
+ *      replaced with :focus-visible ring pairs (WCAG 2.4.7)
+ *   4. no-touch-action-lock — `touch-action: none` dropped from the scroll
+ *      lock, `overscroll-behavior: contain` on the dialog in its place
+ *   5. no-translate3d — `transform: translate3d(0,0,0)` dropped from the card,
+ *      which had made it a containing block for `position: fixed` content
+ *   6. namespaced-invisible — the `invisible` (@disableForeground) styles moved
+ *      to a namespaced `ember-remodal-invisible` class
+ *   7. dialog-border-box — the wrapper IS the <dialog>, so it carries explicit
+ *      `box-sizing: border-box` plus width/height/max-* overrides of the UA
+ *      `fit-content` sizing rather than upstream's plain <div> geometry
+ *   8. bg-blur-hook — the `.remodal-bg` blur is keyed on
+ *      `html.remodal-is-locked .remodal-bg` rather than upstream's
+ *      `.remodal-bg.remodal-is-opened`, because the state classes go on the
+ *      <dialog> and the card and never on the page background
+ *   9. webkit-text-size-adjust — the prefixed property is declared alongside
+ *      the unprefixed one; `-webkit-overflow-scrolling` and `::-moz-focus-inner`
+ *      were deleted as dead
+ *  10. css-layer — every rule below sits in a cascade layer named
+ *      ember-remodal, which inverts `!important` precedence (cost 1 below)
+ *  11. no-layer-fallback — an engine that does not support cascade layers gets
+ *      NO theme at all, and no unlayered fallback copy is shipped (cost 2)
  *
  * Cascade contract: every rule below is inside `@layer ember-remodal`.
  * Unlayered CSS beats layered CSS in the same origin regardless of specificity
@@ -37,11 +56,15 @@
  *      `!important`. For the `visibility` declaration that is exactly the
  *      point — it exists to survive Bootstrap's
  *      `.invisible { visibility: hidden !important }`.
- *   2. An engine with no `@layer` support ignores the at-rule's cascade
- *      semantics entirely and falls back to plain specificity + order. The
- *      addon already requires `dialog.showModal()` and
- *      `Element.getAnimations()`, both of which land later than `@layer`, so
- *      that floor is not the binding constraint.
+ *   2. An engine with no cascade-layer support does NOT fall back to plain
+ *      specificity + order: an unrecognised at-rule is discarded together with
+ *      its block, so such an engine drops every rule in this file and gets no
+ *      theme at all. No unlayered fallback copy is shipped, so this is part of
+ *      the addon's browser floor. It costs nothing in practice — cascade
+ *      layers shipped alongside `dialog.showModal()` in Safari (15.4) and
+ *      ahead of it in Firefox (97 vs 98), and the addon requires showModal()
+ *      plus `Element.getAnimations()` anyway, so Chrome 84-98 is the only
+ *      window in which the required APIs exist without layer support.
  *
  * Theming: every colour is a custom property, declared on `:where(html)` so it
  * carries ZERO specificity even before the layer is taken into account. Each

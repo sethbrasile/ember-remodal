@@ -130,6 +130,16 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
 - `@ariaLabel` — the accessible name for a modal with no visible `@title` (a
   `@disableForeground` overlay, a block-only modal). Wins over `@title` when
   both are given, so only one naming attribute is ever emitted.
+- `@ariaLabelledBy` — id (or space-separated ids) of consumer-authored markup
+  that names the dialog, so a block whose heading is your own markup can be
+  named without duplicating its text into `@ariaLabel`. Outranks both
+  `@ariaLabel` and `@title`, matching accname's own precedence. The three keys
+  are mutually exclusive across `service.open()` calls, so a later call cannot
+  leave a stale label announcing one thing while the dialog displays another.
+- `@hasCustomKeyboardExit` — declares that your block content provides a
+  keyboard-operable way out, which is what makes `@closeOnEscape={{false}}`
+  honorable for a modal whose exit the addon did not render. Only consulted
+  alongside `@closeOnEscape={{false}}`; absent, Escape is never suppressed.
 - `@closeButtonLabel` — accessible name and tooltip for the built-in close
   button, default `'Close Modal'`. An option rather than a hardcoded string so
   it can be translated.
@@ -187,7 +197,9 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
   `EmberRemodalArgs`, `EmberRemodalSignature`, `EmberRemodalYield`,
   `ErButtonSignature`, `ModalState`, `CloseReason`).
 - The `>= 5.8.0` peer floor is CI-proven: the `@embroider/try` matrix runs 5.8,
-  5.12, 6.4, 6.12, latest, beta and alpha, plus a floating-dependency job.
+  5.12, 6.4, 6.12, latest, beta and alpha, plus a `glimmer-component-1.1.2`
+  scenario that pins the declared `@glimmer/component` floor against Ember 5.8,
+  and a floating-dependency job.
 
 ### Fixed
 
@@ -199,7 +211,11 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
 - The `<dialog>` had **no accessible name**. Screen readers announced every open
   modal as an unnamed dialog (WCAG 4.1.2). The rendered `<h2>` now carries a
   generated id and the `<dialog>` an `aria-labelledby`; `@ariaLabel` covers the
-  no-title case, and opening with neither warns in development.
+  no-title case and `@ariaLabelledBy` names the dialog from your own markup.
+  Exactly one naming attribute is emitted, in accname's precedence order
+  (`ariaLabelledBy` > `ariaLabel` > `title`). Opening with none of the three
+  warns in development, and so does an `@ariaLabelledBy` whose idref resolves
+  to nothing — an attribute that is present and names nothing at all.
 - The built-in close button's accessible name was **"×"**. The `::before` glyph
   participates in name-from-contents, which outranks `title`, so the `title`
   attribute was superseded. The button now carries an `aria-label`, and the CSS
@@ -256,11 +272,15 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
   `!important` — which is exactly the behaviour the `invisible` fix above
   wanted. Declare a layer after `ember-remodal` to win either one; see
   [MIGRATION.md](MIGRATION.md#breaking-the-stylesheet-ships-inside-layer-ember-remodal).
-- **Deviation eleven: engines without `@layer` support keep the collision.**
-  They ignore the at-rule's cascade semantics and fall back to plain
-  specificity and order. Accepted: the addon already requires
-  `dialog.showModal()` and `Element.getAnimations()`, both of which shipped
-  later than `@layer`, so the layer floor is not the binding constraint.
+- **Deviation eleven: engines without `@layer` support get no theme at all.**
+  An unrecognised at-rule is discarded together with its block, so such an
+  engine does not fall back to an unlayered copy of the sheet — it drops every
+  rule inside it. No unlayered fallback copy is shipped. Accepted: the addon
+  already requires `dialog.showModal()` and `Element.getAnimations()`, and
+  `@layer` shipped alongside `showModal()` in Safari (15.4) and ahead of it in
+  Firefox (97 vs 98), so Chrome 84–98 is the only window in which the required
+  APIs exist without `@layer`. See [the browser-support floor in the
+  README](README.md#browser-support).
 - **`.remodal-bg` blurring is restored** as
   `html.remodal-is-locked .remodal-bg { filter: blur(3px) }`. Keep the modal
   outside the `.remodal-bg` subtree — an ancestor filter can apply to top-layer
@@ -282,8 +302,11 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
 - A queued native `close` event could **wedge a modal shut** against a chained
   reopen, and could drop the close reason when it finalized a close on our
   behalf.
-- **A modal destroyed while open now fires `@onClose`** (2.x parity) and closes
-  its `<dialog>`, instead of leaving a top-layer element behind.
+- **A modal destroyed while open now fires `@onClose`** and closes its
+  `<dialog>`, instead of leaving a top-layer element behind. (Not 2.x parity:
+  2.x's `willDestroyElement` scheduled `_destroyDomElements`, and nothing on
+  that path dispatched the delegated `closed` event its `closeDidFire` handler
+  was bound to — the observers were torn down in the same `destroy` queue.)
 - A modal whose `<dialog>` never renders **rejects** instead of resolving
   indistinguishably from success.
 - A dev warning (`ember-remodal.duplicate-service-name`) fires when two

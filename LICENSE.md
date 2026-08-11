@@ -43,7 +43,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-The ported theme deviates from upstream in eight places, each documented in
-[CHANGELOG.md](CHANGELOG.md) and each revertible from the consuming
-application. See also the deviation list in the header comment of
-`src/styles/ember-remodal.css`.
+The ported theme deviates from upstream in eleven places, each revertible from
+the consuming application. The canonical, machine-checked list is the deviation
+registry in
+[CHANGELOG.md](CHANGELOG.md#deliberate-deviations-from-upstream-remodal); the
+header comment of `src/styles/ember-remodal.css` summarises it.

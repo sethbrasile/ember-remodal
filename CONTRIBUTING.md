@@ -16,20 +16,26 @@ installs with `--frozen-lockfile`.
 
 ## Repository layout
 
-| Path                | What it is                                                             |
-| ------------------- | ---------------------------------------------------------------------- |
-| `src/`              | The addon itself. Everything published lives here                      |
-| `src/test-support/` | The published `ember-remodal/test-support` entry point                 |
-| `src/styles/`       | The ported Remodal theme, imported by the component                    |
-| `tests/`            | The test suite (rendering + unit), run against the built addon         |
-| `demo-app/`         | The Vite-served demo application                                       |
-| `scripts/`          | `link-self.mjs` (used by `pnpm test`) and `check-declaration-deps.mjs` |
-| `.try.mjs`          | The `@embroider/try` compatibility scenarios CI runs                   |
+| Path                | What it is                                                     |
+| ------------------- | -------------------------------------------------------------- |
+| `src/`              | The addon itself. Everything published lives here              |
+| `src/test-support/` | The published `ember-remodal/test-support` entry point         |
+| `src/styles/`       | The ported Remodal theme, imported by the component            |
+| `tests/`            | The test suite (rendering + unit), run against the built addon |
+| `demo-app/`         | The Vite-served demo application                               |
+| `scripts/`          | Build, lint and release helpers — see below                    |
+| `.try.mjs`          | The `@embroider/try` compatibility scenarios CI runs           |
+
+`scripts/` holds `link-self.mjs` (used by `pnpm test`),
+`check-declaration-deps.mjs` (used by `lint:publish`),
+`css-mutation-selftest.mjs` (`verify:css-deviations`, below),
+`assert-clean-tree.mjs` (`prepublishOnly`),
+`verify-published-package.mjs` and the `publish-gate/` consumer smoke tests.
 
 ## Linting
 
-- `pnpm lint` — runs format, template-lint, ESLint, types and publish checks in
-  parallel
+- `pnpm lint` — runs all six checks in parallel: `lint:audit`, `lint:format`,
+  `lint:hbs`, `lint:js`, `lint:publish`, `lint:types`
 - `pnpm lint:fix`
 - `pnpm lint:publish` — builds, then runs `publint`, `attw --pack .`, and
   `scripts/check-declaration-deps.mjs` (which fails if any specifier in
@@ -58,6 +64,32 @@ test-support entry point. The scroll lock is module-level state that lives outsi
 `#ember-testing`, and that hook is what keeps a leak from cascading through the
 rest of the run.
 
+### The CSS mutation corpus
+
+- `pnpm verify:css-deviations` — `scripts/css-mutation-selftest.mjs`
+
+For every entry in the deviation registry in `CHANGELOG.md` (between the
+`<!-- deviation-registry:start/end -->` markers) and for every published WCAG
+figure, it deletes or neutralises the backing CSS, rebuilds, re-runs the theme
+module and requires the pinning test to go **red**. A pinning test that stays
+green under its own mutation is a failure. Three meta-checks run first, so the
+corpus cannot rot: every registry id must be claimed by a mutation, every corpus
+id must exist in the registry, and every test in the theme module must be killed
+by some mutation. That is why a twelfth deviation cannot be added without a test
+that would notice its loss — and why those markers and the numbered entries
+between them should not be reformatted without re-running the script.
+
+It is a release gate, not a per-commit one: 26 mutations at a rebuild plus a
+full suite each, roughly ten minutes serialised. `.github/workflows/css-mutation-corpus.yml`
+runs it on `workflow_dispatch` and on `v*` tag pushes rather than on every push.
+Note that GitHub only registers a `workflow_dispatch` trigger once the workflow
+file exists on the default branch, so the manual button does not appear for this
+workflow until the branch adding it is merged; run the script locally until
+then.
+
+Touched `src/styles/` or `tests/rendering/ember-remodal-theme-test.gts`? Run it
+before you push.
+
 ## Running the demo application
 
 - `pnpm start`
@@ -66,9 +98,13 @@ rest of the run.
 
 ## Compatibility scenarios
 
-CI runs the `@embroider/try` scenarios declared in `.try.mjs` — Ember 5.8, 5.12,
-6.4, 6.12, `latest`, `beta` and `alpha`, with the two LTS scenarios building
-through `@embroider/compat`. To reproduce one locally:
+CI runs the eight `@embroider/try` scenarios declared in `.try.mjs`:
+`glimmer-component-1.1.2` (which pins the declared `@glimmer/component >= 1.1.2`
+floor against Ember 5.8, since every other scenario leaves it at the repo's
+`^2.0.0`), `ember-lts-5.8`, `ember-lts-5.12`, `ember-lts-6.4`, `ember-lts-6.12`,
+`ember-latest`, `ember-beta` and `ember-alpha`. The first three set
+`ENABLE_COMPAT_BUILD` and build through `@embroider/compat`; 6.4 and up build
+natively. To reproduce one locally:
 
 ```sh
 pnpm exec try list
