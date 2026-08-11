@@ -4,7 +4,10 @@ import { render, click, find } from '@ember/test-helpers';
 import ErButton from '#src/components/ember-remodal/er-button.gts';
 import { hasFocusableDescendant } from '#src/components/ember-remodal/er-button.gts';
 import { setupRemodal } from '#src/test-support/index.ts';
-import { captureWarnings } from '../helpers/remodal-test-helpers.ts';
+import {
+  captureErrors,
+  captureWarnings,
+} from '../helpers/remodal-test-helpers.ts';
 
 /**
  * ErButton is a public export (`ember-remodal` re-exports it) and the component
@@ -91,6 +94,26 @@ module('Rendering | er-button', function (hooks) {
     } finally {
       destination.remove();
     }
+  });
+
+  test('an @onClick that rejects is reported rather than discarded', async function (assert) {
+    // The modal's own handlers come out of its error funnel and never reject,
+    // but @onClick is public: this used to drop the returned promise, so a
+    // consumer handler that rejected became a global unhandledrejection
+    // attributable to nothing.
+    const handleClick = () => Promise.reject(new Error('onClick exploded'));
+
+    await render(
+      <template>
+        <ErButton @destination={{null}} @onClick={{handleClick}}>
+          <button type="button" data-test-inner-button>Go</button>
+        </ErButton>
+      </template>,
+    );
+
+    const errors = await captureErrors(() => click('[data-test-inner-button]'));
+
+    assert.deepEqual(errors, ['Error: onClick exploded']);
   });
 
   test('a block with no focusable control warns, and the warning names the fix', async function (assert) {

@@ -74,6 +74,17 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
 - **Confirm and cancel buttons are styled now.** They carry `remodal-confirm` /
   `remodal-cancel` from the Remodal default theme; in 2.x they rendered
   unstyled. Your `@confirmButtonClasses` / `@cancelButtonClasses` still apply.
+- **A blank `@confirmButton` / `@cancelButton` label renders no button.** As
+  with `@title`, a whitespace-only string is treated as absent: `" "` used to
+  render a button with no perceivable label and no accessible name, and the
+  keyboard-exit gate counted it as the way out of a modal with
+  `@closeOnEscape={{false}}`. The same string now means "no button" to both.
+- **`confirm()` and `cancel()` are `async`.** Like `open()` and `close()`, they
+  report a throwing `@onConfirm` / `@onCancel` as a rejected promise rather
+  than throwing synchronously at the caller. Clicks and the yielded
+  `m.confirm` / `m.cancel` do not reject: every handler the component binds to
+  the DOM reports callback failures to `console.error` instead, since a DOM
+  event has no caller to hand a rejection to.
 - **`@closeOnEscape={{false}}` is honored only while the modal contains a
   focusable control.** With none, Escape closes the modal anyway and a dev-mode
   warning explains why (WCAG 2.1.2). `showModal()` makes focus containment real,

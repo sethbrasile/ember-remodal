@@ -117,6 +117,26 @@ export async function captureWarnings(body: () => unknown): Promise<string[]> {
 }
 
 /**
+ * The `captureWarnings` shape for `console.error`, which is where the
+ * component's error funnel reports a failure it has nobody to hand a rejection
+ * to. Asserting on what lands here is the difference between "the error was
+ * handled" and "the error vanished".
+ */
+export async function captureErrors(body: () => unknown): Promise<string[]> {
+  const errors: string[] = [];
+  const originalError = console.error;
+  console.error = (...args: unknown[]) => {
+    errors.push(String(args[0]));
+  };
+  try {
+    await body();
+  } finally {
+    console.error = originalError;
+  }
+  return errors;
+}
+
+/**
  * Presses Escape inside an open modal and resolves with the event's
  * `defaultPrevented`.
  *

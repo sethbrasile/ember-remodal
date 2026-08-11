@@ -54,7 +54,18 @@ export default class ErButton extends Component<ErButtonSignature> {
     // default behavior of consumer content (checkboxes, form controls, real
     // links). The open trigger's link-safety preventDefault lives in the
     // modal's handleOpenClick instead.
-    this.args.onClick(event);
+    //
+    // The return value is not discarded. `@onClick` is public and returns
+    // `unknown`: the modal's own handlers come out of its error funnel and
+    // never reject, but a consumer-supplied handler can, and a rejection
+    // dropped here becomes a global unhandledrejection attributable to nothing
+    // — a hard failure under Ember's test error validation. Promise.resolve()
+    // makes a non-promise return a no-op. A synchronous throw is left alone:
+    // it reaches window.onerror with this listener still on the stack, which is
+    // both attributable and what a DOM event handler is supposed to do.
+    void Promise.resolve(this.args.onClick(event)).catch((error: unknown) => {
+      console.error(error);
+    });
   };
 
   // Dev-only guardrail. `warn` rather than `assert` on purpose: the check reads

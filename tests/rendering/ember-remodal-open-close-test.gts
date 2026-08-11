@@ -516,6 +516,71 @@ module('Rendering | ember-remodal | open and close', function (hooks) {
     assert.deepEqual(reasons, [undefined], '@onClose still fired');
   });
 
+  test('an open() still waiting for its <dialog> element settles in a hidden tab (NB-17)', async function (assert) {
+    // The other frame-waiting loop. animationsSettled got the hidden-tab guard
+    // in round 1; waitForDialogElement kept its bare rAF loop, which does not
+    // advance in a backgrounded tab — so an open() that landed before the
+    // <dialog> rendered (a session-timeout modal opened from a route hook, say)
+    // never settled, and the waitForPromise waiter wrapping it leaked for the
+    // rest of the session, hanging every later settled().
+    const reasons: (CloseReason | undefined)[] = [];
+    const handleClose = (reason?: CloseReason) => reasons.push(reason);
+    const started: { promise?: Promise<EmberRemodal> } = {};
+
+    class EarlyOpener extends Component {
+      constructor(owner: Owner, args: object) {
+        super(owner, args);
+        const remodal = owner.lookup('service:remodal');
+        started.promise = remodal.open('hidden-early');
+      }
+
+      <template></template>
+    }
+
+    const restoreFrames = suspendAnimationFrames();
+    const restoreHidden = hideDocument();
+    let rendering: Promise<void> | null = null;
+    let openOutcome: 'settled' | 'pending' = 'pending';
+    let closeOutcome: 'settled' | 'pending' = 'pending';
+    try {
+      // Deliberately not awaited: render() awaits settled(), which waits on the
+      // very waiter this test is about, so awaiting it here would hang the test
+      // rather than fail it.
+      rendering = render(
+        <template>
+          <EmberRemodal
+            @forService={{true}}
+            @name="hidden-early"
+            @ariaLabel="Hidden early"
+            @onClose={{handleClose}}
+          />
+          <EarlyOpener />
+        </template>,
+      );
+      await waitUntil(() => started.promise !== undefined, { timeout: 2000 });
+      const opening = started.promise as Promise<EmberRemodal>;
+      openOutcome = await settlesWithin(opening, 2000);
+      if (openOutcome === 'settled') {
+        const modal = await opening;
+        closeOutcome = await settlesWithin(modal.close(), 2000);
+      }
+    } finally {
+      restoreHidden();
+      restoreFrames();
+    }
+
+    assert.strictEqual(
+      openOutcome,
+      'settled',
+      'the open settled instead of waiting on frames that never arrive',
+    );
+    assert.strictEqual(closeOutcome, 'settled', 'and so did the close');
+    assert.false(dialog().open, 'the dialog really closed');
+    assert.deepEqual(reasons, [undefined], '@onClose fired');
+    // The waiter is clear, so this resolves; before the fix it was the leak.
+    await rendering;
+  });
+
   test('a transition already in flight when the tab is backgrounded still settles', async function (assert) {
     const service = lookupService(this);
 

@@ -237,6 +237,10 @@ announces as "dialog".
 | `confirmButton` | —       | Label; renders a confirm button (`remodal-confirm`)                     |
 | `cancelButton`  | —       | Label; renders a cancel button (`remodal-cancel`)                       |
 
+A blank or whitespace-only `confirmButton` / `cancelButton` label counts as
+absent — no button is rendered, and the keyboard-exit gate below does not count
+one. A control with no perceivable label is not a way out.
+
 ### Identity
 
 | Option       | Default           | Description                                                             |

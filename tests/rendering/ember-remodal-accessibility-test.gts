@@ -594,6 +594,57 @@ module('Rendering | ember-remodal | accessibility', function (hooks) {
     );
   });
 
+  test('a blank @cancelButton is neither rendered nor counted as an exit', async function (assert) {
+    // NB-31's defect on the opposite element, and it re-opens the trap the
+    // exit enumeration exists to close: " " is truthy, so the button rendered
+    // with no perceivable label and no accessible name, and the enumeration
+    // counted it as the keyboard way out. One getter feeds both the
+    // enumeration and the render condition, so they cannot disagree.
+    await render(
+      <template>
+        <EmberRemodal
+          @openButton="Open"
+          @ariaLabel="Blank-label trap"
+          @closeOnEscape={{false}}
+          @disableNativeClose={{true}}
+          @cancelButton=" "
+        />
+      </template>,
+    );
+
+    const warnings = await captureWarnings(() =>
+      click('[data-test-id="openButton"]'),
+    );
+
+    assert.dom('[data-test-id="cancelButton"]').doesNotExist('no empty button');
+    assert.true(
+      warnings.some((warning) => warning.includes('no way out')),
+      `warned about the keyboard trap (got: ${JSON.stringify(warnings)})`,
+    );
+
+    await pressEscape();
+
+    assert.false(
+      dialog().open,
+      'Escape closes it: a button with no label is not a way out',
+    );
+  });
+
+  test('a blank @confirmButton is not rendered either', async function (assert) {
+    await render(
+      <template>
+        <EmberRemodal
+          @openButton="Open"
+          @ariaLabel="Blank confirm"
+          @confirmButton=" "
+        />
+      </template>,
+    );
+    await click('[data-test-id="openButton"]');
+
+    assert.dom('[data-test-id="confirmButton"]').doesNotExist();
+  });
+
   test('a cancel button that does close IS an exit, so Escape stays suppressed', async function (assert) {
     // The other side of QC-2-03b: same shape, but @closeOnCancel left at its
     // default, so the enumeration finds a real exit.

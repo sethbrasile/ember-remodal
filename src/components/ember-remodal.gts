@@ -122,6 +122,21 @@ function nextFrame(): Promise<void> {
   return new Promise((resolve) => requestAnimationFrame(() => resolve()));
 }
 
+// What a backgrounded tab has instead of a frame. Rendering is not frame-driven
+// — a hidden tab keeps rendering, it just stops painting — so a wait for the
+// render to catch up still has something to wait FOR while hidden; it simply
+// cannot be measured in frames.
+function nextTick(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+// Brand attached by `EmberRemodal#domHandler`, the factory every DOM-bound
+// handler is produced by. Registered with `Symbol.for` rather than kept
+// module-local so a test can enumerate the template's bindings and assert each
+// one carries it, without the component exporting a testing seam that the
+// package's `"./*"` entry would make semver-visible.
+const DOM_HANDLER = Symbol.for('ember-remodal:dom-handler');
+
 function documentIsHidden(): boolean {
   return typeof document !== 'undefined' && document.hidden;
 }
@@ -336,7 +351,7 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
       // is concerned. Errors are reported, not thrown — we are already inside
       // destruction and there is no caller left to hand a rejection to.
       try {
-        this.opt('onClose')?.(reason);
+        this.observeCallback(this.opt('onClose')?.(reason));
       } catch (error) {
         this.reportError(error);
       }
@@ -468,6 +483,21 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     return this.opt('closeButtonLabel') || 'Close Modal';
   }
 
+  // NB-31's defect on the opposite element. `@cancelButton=" "` passes a truthy
+  // test, so the old `{{#if (this.opt "cancelButton")}}` rendered a button with
+  // no perceivable label and no accessible name — and the exit enumeration
+  // below counted that button as the keyboard way out, re-opening the WCAG
+  // 2.1.2 trap the enumeration exists to close. One getter feeds BOTH the
+  // enumeration and the render condition, so the two cannot disagree about
+  // whether the button exists.
+  get cancelButton(): string | undefined {
+    return presentString(this.opt('cancelButton'));
+  }
+
+  get confirmButton(): string | undefined {
+    return presentString(this.opt('confirmButton'));
+  }
+
   get closeOnEscape(): boolean {
     return this.opt('closeOnEscape') ?? true;
   }
@@ -569,7 +599,7 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     if (this.openDeferred && this.state !== 'closing') {
       return this.openDeferred.promise;
     }
-    if (this.opt('onBeforeOpen')?.() === false) {
+    if (this.observeCallback(this.opt('onBeforeOpen')?.()) === false) {
       return this;
     }
 
@@ -627,7 +657,7 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
         // ({{#if m.isOpen}}) is in the DOM before we look for focusable
         // controls. Before @onOpen, so a throwing callback cannot hide it.
         this.auditAccessibility();
-        this.opt('onOpen')?.();
+        this.observeCallback(this.opt('onOpen')?.());
       }
       return deferred.promise;
     } finally {
@@ -696,58 +726,58 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     }
   };
 
-  confirm = (): Promise<this> => {
-    this.opt('onConfirm')?.();
+  // `async` so that this — like every other public method — hands the caller a
+  // promise for BOTH outcomes. As a plain arrow it called `onConfirm`
+  // synchronously, so a throwing callback escaped past the returned promise
+  // entirely and past `confirmAction`'s catch with it.
+  confirm = async (): Promise<this> => {
+    this.observeCallback(this.opt('onConfirm')?.());
     if (this.closeOnConfirm) {
       return this.close('confirmation');
     }
-    return Promise.resolve(this);
+    return this;
   };
 
-  cancel = (): Promise<this> => {
-    this.opt('onCancel')?.();
+  cancel = async (): Promise<this> => {
+    this.observeCallback(this.opt('onCancel')?.());
     if (this.closeOnCancel) {
       return this.close('cancellation');
     }
-    return Promise.resolve(this);
+    return this;
   };
 
-  // Zero-arg wrappers safe to use as DOM event handlers (they swallow the
-  // Event argument so it can never be mistaken for a close reason).
+  // --- DOM-bound handlers ---------------------------------------------------
   //
-  // They `.catch()` rather than `void`: `void` does not mark a rejection
-  // handled, so a failed showModal() or a throwing consumer callback would
-  // surface as a global unhandledrejection (a hard failure under Ember's test
-  // error validation) with no caller able to intercept it.
+  // Every one of these is produced by `domHandler`, and the template binds
+  // nothing else: no `{{on}}` modifier and no yielded `onClick` may reference a
+  // public method directly. That is the whole rule, and it is the reason the
+  // rule holds — a handler added later cannot skip the funnel without also
+  // dropping the brand `domHandler` attaches, which the error-funnel test
+  // enumerates the template for.
+  //
+  // The handlers also swallow their Event argument where the underlying method
+  // takes one (close's `reason`), so a DOM event can never be mistaken for it.
 
-  openAction = (): void => {
-    this.open().catch(this.reportError);
-  };
+  openAction = this.domHandler((): unknown => this.open());
 
-  closeAction = (): void => {
-    this.close().catch(this.reportError);
-  };
+  closeAction = this.domHandler((): unknown => this.close());
 
-  confirmAction = (): void => {
-    this.confirm().catch(this.reportError);
-  };
+  confirmAction = this.domHandler((): unknown => this.confirm());
 
-  cancelAction = (): void => {
-    this.cancel().catch(this.reportError);
-  };
+  cancelAction = this.domHandler((): unknown => this.cancel());
 
-  handleOpenClick = (event?: Event): void => {
+  handleOpenClick = this.domHandler((event?: Event): unknown => {
     // Open triggers may render as `<a href="#">`; never navigate.
     event?.preventDefault();
-    this.open().catch(this.reportError);
-  };
+    return this.open();
+  });
 
-  handleWrapperMouseDown = (event: Event): void => {
+  handleWrapperMouseDown = this.domHandler((event: Event): void => {
     this.pressedOnBackdrop =
       event.target === this.dialogElement && !isScrollbarPress(event);
-  };
+  });
 
-  handleWrapperClick = (event: Event): void => {
+  handleWrapperClick = this.domHandler((event: Event): unknown => {
     // `event.target === dialog` alone is also true when a press that started
     // inside the card is released over the backdrop (the click dispatches on
     // their common ancestor, the dialog) and when the user drags the dialog's
@@ -760,11 +790,12 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
       event.target === this.dialogElement &&
       this.closeOnOutsideClick
     ) {
-      this.close().catch(this.reportError);
+      return this.close();
     }
-  };
+    return undefined;
+  });
 
-  handleNativeCancel = (event: Event): void => {
+  handleNativeCancel = this.domHandler((event: Event): unknown => {
     // We own the closing animation, so never let the browser close instantly.
     // (When the window has no history-action activation the `cancel` event is
     // dispatched non-cancelable and the dialog force-closes anyway; the queued
@@ -782,11 +813,12 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
       // The gate is deliberately fail-safe: an exit the addon does not render
       // has to be declared with @hasCustomKeyboardExit, because the cost of
       // guessing wrong here is a user who cannot leave.
-      this.close().catch(this.reportError);
+      return this.close();
     }
-  };
+    return undefined;
+  });
 
-  handleDialogClose = (): void => {
+  handleDialogClose = this.domHandler((): void => {
     if (this.isDestroying || this.state === 'closed') {
       return;
     }
@@ -800,11 +832,55 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     // The dialog closed without going through close() — e.g. a
     // `<form method="dialog">` submission inside user content, or a browser
     // force-close that ignored our cancel preventDefault. Re-sync state.
+    // finalizeClose calls @onClose with nobody to hand a rejection to — this
+    // is the one @onClose call site with no promise behind it — which is
+    // exactly what the funnel around this handler is for.
     this.transitionId += 1;
     this.finalizeClose();
-  };
+  });
 
   // --- internals ---
+
+  // The factory. Wraps a body in the error funnel and brands the result, so
+  // "is this handler safe to hand to the DOM?" is answerable by inspection
+  // rather than by reading the body. Both escape routes end in `reportError`:
+  // a synchronous throw (which would otherwise reach window.onerror from an
+  // event listener) and a rejected promise (which `void` does NOT mark as
+  // handled, so it would otherwise surface as a global unhandledrejection —
+  // a hard failure under Ember's test error validation, and attributable to
+  // nothing in production).
+  private domHandler<A extends unknown[]>(
+    run: (...args: A) => unknown,
+  ): (...args: A) => void {
+    const handler = (...args: A): void => {
+      try {
+        // Promise.resolve() makes a non-promise return a no-op, so the funnel
+        // does not care whether the body it wraps is async.
+        void Promise.resolve(run(...args)).catch(this.reportError);
+      } catch (error) {
+        this.reportError(error);
+      }
+    };
+    Object.defineProperty(handler, DOM_HANDLER, { value: true });
+    return handler;
+  }
+
+  // Consumer callbacks are typed `() => void`, but nothing stops an `async`
+  // one, and `this.opt('onOpen')?.()` does not await what it gets back: an
+  // async callback that throws hands an already-rejected promise to a call site
+  // that never references it. That is a different escape route from the
+  // synchronous throw the surrounding funnel catches, so every callback
+  // invocation is passed through here.
+  //
+  // A SYNCHRONOUS throw is deliberately left to propagate: the caller of
+  // open()/close()/confirm()/cancel() is entitled to it as a rejection, and
+  // that contract is pinned by tests. An asynchronous one cannot be routed
+  // there without awaiting consumer callbacks inside the transition, which
+  // would let a slow callback stall the animation; it is reported instead.
+  private observeCallback(result: unknown): unknown {
+    void Promise.resolve(result).catch(this.reportError);
+    return result;
+  }
 
   // Every way out of this modal OTHER than Escape, enumerated from the
   // configuration that produces it. Escape itself is deliberately absent: this
@@ -826,10 +902,10 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     if (!this.disableNativeClose) {
       exits.push({ id: 'native-close-button', keyboard: true });
     }
-    if (this.opt('cancelButton') && this.closeOnCancel) {
+    if (this.cancelButton && this.closeOnCancel) {
       exits.push({ id: 'cancel-button', keyboard: true });
     }
-    if (this.opt('confirmButton') && this.closeOnConfirm) {
+    if (this.confirmButton && this.closeOnConfirm) {
       exits.push({ id: 'confirm-button', keyboard: true });
     }
     if (this.hasCustomKeyboardExit) {
@@ -904,12 +980,40 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
       this.dialogElement.close();
     }
     this.settlePendingTransitions();
-    this.opt('onClose')?.(effectiveReason);
+    // Unguarded on purpose. Both callers are inside the funnel: close() turns a
+    // throw into its own rejection (a contract its tests pin), and
+    // handleDialogClose — the native `close` listener, which is the one caller
+    // with no promise behind it — is produced by domHandler.
+    this.observeCallback(this.opt('onClose')?.(effectiveReason));
   }
 
   private async waitForDialogElement(): Promise<void> {
-    for (let i = 0; i < 10 && !this.dialogElement && !this.isDestroying; i++) {
-      await nextFrame();
+    // The same hidden-tab hazard animationsSettled guards against, in the other
+    // frame-waiting loop: requestAnimationFrame does not advance in a
+    // backgrounded tab, so a bare rAF loop never finished there — open() never
+    // settled and the waitForPromise waiter around this call leaked for the
+    // rest of the session (in a test suite, that hangs every later settled()).
+    // Ticks rather than frames while hidden, because rendering keeps going in a
+    // hidden tab even though painting does not: there is still something to
+    // wait for, it just cannot be counted in frames.
+    const hidden = whenDocumentHidden();
+    try {
+      for (
+        let i = 0;
+        i < 10 && !this.dialogElement && !this.isDestroying;
+        i++
+      ) {
+        if (documentIsHidden()) {
+          await nextTick();
+        } else {
+          // Racing the visibility change so a tab backgrounded mid-wait
+          // switches to ticks on the next pass instead of stalling on a frame
+          // that will never arrive.
+          await Promise.race([nextFrame(), hidden.promise]);
+        }
+      }
+    } finally {
+      hidden.dispose();
     }
   }
 
@@ -1157,8 +1261,8 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
                     destination=this.openButtonTarget
                     onClick=this.handleOpenClick
                   )
-                  confirm=(component ErButton onClick=this.confirm)
-                  cancel=(component ErButton onClick=this.cancel)
+                  confirm=(component ErButton onClick=this.confirmAction)
+                  cancel=(component ErButton onClick=this.cancelAction)
                   isOpen=this.isOpen
                   openAction=this.openAction
                   closeAction=this.closeAction
@@ -1169,7 +1273,7 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
             </div>
           {{/if}}
 
-          {{#if (this.opt "cancelButton")}}
+          {{#if this.cancelButton}}
             <button
               type="button"
               class="remodal-cancel ember-remodal ember-remodal-inner ember-remodal-cancel ember-remodal-button
@@ -1179,10 +1283,10 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
                 {{this.opt 'cancelButtonClasses'}}"
               data-test-id="cancelButton"
               {{on "click" this.cancelAction}}
-            >{{this.opt "cancelButton"}}</button>
+            >{{this.cancelButton}}</button>
           {{/if}}
 
-          {{#if (this.opt "confirmButton")}}
+          {{#if this.confirmButton}}
             <button
               type="button"
               class="remodal-confirm ember-remodal ember-remodal-inner ember-remodal-confirm ember-remodal-button
@@ -1192,7 +1296,7 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
                 {{this.opt 'confirmButtonClasses'}}"
               data-test-id="confirmButton"
               {{on "click" this.confirmAction}}
-            >{{this.opt "confirmButton"}}</button>
+            >{{this.confirmButton}}</button>
           {{/if}}
         </div>
       </dialog>
