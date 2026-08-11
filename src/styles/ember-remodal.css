@@ -158,7 +158,17 @@ dialog.remodal-wrapper.remodal-is-closing::backdrop {
   left: 0;
   display: block;
   width: 35px;
+
+  /* Pseudo-element content participates in the accessible-name computation via
+     name-from-contents, which outranks `title`, so the bare glyph made the
+     close button announce as "times" / "multiplication sign". The button now
+     carries an aria-label (which outranks both), and the alt-text form
+     (`content: "…" / ""`) keeps the glyph out of the name entirely.
+
+     Declared twice on purpose: a browser without alt-text support drops the
+     second declaration as invalid and still paints the glyph from the first. */
   content: "\00d7";
+  content: "\00d7" / "";
   text-align: center;
 }
 

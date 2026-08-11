@@ -1,5 +1,7 @@
 import Component from '@glimmer/component';
+import { warn } from '@ember/debug';
 import { on } from '@ember/modifier';
+import { modifier } from 'ember-modifier';
 
 export interface ErButtonSignature {
   Args: {
@@ -12,6 +14,33 @@ export interface ErButtonSignature {
   Element: HTMLSpanElement;
 }
 
+// Anything that can take keyboard focus. Deliberately lenient — disabled
+// controls, `tabindex="-1"` and programmatically-focused containers all count,
+// because a false "your trigger is keyboard-unreachable" warning is worse than
+// a missed one. `<button>` alone covers the overwhelmingly common case.
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'area[href]',
+  'button',
+  'details',
+  'summary',
+  'iframe',
+  'input',
+  'select',
+  'textarea',
+  'audio[controls]',
+  'video[controls]',
+  '[contenteditable]:not([contenteditable="false"])',
+  '[tabindex]',
+].join(',');
+
+export function hasFocusableDescendant(root: Element | null): boolean {
+  return root !== null && root.querySelector(FOCUSABLE_SELECTOR) !== null;
+}
+
+const MISSING_FOCUSABLE_CONTENT_MESSAGE =
+  'ember-remodal: the yielded <m.open> / <m.confirm> / <m.cancel> components render a click-delegating <span>, so the block must contain your own focusable control. `<m.open>Open modal</m.open>` produces a trigger that mouse users can click but keyboard users can never reach (WCAG 2.1.1). Wrap the label in a real control: `<m.open><button type="button">Open modal</button></m.open>`.';
+
 export default class ErButton extends Component<ErButtonSignature> {
   handleClick = (event: Event): void => {
     // Deliberately no preventDefault here: the wrapper must not swallow the
@@ -21,16 +50,46 @@ export default class ErButton extends Component<ErButtonSignature> {
     this.args.onClick(event);
   };
 
+  // Dev-only guardrail. `warn` rather than `assert` on purpose: the check reads
+  // the consumer's rendered DOM, and content that arrives a tick late (an
+  // awaited component, a flipped {{#if}}) can legitimately be focusable without
+  // being focusable *yet*. A throwing assert would take a working application
+  // down over a heuristic; a warning is loud, dev-only, and harmless when wrong.
+  // The re-check on a microtask covers the synchronously-resolved async case.
+  auditFocusableContent = modifier((element: Element) => {
+    let cancelled = false;
+    if (!hasFocusableDescendant(element)) {
+      void Promise.resolve().then(() => {
+        if (cancelled || !element.isConnected) {
+          return;
+        }
+        warn(
+          MISSING_FOCUSABLE_CONTENT_MESSAGE,
+          hasFocusableDescendant(element),
+          {
+            id: 'ember-remodal.er-button-without-focusable-content',
+          },
+        );
+      });
+    }
+    return () => {
+      cancelled = true;
+    };
+  });
+
   <template>
     {{! The span is a click-delegating wrapper: consumers put their own real
         interactive element (usually a <button>) in the block, so giving the
-        wrapper a role or tabindex would double up on semantics/focus. }}
+        wrapper a role or tabindex would double up on semantics/focus. The
+        disable is re-armed below, so it covers only these two spans rather
+        than everything to the end of the template. }}
     {{! template-lint-disable no-invalid-interactive }}
     {{#if @destination}}
       {{#in-element @destination insertBefore=null}}
         <span
           class="er-button"
           {{on "click" this.handleClick}}
+          {{this.auditFocusableContent}}
           ...attributes
         >{{yield}}</span>
       {{/in-element}}
@@ -38,8 +97,10 @@ export default class ErButton extends Component<ErButtonSignature> {
       <span
         class="er-button"
         {{on "click" this.handleClick}}
+        {{this.auditFocusableContent}}
         ...attributes
       >{{yield}}</span>
     {{/if}}
+    {{! template-lint-enable no-invalid-interactive }}
   </template>
 }

@@ -3,13 +3,16 @@ import { tracked } from '@glimmer/tracking';
 import { warn } from '@ember/debug';
 import { hash } from '@ember/helper';
 import { on } from '@ember/modifier';
+import { guidFor } from '@ember/object/internals';
 import { service } from '@ember/service';
 import { waitForPromise } from '@ember/test-waiters';
 import { modifier } from 'ember-modifier';
 import type Owner from '@ember/owner';
 import type { WithBoundArgs } from '@glint/template';
 import type RemodalService from '../services/remodal.ts';
-import ErButton from './ember-remodal/er-button.gts';
+import ErButton, {
+  hasFocusableDescendant,
+} from './ember-remodal/er-button.gts';
 import '../styles/ember-remodal.css';
 
 export type ModalState = 'closed' | 'opening' | 'opened' | 'closing';
@@ -18,6 +21,14 @@ export type CloseReason = 'confirmation' | 'cancellation';
 export interface EmberRemodalOptions {
   title?: string;
   text?: string;
+  // `showModal()` gives the <dialog> `role="dialog"` and implicit `aria-modal`,
+  // but not a name. `title` names it via aria-labelledby; `ariaLabel` is the
+  // escape hatch for a modal with no visible title (a @disableForeground
+  // overlay, or a block whose heading is consumer markup we cannot reference).
+  ariaLabel?: string;
+  // Accessible name of the built-in close button. An option (rather than a
+  // hardcoded string) so it can be translated.
+  closeButtonLabel?: string;
   confirmButton?: string;
   cancelButton?: string;
   openButton?: string;
@@ -290,6 +301,39 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     return this.opt('modifier') ?? '';
   }
 
+  // --- accessible naming ---
+
+  // Stable per-instance id for the rendered <h2>, so the <dialog> can point
+  // aria-labelledby at it. Multiple modals on a page each get their own.
+  get titleId(): string {
+    return `${guidFor(this)}-title`;
+  }
+
+  // Falsy strings are treated as absent: `aria-label=""` names nothing and an
+  // empty @title renders no <h2> for aria-labelledby to reference.
+  get ariaLabel(): string | undefined {
+    return this.opt('ariaLabel') || undefined;
+  }
+
+  // aria-labelledby only when the <h2> actually renders AND the consumer has
+  // not overridden the name with @ariaLabel. Emitting both would be harmless
+  // (aria-labelledby wins in the accname algorithm) but silently ignoring an
+  // explicitly-passed @ariaLabel is worse than honoring it.
+  get labelledById(): string | undefined {
+    if (this.ariaLabel) {
+      return undefined;
+    }
+    return this.opt('title') ? this.titleId : undefined;
+  }
+
+  get hasAccessibleName(): boolean {
+    return Boolean(this.ariaLabel) || Boolean(this.opt('title'));
+  }
+
+  get closeButtonLabel(): string {
+    return this.opt('closeButtonLabel') || 'Close Modal';
+  }
+
   get closeOnEscape(): boolean {
     return this.opt('closeOnEscape') ?? true;
   }
@@ -435,6 +479,10 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
 
       if (this.transitionId === runId && !this.isDestroying) {
         this.setState('opened');
+        // After animationsSettled, so lazily-rendered block content
+        // ({{#if m.isOpen}}) is in the DOM before we look for focusable
+        // controls. Before @onOpen, so a throwing callback cannot hide it.
+        this.auditAccessibility();
         this.opt('onOpen')?.();
       }
       return deferred.promise;
@@ -574,8 +622,19 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
 
   handleNativeCancel = (event: Event): void => {
     // We own the closing animation, so never let the browser close instantly.
+    // (When the window has no history-action activation the `cancel` event is
+    // dispatched non-cancelable and the dialog force-closes anyway; the queued
+    // native `close` event then re-syncs state through handleDialogClose.)
     event.preventDefault();
-    if (this.closeOnEscape) {
+    if (this.closeOnEscape || !this.hasKeyboardExit()) {
+      // `@closeOnEscape={{false}}` is honored only while the user has some
+      // other way out. Under the old jQuery implementation the modal was a
+      // plain <div> a keyboard user could simply Tab out of; showModal() makes
+      // focus containment real, so suppressing Escape in a modal with no
+      // focusable control at all is an inescapable keyboard trap (WCAG 2.1.2,
+      // Level A). Escape wins in exactly that configuration — a dev warning at
+      // open time says so, and this behavior is NOT dev-only: dev and
+      // production must not disagree about whether a modal can be escaped.
       this.close().catch(this.reportError);
     }
   };
@@ -599,6 +658,34 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
   };
 
   // --- internals ---
+
+  // The `.remodal` card: everything the user can interact with lives inside it.
+  private get cardElement(): Element | null {
+    return this.dialogElement?.querySelector('.remodal') ?? null;
+  }
+
+  // Whether a keyboard user can leave the modal without Escape. Measured off
+  // the live DOM rather than inferred from options, because the built-in close
+  // button, the cancel/confirm buttons and anything in the consumer's block all
+  // count, and only the DOM knows about the last one.
+  private hasKeyboardExit(): boolean {
+    return hasFocusableDescendant(this.cardElement);
+  }
+
+  // Dev-only accessibility audit, run once per open. Both `warn` calls are
+  // stripped from production builds along with their condition arguments.
+  private auditAccessibility(): void {
+    warn(
+      `ember-remodal: the modal "${this.name}" was opened with neither @title nor @ariaLabel, so its <dialog> has no accessible name — screen readers announce it only as "dialog" (WCAG 4.1.2). Pass @ariaLabel="…" when the modal has no visible title.`,
+      this.hasAccessibleName,
+      { id: 'ember-remodal.modal-without-accessible-name' },
+    );
+    warn(
+      `ember-remodal: the modal "${this.name}" was opened with @closeOnEscape={{false}} and contains no focusable control, so a keyboard user would have no way out (WCAG 2.1.2). Escape will close it anyway. Render the built-in close button (drop @disableNativeClose / @disableForeground) or put a focusable control inside the modal.`,
+      this.closeOnEscape || this.hasKeyboardExit(),
+      { id: 'ember-remodal.no-keyboard-exit' },
+    );
+  }
 
   private reportError = (error: unknown): void => {
     // The DOM entry points above have nobody to hand a rejection to, and
@@ -788,6 +875,8 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
           {{this.modifier}}
           {{this.animationState}}"
         data-test-id="modalWrapper"
+        aria-labelledby={{this.labelledById}}
+        aria-label={{this.ariaLabel}}
         {{on "mousedown" this.handleWrapperMouseDown}}
         {{on "click" this.handleWrapperClick}}
         {{on "cancel" this.handleNativeCancel}}
@@ -807,9 +896,14 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
           data-test-id="modalWindow"
         >
           {{#unless this.disableNativeClose}}
+            {{! The visible glyph comes from `.remodal-close::before`, and
+                pseudo-element content participates in name-from-contents,
+                which OUTRANKS `title` in the accname algorithm — without an
+                aria-label this button is announced as "times, button". }}
             <button
               type="button"
-              title="Close Modal"
+              aria-label={{this.closeButtonLabel}}
+              title={{this.closeButtonLabel}}
               class="remodal-close ember-remodal inner native close"
               data-test-id="nativeClose"
               {{on "click" this.closeAction}}
@@ -818,6 +912,7 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
 
           {{#if (this.opt "title")}}
             <h2
+              id={{this.titleId}}
               class="ember-remodal inner title text"
               data-test-id="title"
             >{{this.opt "title"}}</h2>
@@ -879,6 +974,10 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
           {{/if}}
         </div>
       </dialog>
+      {{! Re-arm both rules: an unterminated disable comment suppresses them
+          all the way to the end of the template, which would have covered the
+          whole card subtree and every yielded block inside it. }}
+      {{! template-lint-enable no-invalid-interactive no-pointer-down-event-binding }}
     </span>
   </template>
 }
