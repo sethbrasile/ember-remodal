@@ -264,9 +264,19 @@ function releaseScrollLock(holder: object): void {
 
 // The accname algorithm trims and collapses whitespace, so " " names nothing:
 // it produces an <h2> with no perceivable text, an aria-labelledby pointing at
-// it, and a guard cheerfully reporting the dialog as named. Every string that
-// can become a name goes through here, so "present" means the same thing at
-// every one of them.
+// it, and a guard cheerfully reporting the dialog as named.
+//
+// Every consumer-supplied string that decides whether an element renders,
+// supplies an accessible name, or is counted as a control goes through here, so
+// "present" means the same thing at every one of them — and each of those
+// decisions reads the SAME getter, so a render condition and the logic that
+// counts the element can never disagree about whether it exists. The exceptions
+// are deliberate and enumerated in the blank-string-arguments test: the class
+// tokens (@modifier, @*Classes), @dataTestId and @name gate no render and name
+// no element, and a blank class token is collapsed by the HTML parser anyway.
+//
+// The class is a real one: it surfaced on @title, then on @cancelButton /
+// @confirmButton, then on the open triggers, once per review round.
 function presentString(value: string | undefined): string | undefined {
   return value !== undefined && value.trim() !== '' ? value : undefined;
 }
@@ -480,7 +490,33 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
   }
 
   get closeButtonLabel(): string {
-    return this.opt('closeButtonLabel') || 'Close Modal';
+    // `||` already caught `''`, but not `'  '` — which would have put a
+    // whitespace-only aria-label on the close button, i.e. the one control on a
+    // @disableForeground modal, named nothing at all.
+    return presentString(this.opt('closeButtonLabel')) ?? 'Close Modal';
+  }
+
+  // Renders a <p>. A blank string is not text, and an empty paragraph in the
+  // card is a rendered element nobody asked for.
+  get text(): string | undefined {
+    return presentString(this.opt('text'));
+  }
+
+  // The three open triggers. A blank label renders a trigger with no accessible
+  // name (WCAG 4.1.2) — a button announced as "button", a link as "link". They
+  // are an if/else-if chain in the template, and each `{{#if}}` reads the same
+  // getter its content does, so a blank one falls through to the next candidate
+  // instead of winning the chain and rendering nothing perceivable.
+  get linkButton(): string | undefined {
+    return presentString(this.opt('linkButton'));
+  }
+
+  get openLink(): string | undefined {
+    return presentString(this.opt('openLink'));
+  }
+
+  get openButton(): string | undefined {
+    return presentString(this.opt('openButton'));
   }
 
   // NB-31's defect on the opposite element. `@cancelButton=" "` passes a truthy
@@ -1121,7 +1157,7 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
           addon cannot outrank from a stylesheet whose bundle position it does
           not control. They are retired; the @legacyClassNames argument emits
           them alongside the namespaced ones. }}
-      {{#if (this.opt "linkButton")}}
+      {{#if this.linkButton}}
         <a
           href="#"
           class="ember-remodal ember-remodal-outer ember-remodal-link ember-remodal-text
@@ -1130,8 +1166,8 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
             {{this.opt 'outerButtonClasses'}}"
           data-test-id="linkButton"
           {{on "click" this.handleOpenClick}}
-        >{{this.opt "linkButton"}}</a>
-      {{else if (this.opt "openLink")}}
+        >{{this.linkButton}}</a>
+      {{else if this.openLink}}
         <a
           href="#"
           class="ember-remodal ember-remodal-outer ember-remodal-link ember-remodal-text
@@ -1141,8 +1177,8 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
             {{this.opt 'openLinkClasses'}}"
           data-test-id="openLink"
           {{on "click" this.handleOpenClick}}
-        >{{this.opt "openLink"}}</a>
-      {{else if (this.opt "openButton")}}
+        >{{this.openLink}}</a>
+      {{else if this.openButton}}
         <button
           type="button"
           class="ember-remodal ember-remodal-outer ember-remodal-open ember-remodal-button
@@ -1152,7 +1188,7 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
             {{this.opt 'openButtonClasses'}}"
           data-test-id="openButton"
           {{on "click" this.handleOpenClick}}
-        >{{this.opt "openButton"}}</button>
+        >{{this.openButton}}</button>
       {{/if}}
 
       <span
@@ -1240,12 +1276,12 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
             >{{this.title}}</h2>
           {{/if}}
 
-          {{#if (this.opt "text")}}
+          {{#if this.text}}
             <p
               class="ember-remodal ember-remodal-inner ember-remodal-paragraph ember-remodal-text
                 {{if this.legacyClassNames 'inner paragraph text'}}"
               data-test-id="text"
-            >{{this.opt "text"}}</p>
+            >{{this.text}}</p>
           {{/if}}
 
           {{#if (has-block)}}

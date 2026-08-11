@@ -218,7 +218,9 @@ work.
 Exactly one naming attribute is ever emitted, and a blank string (`@title=" "`)
 counts as absent — the accname algorithm trims it to nothing, so pretending
 otherwise would produce a dialog the guard reports as named and a screen reader
-announces as "dialog".
+announces as "dialog". The same rule holds for every argument in this table:
+`@text=" "` renders no paragraph, and `@closeButtonLabel=" "` falls back to
+`'Close Modal'` rather than leaving the close button unnamed.
 
 ```hbs
 {{! Name the dialog from your own heading instead of duplicating its text }}
@@ -237,9 +239,13 @@ announces as "dialog".
 | `confirmButton` | —       | Label; renders a confirm button (`remodal-confirm`)                     |
 | `cancelButton`  | —       | Label; renders a cancel button (`remodal-cancel`)                       |
 
-A blank or whitespace-only `confirmButton` / `cancelButton` label counts as
-absent — no button is rendered, and the keyboard-exit gate below does not count
-one. A control with no perceivable label is not a way out.
+A blank or whitespace-only label counts as absent for **every** option in this
+table. No control is rendered: a trigger with no perceivable label is announced
+as bare "button" / "link" (WCAG 4.1.2), and a blank `confirmButton` /
+`cancelButton` is not counted by the keyboard-exit gate below either, because a
+control with no perceivable label is not a way out. `linkButton` / `openLink` /
+`openButton` are tried in that order, so a blank one falls through to the next
+rather than winning the chain.
 
 ### Identity
 

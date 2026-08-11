@@ -74,22 +74,36 @@ moved onto it. Install with `pnpm add ember-remodal@beta`.
 - **Confirm and cancel buttons are styled now.** They carry `remodal-confirm` /
   `remodal-cancel` from the Remodal default theme; in 2.x they rendered
   unstyled. Your `@confirmButtonClasses` / `@cancelButtonClasses` still apply.
-- **A blank `@confirmButton` / `@cancelButton` label renders no button.** As
-  with `@title`, a whitespace-only string is treated as absent: `" "` used to
-  render a button with no perceivable label and no accessible name, and the
-  keyboard-exit gate counted it as the way out of a modal with
-  `@closeOnEscape={{false}}`. The same string now means "no button" to both.
+- **A blank string means "absent" for every argument that labels something.**
+  The accname algorithm trims and collapses whitespace, so `" "` names nothing —
+  but it is truthy, so it used to render the element anyway. It now means
+  "absent" uniformly, for `@title`, `@text`, `@ariaLabel`, `@ariaLabelledBy`,
+  `@closeButtonLabel` (which falls back to `'Close Modal'`), `@confirmButton`,
+  `@cancelButton`, `@openButton`, `@openLink` and `@linkButton`. A blank
+  `@confirmButton` / `@cancelButton` also stops counting as a keyboard exit, so
+  it can no longer be the declared way out of a modal with
+  `@closeOnEscape={{false}}`; a blank `@linkButton` / `@openLink` falls through
+  to the next trigger argument rather than winning and rendering an unnamed
+  control. Class-name arguments (`@modifier`, `@modalClasses`, `@buttonClasses`
+  and friends), `@dataTestId` and `@name` are unaffected: they label nothing and
+  gate no render.
 - **`confirm()` and `cancel()` are `async`.** Like `open()` and `close()`, they
   report a throwing `@onConfirm` / `@onCancel` as a rejected promise rather
   than throwing synchronously at the caller. Clicks and the yielded
   `m.confirm` / `m.cancel` do not reject: every handler the component binds to
   the DOM reports callback failures to `console.error` instead, since a DOM
   event has no caller to hand a rejection to.
-- **`@closeOnEscape={{false}}` is honored only while the modal contains a
-  focusable control.** With none, Escape closes the modal anyway and a dev-mode
-  warning explains why (WCAG 2.1.2). `showModal()` makes focus containment real,
-  so the 1.x/2.x combination of "no Escape, no focusable content" is now an
-  inescapable keyboard trap rather than a `<div>` a user could Tab out of.
+- **`@closeOnEscape={{false}}` is conditional.** It is honored only while the
+  modal has some other way out, and the addon works that out by **enumerating
+  the exits it renders** rather than by looking for something focusable in the
+  DOM. The exits are: the built-in close button; a `@cancelButton` with
+  `@closeOnCancel`; a `@confirmButton` with `@closeOnConfirm`; and
+  `@hasCustomKeyboardExit={{true}}`, which is how you declare that your own
+  block content provides the way out. With none of those, Escape closes the
+  modal anyway and a dev-mode warning explains why (WCAG 2.1.2). `showModal()`
+  makes focus containment real, so the 1.x/2.x combination of "no Escape, no way
+  out" is now an inescapable keyboard trap rather than a `<div>` a user could
+  Tab out of.
 - **Backdrop dismissal requires the press and the release to land on the
   backdrop**, and ignores presses on the dialog's own scrollbar. Dragging a
   selection out of the card no longer discards the modal.
