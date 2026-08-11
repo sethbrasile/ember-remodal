@@ -42,15 +42,18 @@ export interface EmberRemodalOptions {
   disableForeground?: boolean;
   disableNativeClose?: boolean;
   disableAnimation?: boolean;
-}
-
-export interface EmberRemodalArgs extends EmberRemodalOptions {
-  options?: EmberRemodalOptions;
+  // Callbacks live here (rather than only on the args) so they can be passed
+  // through `@options` or `service.open(name, opts)` as well as directly,
+  // which is what 2.x's setProperties-based option merge allowed.
   onBeforeOpen?: () => unknown;
   onOpen?: () => void;
   onClose?: (reason?: CloseReason) => void;
   onConfirm?: () => void;
   onCancel?: () => void;
+}
+
+export interface EmberRemodalArgs extends EmberRemodalOptions {
+  options?: EmberRemodalOptions;
 }
 
 export interface EmberRemodalYield {
@@ -88,6 +91,49 @@ function defer<T>(): Deferred<T> {
 function nextFrame(): Promise<void> {
   return new Promise((resolve) => requestAnimationFrame(() => resolve()));
 }
+
+function documentIsHidden(): boolean {
+  return typeof document !== 'undefined' && document.hidden;
+}
+
+// Resolves the first time the document becomes hidden, and hands back a
+// disposer for the listener. requestAnimationFrame is suspended and CSS
+// animations stop advancing while a tab is backgrounded, so anything waiting on
+// either (our frame preamble, `animation.finished`) can hang indefinitely —
+// racing this lets the transition finalize immediately instead.
+function whenDocumentHidden(): { promise: Promise<void>; dispose: () => void } {
+  if (typeof document === 'undefined') {
+    return { promise: new Promise<void>(() => {}), dispose: () => {} };
+  }
+  let dispose = (): void => {};
+  const promise = new Promise<void>((resolve) => {
+    const onVisibilityChange = (): void => {
+      if (document.hidden) {
+        resolve();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    dispose = (): void => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  });
+  return { promise, dispose };
+}
+
+// The wrapper <dialog> is `overflow: auto`, so a press on its own scrollbar
+// targets the dialog element itself just like a press on the backdrop does.
+// The scrollbar gutter is the only region of the element outside its client
+// box, and `offsetX/offsetY` are measured from the padding edge.
+function isScrollbarPress(event: Event): boolean {
+  if (!(event instanceof MouseEvent) || !(event.target instanceof Element)) {
+    return false;
+  }
+  const { clientWidth, clientHeight } = event.target;
+  return event.offsetX > clientWidth || event.offsetY > clientHeight;
+}
+
+const MISSING_DIALOG_MESSAGE =
+  'ember-remodal: "open" was called, but the modal\'s <dialog> element never rendered, so there is nothing to open.';
 
 // Shared scroll-lock bookkeeping so multiple simultaneously-open modals
 // only lock/unlock the document once. The set tracks which modal instances
@@ -153,6 +199,13 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
   // Whether open() has ever actually started a transition; used to scope the
   // "close before open" warning.
   private hasOpened = false;
+  // The reason of the close currently in flight. Stashed on the instance so a
+  // stale native `close` event that finalizes the close on our behalf still
+  // reports the reason to @onClose instead of dropping it.
+  private pendingCloseReason: CloseReason | undefined = undefined;
+  // Latched on mousedown so backdrop dismissal requires the press AND the
+  // release to land on the dialog itself.
+  private pressedOnBackdrop = false;
   private readonly testingAnimationDisabled: boolean;
 
   constructor(owner: Owner, args: EmberRemodalArgs) {
@@ -170,11 +223,26 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     if (this.registeredName !== null) {
       this.remodal.unregister(this.registeredName, this);
     }
+    const wasOpen = this.state !== 'closed';
+    const reason = this.pendingCloseReason;
+    this.pendingCloseReason = undefined;
+    // Releases the scroll lock. The <dialog> element itself is closed by the
+    // registerDialog modifier's destructor: that runs one `actions`-queue hop
+    // before this hook, so by now `dialogElement` is already null.
     this.setState('closed');
-    if (this.dialogElement?.open) {
-      this.dialogElement.close();
-    }
     this.settlePendingTransitions();
+    if (wasOpen) {
+      // 2.x fired its `closed` callback from the destroy path, so keep that
+      // parity: a modal torn down while open (a route transition, a
+      // `{{#if}}` flipping) is still a close as far as the consumer's state
+      // is concerned. Errors are reported, not thrown — we are already inside
+      // destruction and there is no caller left to hand a rejection to.
+      try {
+        this.opt('onClose')?.(reason);
+      } catch (error) {
+        this.reportError(error);
+      }
+    }
   }
 
   private resolveTestingAnimationDisabled(owner: Owner): boolean {
@@ -274,6 +342,13 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
       if (this.dialogElement === element) {
         this.dialogElement = null;
       }
+      // This destructor is the last point at which the element is still in
+      // hand: it runs one `actions`-queue hop before willDestroy. A modal
+      // destroyed (or removed from the DOM) while open must not leave a
+      // top-layer dialog behind.
+      if (element.open) {
+        element.close();
+      }
     };
   });
 
@@ -289,64 +364,105 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
   // --- state machine ---
 
   open = async (): Promise<this> => {
-    if (this.isDestroying || this.state === 'opened') {
-      return this;
-    }
-    if (this.state === 'opening' && this.openDeferred) {
-      return this.openDeferred.promise;
-    }
-    if (this.args.onBeforeOpen?.() === false) {
-      return this;
-    }
-    if (!this.dialogElement) {
-      // e.g. service.open() during the initial render pass, before our
-      // <dialog> has been inserted; give rendering a few frames to catch up.
-      await waitForPromise(this.waitForDialogElement());
-    }
     if (this.isDestroying) {
       return this;
     }
-    const dialog = this.dialogElement;
-    if (!dialog) {
-      warn(
-        'ember-remodal: "open" was called, but the modal\'s <dialog> element never rendered, so there is nothing to open. The returned promise will immediately resolve.',
-        false,
-        { id: 'ember-remodal.missing-dialog-element' },
-      );
+    // A bare `state === 'opened'` check can disagree with the element: the
+    // native `close` event is queued, so between an external close and its
+    // event delivery state is still 'opened' while the dialog is shut. Only
+    // short-circuit when state and element agree.
+    if (this.state === 'opened' && this.dialogElement?.open) {
+      return this;
+    }
+    // Join an open that is already in flight — either still waiting for its
+    // <dialog> element (state has not left 'closed' yet) or animating (state
+    // is 'opening'). Never join while 'closing': a deferred surviving there
+    // belongs to an open a close has already superseded.
+    if (this.openDeferred && this.state !== 'closing') {
+      return this.openDeferred.promise;
+    }
+    if (this.opt('onBeforeOpen')?.() === false) {
       return this;
     }
 
+    // Claim the transition BEFORE any await. waitForDialogElement below can
+    // span many frames, and until the id and the deferred are claimed nothing
+    // records that an open is pending — a close() landing in that window would
+    // warn about closing an unopened modal and no-op while we opened anyway.
     const deferred = defer<this>();
     this.openDeferred = deferred;
     const runId = ++this.transitionId;
     this.hasOpened = true;
+    this.pendingCloseReason = undefined;
 
-    if (this.state === 'closing') {
-      // Interrupt the in-flight close: cancelling its animations wakes its
-      // continuation, which sees the stale transitionId and settles itself
-      // without closing the dialog.
-      this.cancelAnimations(dialog);
-    }
-    if (!dialog.open) {
-      dialog.showModal();
-    }
-    this.setState('opening');
+    try {
+      if (!this.dialogElement) {
+        // e.g. service.open() during the initial render pass, before our
+        // <dialog> has been inserted; give rendering a few frames to catch up.
+        await waitForPromise(this.waitForDialogElement());
+      }
+      if (this.isDestroying || this.transitionId !== runId) {
+        return this;
+      }
+      const dialog = this.dialogElement;
+      if (!dialog) {
+        // Rejecting is the only signal that survives a production build (a
+        // `warn` is stripped), so a slow render can no longer silently drop
+        // the open. Every internal call site catches.
+        throw new Error(MISSING_DIALOG_MESSAGE);
+      }
 
-    await this.animationsSettled(dialog, runId);
+      if (this.state === 'closing') {
+        // Interrupt the in-flight close: cancelling its animations wakes its
+        // continuation, which sees the stale transitionId and settles itself
+        // without closing the dialog.
+        this.cancelAnimations(dialog);
+      }
+      if (!dialog.open) {
+        try {
+          dialog.showModal();
+        } catch (error) {
+          // showModal() throws InvalidStateError for a <dialog> that is not
+          // connected to a document. Keep state coherent and let the caller
+          // see the failure; the `finally` still settles every joined caller.
+          this.setState('closed');
+          throw error;
+        }
+      }
+      this.setState('opening');
 
-    if (this.openDeferred === deferred) {
-      this.openDeferred = null;
+      await this.animationsSettled(dialog, runId);
+
+      if (this.transitionId === runId && !this.isDestroying) {
+        this.setState('opened');
+        this.opt('onOpen')?.();
+      }
+      return deferred.promise;
+    } finally {
+      if (this.openDeferred === deferred) {
+        this.openDeferred = null;
+      }
+      // Settle unconditionally. A throwing consumer callback (or a failed
+      // showModal) must never strand a caller that joined this transition:
+      // openDeferred is already cleared above, so settlePendingTransitions()
+      // can no longer rescue it.
+      deferred.resolve(this);
     }
-    if (this.transitionId === runId && !this.isDestroying) {
-      this.setState('opened');
-      this.args.onOpen?.();
-    }
-    deferred.resolve(this);
-    return deferred.promise;
   };
 
   close = async (reason?: CloseReason): Promise<this> => {
     if (this.state === 'closed') {
+      const pendingOpen = this.openDeferred;
+      if (pendingOpen) {
+        // An open() still waiting for its <dialog> element has not reached
+        // 'opening' yet. Supersede it here — bumping the id makes its
+        // continuation notice it lost — so this close actually wins instead of
+        // the modal opening after we have returned.
+        this.transitionId += 1;
+        this.openDeferred = null;
+        pendingOpen.resolve(this);
+        return this;
+      }
       warn(
         'ember-remodal: You called "close" on a modal that has not yet been opened. This is not a big deal, but I thought you should know. The returned promise will immediately resolve.',
         this.hasOpened,
@@ -365,27 +481,31 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     const deferred = defer<this>();
     this.closeDeferred = deferred;
     const runId = ++this.transitionId;
+    this.pendingCloseReason = reason;
 
-    if (this.state === 'opening') {
-      // Interrupt the in-flight open; its continuation settles itself.
-      this.cancelAnimations(dialog);
-    }
-    this.setState('closing');
+    try {
+      if (this.state === 'opening') {
+        // Interrupt the in-flight open; its continuation settles itself.
+        this.cancelAnimations(dialog);
+      }
+      this.setState('closing');
 
-    await this.animationsSettled(dialog, runId);
+      await this.animationsSettled(dialog, runId);
 
-    if (this.closeDeferred === deferred) {
-      this.closeDeferred = null;
+      if (this.transitionId === runId && !this.isDestroying) {
+        this.finalizeClose(reason);
+      }
+      return deferred.promise;
+    } finally {
+      if (this.closeDeferred === deferred) {
+        this.closeDeferred = null;
+      }
+      deferred.resolve(this);
     }
-    if (this.transitionId === runId && !this.isDestroying) {
-      this.finalizeClose(reason);
-    }
-    deferred.resolve(this);
-    return deferred.promise;
   };
 
   confirm = (): Promise<this> => {
-    this.args.onConfirm?.();
+    this.opt('onConfirm')?.();
     if (this.closeOnConfirm) {
       return this.close('confirmation');
     }
@@ -393,7 +513,7 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
   };
 
   cancel = (): Promise<this> => {
-    this.args.onCancel?.();
+    this.opt('onCancel')?.();
     if (this.closeOnCancel) {
       return this.close('cancellation');
     }
@@ -402,32 +522,53 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
 
   // Zero-arg wrappers safe to use as DOM event handlers (they swallow the
   // Event argument so it can never be mistaken for a close reason).
+  //
+  // They `.catch()` rather than `void`: `void` does not mark a rejection
+  // handled, so a failed showModal() or a throwing consumer callback would
+  // surface as a global unhandledrejection (a hard failure under Ember's test
+  // error validation) with no caller able to intercept it.
 
   openAction = (): void => {
-    void this.open();
+    this.open().catch(this.reportError);
   };
 
   closeAction = (): void => {
-    void this.close();
+    this.close().catch(this.reportError);
   };
 
   confirmAction = (): void => {
-    void this.confirm();
+    this.confirm().catch(this.reportError);
   };
 
   cancelAction = (): void => {
-    void this.cancel();
+    this.cancel().catch(this.reportError);
   };
 
   handleOpenClick = (event?: Event): void => {
     // Open triggers may render as `<a href="#">`; never navigate.
     event?.preventDefault();
-    void this.open();
+    this.open().catch(this.reportError);
+  };
+
+  handleWrapperMouseDown = (event: Event): void => {
+    this.pressedOnBackdrop =
+      event.target === this.dialogElement && !isScrollbarPress(event);
   };
 
   handleWrapperClick = (event: Event): void => {
-    if (event.target === this.dialogElement && this.closeOnOutsideClick) {
-      void this.close();
+    // `event.target === dialog` alone is also true when a press that started
+    // inside the card is released over the backdrop (the click dispatches on
+    // their common ancestor, the dialog) and when the user drags the dialog's
+    // own scrollbar — both would discard the user's content. Require the press
+    // to have landed on the backdrop too.
+    const pressedOnBackdrop = this.pressedOnBackdrop;
+    this.pressedOnBackdrop = false;
+    if (
+      pressedOnBackdrop &&
+      event.target === this.dialogElement &&
+      this.closeOnOutsideClick
+    ) {
+      this.close().catch(this.reportError);
     }
   };
 
@@ -435,7 +576,7 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     // We own the closing animation, so never let the browser close instantly.
     event.preventDefault();
     if (this.closeOnEscape) {
-      void this.close();
+      this.close().catch(this.reportError);
     }
   };
 
@@ -458,6 +599,12 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
   };
 
   // --- internals ---
+
+  private reportError = (error: unknown): void => {
+    // The DOM entry points above have nobody to hand a rejection to, and
+    // swallowing it silently would hide a consumer callback that threw.
+    console.error(error);
+  };
 
   // The single funnel for state writes: acquires the scroll lock on the
   // closed → non-closed edge and releases it on the non-closed → closed edge,
@@ -482,12 +629,17 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
   // scroll lock) BEFORE closing the native dialog, so the queued native
   // `close` event hits handleDialogClose's state guard.
   private finalizeClose(reason?: CloseReason): void {
+    // Whichever path finalizes reports the reason: a stale native `close`
+    // event can beat an in-flight close('confirmation') to the finish line,
+    // and it has no reason of its own to pass on.
+    const effectiveReason = reason ?? this.pendingCloseReason;
+    this.pendingCloseReason = undefined;
     this.setState('closed');
     if (this.dialogElement?.open) {
       this.dialogElement.close();
     }
     this.settlePendingTransitions();
-    this.args.onClose?.(reason);
+    this.opt('onClose')?.(effectiveReason);
   }
 
   private async waitForDialogElement(): Promise<void> {
@@ -536,31 +688,46 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
     dialog: HTMLDialogElement,
     runId: number,
   ): Promise<void> {
-    if (this.disableAnimation) {
+    // A backgrounded tab suspends requestAnimationFrame and stops advancing
+    // CSS animations, so the frame preamble and `animation.finished` below both
+    // hang for as long as the tab stays hidden — a session-timeout timer or a
+    // websocket message calling close() would never reach finalizeClose. Skip
+    // waiting entirely when already hidden, and race the visibility change so a
+    // tab backgrounded mid-transition still settles.
+    if (this.disableAnimation || documentIsHidden()) {
       return Promise.resolve();
     }
+    const hidden = whenDocumentHidden();
     // The waiter keeps `settled()` (and `await click(…)`) reliable in tests.
     return waitForPromise(
-      (async () => {
-        // Two frames so the state-class change has applied and CSS animations
-        // have actually started before we collect them. Bail after each await
-        // if a newer transition has taken over, so a superseded transition
-        // never collects or waits on its successor's animations.
-        await nextFrame();
-        if (this.transitionId !== runId || this.isDestroying) {
-          return;
-        }
-        await nextFrame();
-        if (this.transitionId !== runId || this.isDestroying) {
-          return;
-        }
-        const animations = this.ownAnimations(dialog);
-        if (animations.length > 0) {
-          // allSettled: cancelled animations reject their `finished` promise.
-          await Promise.allSettled(animations.map((a) => a.finished));
-        }
-      })(),
+      Promise.race([
+        this.ownAnimationsSettled(dialog, runId),
+        hidden.promise,
+      ]).finally(hidden.dispose),
     );
+  }
+
+  private async ownAnimationsSettled(
+    dialog: HTMLDialogElement,
+    runId: number,
+  ): Promise<void> {
+    // Two frames so the state-class change has applied and CSS animations
+    // have actually started before we collect them. Bail after each await
+    // if a newer transition has taken over, so a superseded transition
+    // never collects or waits on its successor's animations.
+    await nextFrame();
+    if (this.transitionId !== runId || this.isDestroying) {
+      return;
+    }
+    await nextFrame();
+    if (this.transitionId !== runId || this.isDestroying) {
+      return;
+    }
+    const animations = this.ownAnimations(dialog);
+    if (animations.length > 0) {
+      // allSettled: cancelled animations reject their `finished` promise.
+      await Promise.allSettled(animations.map((a) => a.finished));
+    }
   }
 
   <template>
@@ -608,14 +775,20 @@ export default class EmberRemodal extends Component<EmberRemodalSignature> {
       {{! The wrapper click handler only detects clicks on the backdrop area
           (outside the card) to support closeOnOutsideClick; it is not a
           keyboard-reachable control (Escape is handled via the native cancel
-          event), so no-invalid-interactive does not apply. }}
-      {{! template-lint-disable no-invalid-interactive }}
+          event), so no-invalid-interactive does not apply.
+
+          The mousedown listener does not activate anything either — it only
+          latches where the press started, so that dismissing on a backdrop
+          click requires the press AND the release to land on the backdrop.
+          Dismissal itself still happens on click. }}
+      {{! template-lint-disable no-invalid-interactive no-pointer-down-event-binding }}
       <dialog
         class="remodal-wrapper
           {{this.stateClass}}
           {{this.modifier}}
           {{this.animationState}}"
         data-test-id="modalWrapper"
+        {{on "mousedown" this.handleWrapperMouseDown}}
         {{on "click" this.handleWrapperClick}}
         {{on "cancel" this.handleNativeCancel}}
         {{on "close" this.handleDialogClose}}

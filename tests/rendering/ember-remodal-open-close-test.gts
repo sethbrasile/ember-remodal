@@ -1,14 +1,18 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render, click, find } from '@ember/test-helpers';
+import { render, click, find, settled } from '@ember/test-helpers';
 import { on } from '@ember/modifier';
 import Component from '@glimmer/component';
 import type Owner from '@ember/owner';
 import EmberRemodal from '#src/components/ember-remodal.gts';
+import type { CloseReason } from '#src/components/ember-remodal.gts';
 import {
   dialog,
+  hideDocument,
   lookupService,
   pressEscape,
+  settlesWithin,
+  suspendAnimationFrames,
 } from '../helpers/remodal-test-helpers.ts';
 
 module('Rendering | ember-remodal | open and close', function (hooks) {
@@ -341,6 +345,228 @@ module('Rendering | ember-remodal | open and close', function (hooks) {
 
     assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
     assert.true(dialog().open);
+  });
+
+  test('close() cancels an open() that is still waiting for the <dialog> element', async function (assert) {
+    // Regression test: open() used to leave `state === 'closed'` (and claim no
+    // transition id) for the whole time it awaited waitForDialogElement, so
+    // nothing recorded that an open was pending. A close() landing in that
+    // window warned about closing an unopened modal, no-opped, and the modal
+    // went on to open anyway. The same pair after render already ends closed,
+    // so the outcome depended purely on render timing.
+    class EarlyOpenCloser extends Component {
+      constructor(owner: Owner, args: object) {
+        super(owner, args);
+        const remodal = owner.lookup('service:remodal');
+        void remodal.open('early-pair');
+        void remodal.close('early-pair');
+      }
+
+      <template></template>
+    }
+
+    const warnings: unknown[] = [];
+    const originalWarn = console.warn;
+    console.warn = (...args: unknown[]) => {
+      warnings.push(args[0]);
+    };
+
+    try {
+      await render(
+        <template>
+          <EmberRemodal @forService={{true}} @name="early-pair" @title="Pair" />
+          <EarlyOpenCloser />
+        </template>,
+      );
+    } finally {
+      console.warn = originalWarn;
+    }
+
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-closed');
+    assert.false(dialog().open, 'the close won over the pending open');
+    assert.false(
+      warnings.some((warning) =>
+        String(warning).includes('has not yet been opened'),
+      ),
+      'no spurious "close before open" warning',
+    );
+  });
+
+  test('a throwing @onOpen still settles an open() that joined the same transition', async function (assert) {
+    // Regression test: `deferred.resolve(this)` sat AFTER the @onOpen call with
+    // no try/finally, and openDeferred had already been nulled — so when a
+    // consumer's @onOpen threw, a second open() that had been handed the first
+    // call's deferred was never settled and settlePendingTransitions() could
+    // not rescue it.
+    const service = lookupService(this);
+    const explode = () => {
+      throw new Error('onOpen exploded');
+    };
+
+    await render(
+      <template>
+        <EmberRemodal @forService={{true}} @name="boom" @onOpen={{explode}} />
+      </template>,
+    );
+
+    const first = service.open('boom');
+    const second = service.open('boom');
+
+    // The exception belongs to the caller whose transition ran the callback.
+    await assert.rejects(first, /onOpen exploded/);
+
+    assert.strictEqual(
+      await settlesWithin(second, 1000),
+      'settled',
+      'the joined open() settled instead of dangling forever',
+    );
+  });
+
+  test('a throwing @onClose still settles a close() that joined the same transition', async function (assert) {
+    // Same shape as the @onOpen case above, on the close path.
+    const service = lookupService(this);
+    const explode = () => {
+      throw new Error('onClose exploded');
+    };
+
+    await render(
+      <template>
+        <EmberRemodal
+          @forService={{true}}
+          @name="boom-close"
+          @onClose={{explode}}
+        />
+      </template>,
+    );
+
+    const modal = await service.open('boom-close');
+    const first = modal.close();
+    const second = modal.close();
+
+    await assert.rejects(first, /onClose exploded/);
+
+    assert.strictEqual(
+      await settlesWithin(second, 1000),
+      'settled',
+      'the joined close() settled instead of dangling forever',
+    );
+  });
+
+  test('close() settles in a hidden tab, where requestAnimationFrame is suspended', async function (assert) {
+    // Regression test: animationsSettled unconditionally awaited two
+    // requestAnimationFrames, which never fire while the tab is backgrounded,
+    // so a session-timeout timer or websocket message calling close() left the
+    // dialog visibly open forever and never fired @onClose.
+    const service = lookupService(this);
+    const reasons: (CloseReason | undefined)[] = [];
+    const handleClose = (reason?: CloseReason) => reasons.push(reason);
+
+    await render(
+      <template>
+        <EmberRemodal
+          @forService={{true}}
+          @name="hidden-tab"
+          @onClose={{handleClose}}
+        />
+      </template>,
+    );
+    const modal = await service.open('hidden-tab');
+
+    const restoreFrames = suspendAnimationFrames();
+    const restoreHidden = hideDocument();
+    let outcome: 'settled' | 'pending';
+    try {
+      outcome = await settlesWithin(modal.close(), 1000);
+    } finally {
+      restoreHidden();
+      restoreFrames();
+    }
+
+    assert.strictEqual(outcome, 'settled', 'close() did not hang');
+    assert.strictEqual(modal.state, 'closed');
+    assert.false(dialog().open, 'the dialog really closed');
+    assert.deepEqual(reasons, [undefined], '@onClose still fired');
+  });
+
+  test('a transition already in flight when the tab is backgrounded still settles', async function (assert) {
+    const service = lookupService(this);
+
+    await render(
+      <template>
+        <EmberRemodal @forService={{true}} @name="backgrounded" />
+      </template>,
+    );
+    const modal = await service.open('backgrounded');
+
+    const restoreFrames = suspendAnimationFrames();
+    let restoreHidden = () => {};
+    let outcome: 'settled' | 'pending';
+    try {
+      const closing = modal.close();
+      // The tab is backgrounded after close() has already started waiting on
+      // frames that will now never arrive.
+      restoreHidden = hideDocument();
+      document.dispatchEvent(new Event('visibilitychange'));
+      outcome = await settlesWithin(closing, 1000);
+    } finally {
+      restoreHidden();
+      restoreFrames();
+    }
+
+    assert.strictEqual(outcome, 'settled', 'close() did not hang');
+    assert.strictEqual(modal.state, 'closed');
+  });
+
+  test('destroying a modal while it is open closes the dialog and fires @onClose', async function (assert) {
+    // The registerDialog modifier's destructor runs one `actions`-queue hop
+    // before willDestroy, which nulls dialogElement — so willDestroy's
+    // `if (this.dialogElement?.open)` branch was dead code and a modal
+    // destroyed while open left an open <dialog> behind and never fired
+    // @onClose (2.x's destroy path did fire `closed`).
+    const service = lookupService(this);
+    const reasons: (CloseReason | undefined)[] = [];
+    const handleClose = (reason?: CloseReason) => reasons.push(reason);
+
+    await render(
+      <template>
+        <EmberRemodal
+          @forService={{true}}
+          @name="doomed"
+          @onClose={{handleClose}}
+        />
+      </template>,
+    );
+
+    await service.open('doomed');
+    const element = dialog();
+    assert.true(element.open, 'open before teardown');
+
+    await render(<template></template>);
+
+    assert.false(element.open, 'the <dialog> element was closed on teardown');
+    assert.deepEqual(reasons, [undefined], '@onClose fired on destroy');
+    assert
+      .dom(document.documentElement)
+      .doesNotHaveClass('remodal-is-locked', 'scroll lock released');
+  });
+
+  test('a press that starts inside the card and is released over the backdrop does not close', async function (assert) {
+    // The click of a drag out of the card dispatches on the common ancestor of
+    // press and release — the <dialog> — which looked exactly like a backdrop
+    // click and discarded the user's content.
+    await render(
+      <template><EmberRemodal @openButton="Open" @title="Hi" /></template>,
+    );
+    await click('[data-test-id="openButton"]');
+
+    const card = find('[data-test-id="modalWindow"]');
+    assert.ok(card, 'the card is rendered');
+    card?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    dialog().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await settled();
+
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
+    assert.true(dialog().open, 'the modal survived the drag-release');
   });
 
   test('isOpen (and thus yielded m.isOpen) stays true through the closing animation', async function (assert) {

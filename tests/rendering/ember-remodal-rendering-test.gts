@@ -1,8 +1,9 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render } from '@ember/test-helpers';
+import { render, click } from '@ember/test-helpers';
 import { hash } from '@ember/helper';
 import EmberRemodal from '#src/components/ember-remodal.gts';
+import type { CloseReason } from '#src/components/ember-remodal.gts';
 
 module('Rendering | ember-remodal', function (hooks) {
   setupRenderingTest(hooks);
@@ -105,6 +106,70 @@ module('Rendering | ember-remodal', function (hooks) {
     );
 
     assert.dom('[data-test-id="title"]').hasText('From options');
+  });
+
+  test('callbacks can be provided via the @options object', async function (assert) {
+    // 2.x applied `setProperties(options)`, so every key handed to @options
+    // landed on the component — callbacks included. Reading the callbacks only
+    // from `this.args` made `@options={{hash onConfirm=…}}` silent dead code.
+    const events: string[] = [];
+    const handleOpen = () => events.push('open');
+    const handleConfirm = () => events.push('confirm');
+    const handleClose = (reason?: CloseReason) =>
+      events.push(`close:${String(reason)}`);
+
+    await render(
+      <template>
+        <EmberRemodal
+          @options={{hash
+            openButton="Open"
+            confirmButton="Yes"
+            onOpen=handleOpen
+            onConfirm=handleConfirm
+            onClose=handleClose
+          }}
+        />
+      </template>,
+    );
+
+    await click('[data-test-id="openButton"]');
+    await click('[data-test-id="confirmButton"]');
+
+    assert.deepEqual(events, ['open', 'confirm', 'close:confirmation']);
+  });
+
+  test('a callback in @options takes precedence over the direct argument', async function (assert) {
+    const events: string[] = [];
+    const direct = () => events.push('direct');
+    const fromOptions = () => events.push('from-options');
+
+    await render(
+      <template>
+        <EmberRemodal
+          @openButton="Open"
+          @onOpen={{direct}}
+          @options={{hash onOpen=fromOptions}}
+        />
+      </template>,
+    );
+
+    await click('[data-test-id="openButton"]');
+
+    assert.deepEqual(events, ['from-options']);
+  });
+
+  test('@onBeforeOpen can veto from the @options object', async function (assert) {
+    const veto = () => false;
+
+    await render(
+      <template>
+        <EmberRemodal @openButton="Open" @options={{hash onBeforeOpen=veto}} />
+      </template>,
+    );
+
+    await click('[data-test-id="openButton"]');
+
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-closed');
   });
 
   test('the native close button renders by default', async function (assert) {

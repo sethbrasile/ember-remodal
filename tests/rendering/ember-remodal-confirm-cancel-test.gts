@@ -3,7 +3,7 @@ import { setupRenderingTest } from 'ember-qunit';
 import { render, click } from '@ember/test-helpers';
 import EmberRemodal from '#src/components/ember-remodal.gts';
 import type { CloseReason } from '#src/components/ember-remodal.gts';
-import { dialog } from '../helpers/remodal-test-helpers.ts';
+import { dialog, lookupService } from '../helpers/remodal-test-helpers.ts';
 
 module('Rendering | ember-remodal | confirm and cancel', function (hooks) {
   setupRenderingTest(hooks);
@@ -58,6 +58,39 @@ module('Rendering | ember-remodal | confirm and cancel', function (hooks) {
     assert.deepEqual(reasons, ['cancellation'], 'reason passed to @onClose');
     assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-closed');
     assert.false(dialog().open);
+  });
+
+  test('a stale native close racing an in-flight confirm still reports the confirmation reason', async function (assert) {
+    // Regression test: a native `close` event arriving mid-animation bumps the
+    // transitionId and finalizes with no reason of its own, which made the
+    // in-flight close('confirmation') skip its own finalizeClose — so @onClose
+    // received undefined instead of 'confirmation'.
+    const service = lookupService(this);
+    const reasons: (CloseReason | undefined)[] = [];
+    const handleClose = (reason?: CloseReason) => reasons.push(reason);
+
+    await render(
+      <template>
+        <EmberRemodal
+          @forService={{true}}
+          @name="reason-race"
+          @onClose={{handleClose}}
+        />
+      </template>,
+    );
+
+    const modal = await service.open('reason-race');
+    const closing = modal.confirm();
+    // Something outside the addon closes the dialog natively while our closing
+    // animation is still running (a `<form method="dialog">` submit inside user
+    // content, say). The real event is queued; dispatching it synchronously
+    // makes the race deterministic.
+    dialog().close();
+    dialog().dispatchEvent(new Event('close'));
+
+    await closing;
+
+    assert.deepEqual(reasons, ['confirmation'], 'the reason survived the race');
   });
 
   test('the yielded m.confirm and m.cancel buttons work', async function (assert) {

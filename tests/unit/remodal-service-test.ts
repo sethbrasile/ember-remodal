@@ -8,9 +8,13 @@ class FakeModal {
   openCalls = 0;
   closeCalls = 0;
   serviceOverrides: EmberRemodalOptions | null = null;
+  // Snapshot of the overrides as they stood when open() was called, so tests
+  // can assert the service applies them BEFORE starting the transition.
+  overridesAtOpen: EmberRemodalOptions | null = null;
 
   open(): Promise<this> {
     this.openCalls++;
+    this.overridesAtOpen = this.serviceOverrides;
     return Promise.resolve(this);
   }
 
@@ -72,6 +76,24 @@ module('Unit | Service | remodal', function (hooks) {
     );
   });
 
+  test('open() applies option overrides before starting the open transition', async function (assert) {
+    // The overrides write is deferred out of any active render transaction
+    // (see the backtracking-rerender regression test), but it must still land
+    // before open() runs or the modal animates open showing stale content.
+    const service = lookupService(this);
+    const fake = new FakeModal();
+
+    service.register('a', asModal(fake));
+
+    await service.open('a', { title: 'Hello' });
+
+    assert.deepEqual(
+      fake.overridesAtOpen,
+      { title: 'Hello' },
+      'the overrides were already applied when open() ran',
+    );
+  });
+
   test('close() dispatches to the registered modal', async function (assert) {
     const service = lookupService(this);
     const fake = new FakeModal();
@@ -116,24 +138,27 @@ module('Unit | Service | remodal', function (hooks) {
     );
 
     service.unregister('a', asModal(registered));
-    assert.throws(
-      () => {
-        void service.open('a');
-      },
+    await assert.rejects(
+      service.open('a'),
       /can not be opened because it is not rendered/,
       'matching unregister removes the modal',
     );
   });
 
-  test('open() and close() assert helpfully for unknown names', function (assert) {
+  test('open() and close() reject helpfully for unknown names', async function (assert) {
+    // They must REJECT, not throw synchronously: an assert() in the lookup
+    // fired before open() could return, so `service.open('typo').catch(…)`
+    // never caught in dev while it did in production.
     const service = lookupService(this);
 
-    assert.throws(() => {
-      void service.open('missing');
-    }, /The requested modal, "missing" can not be opened/);
+    await assert.rejects(
+      service.open('missing'),
+      /The requested modal, "missing" can not be opened/,
+    );
 
-    assert.throws(() => {
-      void service.close('missing');
-    }, /The requested modal, "missing" can not be opened/);
+    await assert.rejects(
+      service.close('missing'),
+      /The requested modal, "missing" can not be opened/,
+    );
   });
 });

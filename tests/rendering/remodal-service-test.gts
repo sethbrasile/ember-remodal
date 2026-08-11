@@ -1,7 +1,10 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render } from '@ember/test-helpers';
+import { render, click } from '@ember/test-helpers';
+import Component from '@glimmer/component';
+import type Owner from '@ember/owner';
 import EmberRemodal from '#src/components/ember-remodal.gts';
+import type { CloseReason } from '#src/components/ember-remodal.gts';
 import { dialog, lookupService } from '../helpers/remodal-test-helpers.ts';
 
 module('Rendering | remodal service', function (hooks) {
@@ -79,6 +82,67 @@ module('Rendering | remodal service', function (hooks) {
     assert.dom('[data-test-id="text"]').hasText('B text');
   });
 
+  test('service.open with options during the initial render pass applies them without a backtracking assertion', async function (assert) {
+    // Regression test: `service.open(name, opts)` writes `serviceOverrides` on
+    // the modal, which is a tracked write. Called from a component constructor
+    // it lands inside the same render transaction in which the already-rendered
+    // modal read those options, so Ember threw "You attempted to update
+    // 'serviceOverrides' on 'EmberRemodal', but it had already been used
+    // previously in the same computation". The write has to be deferred out of
+    // the transaction — but still applied before the open transition starts.
+    class EarlyOpener extends Component {
+      constructor(owner: Owner, args: object) {
+        super(owner, args);
+        const remodal = owner.lookup('service:remodal');
+        void remodal.open('early-opts', { title: 'Overridden' });
+      }
+
+      <template></template>
+    }
+
+    await render(
+      <template>
+        <EmberRemodal
+          @forService={{true}}
+          @name="early-opts"
+          @title="Original"
+        />
+        <EarlyOpener />
+      </template>,
+    );
+
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
+    assert.dom('[data-test-id="title"]').hasText('Overridden');
+  });
+
+  test('callbacks can be passed through service.open options', async function (assert) {
+    // 2.x used setProperties, so anything the service was handed landed on the
+    // component — including the callbacks.
+    const service = lookupService(this);
+    const events: string[] = [];
+    const handleOpen = () => events.push('open');
+    const handleConfirm = () => events.push('confirm');
+    const handleClose = (reason?: CloseReason) =>
+      events.push(`close:${String(reason)}`);
+
+    await render(
+      <template>
+        <EmberRemodal @forService={{true}} @name="svc-callbacks" />
+      </template>,
+    );
+
+    await service.open('svc-callbacks', {
+      confirmButton: 'Yes',
+      onOpen: handleOpen,
+      onConfirm: handleConfirm,
+      onClose: handleClose,
+    });
+
+    await click('[data-test-id="confirmButton"]');
+
+    assert.deepEqual(events, ['open', 'confirm', 'close:confirmation']);
+  });
+
   test('service.close closes the modal and resolves', async function (assert) {
     const service = lookupService(this);
 
@@ -96,19 +160,17 @@ module('Rendering | remodal service', function (hooks) {
     assert.false(dialog().open);
   });
 
-  test('opening an unregistered modal name asserts helpfully', async function (assert) {
+  test('opening an unregistered modal name rejects helpfully', async function (assert) {
     const service = lookupService(this);
 
     await render(
       <template><EmberRemodal @forService={{true}} @name="svc" /></template>,
     );
 
-    assert.throws(
-      () => {
-        void service.open('not-registered');
-      },
+    await assert.rejects(
+      service.open('not-registered'),
       /not-registered.*can not be opened because it is not rendered/,
-      'throws the not-registered assertion',
+      'rejects with the not-registered diagnostic',
     );
   });
 
@@ -130,10 +192,8 @@ module('Rendering | remodal service', function (hooks) {
 
     await render(<template></template>);
 
-    assert.throws(
-      () => {
-        void service.open('snap');
-      },
+    await assert.rejects(
+      service.open('snap'),
       /snap.*can not be opened because it is not rendered/,
       'the registry has no stale entry left under the original name',
     );
