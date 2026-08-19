@@ -280,8 +280,18 @@ code {
 }
 
 .docs-main {
-  max-width: 52rem;
+  /* Wide enough that DemoExample's live/source split gets a source panel that
+     fits a real snippet; prose below is capped separately so lines stay at a
+     readable measure. */
+  max-width: 72rem;
   padding: 2rem 1.25rem 4rem;
+}
+
+/* .docs-main is wide so the examples' code panels fit; body copy stays at a
+   readable measure regardless of where in the page it sits. */
+.docs-main p,
+.docs-main li {
+  max-width: 68ch;
 }
 
 .docs-lede {
@@ -338,6 +348,11 @@ code {
   border: 1px solid var(--demo-border);
   border-radius: 10px;
   margin-top: 1.5rem;
+  /* The live/source split keys off the example's own width, not the viewport:
+     the docs nav takes 16rem and .docs-main caps the rest, so a viewport-width
+     media query splits into two columns long before the example itself has
+     room for them. */
+  container-type: inline-size;
 }
 
 .demo-example-header {
@@ -352,34 +367,55 @@ code {
 .demo-example-description {
   margin: 0 0 1rem;
   color: var(--demo-muted);
+  max-width: 68ch;
 }
 
+/* Stacked by default; the container query below opts into two columns once
+   there is room. minmax(0, …) rather than 1fr so the source panel can be
+   narrower than its longest code line and let <pre> scroll, instead of the
+   line forcing the track wide and being clipped by the panel's overflow. */
 .demo-example-body {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0;
 }
 
-.demo-example-body.is-source-only {
-  grid-template-columns: 1fr;
-}
-
+/* Column, not row: an example's live panel is a stack of blocks — controls,
+   then an event log, then the modal's own (display:none until opened) wrapper
+   span. A row laid the log out beside the button it belongs under. Multi-button
+   examples group their buttons in .demo-buttons, which is still a wrapping row.
+   No `gap` here: the always-rendered .remodal-component span is a zero-height
+   flex item that a gap would still push space around. Children carry their own
+   margins instead. */
 .demo-example-live {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 6rem;
   padding: 1.5rem;
 }
 
+.demo-example-live > .demo-log-panel {
+  align-self: stretch;
+}
+
 .demo-example-source {
   background: #24292e;
-  border-radius: 0 0 10px 0;
+  border-radius: 0 0 10px 10px;
   overflow: hidden;
 }
 
-.demo-example-body.is-source-only .demo-example-source {
-  border-radius: 0 0 10px 10px;
+@container (min-width: 46rem) {
+  /* Source panel gets the larger share — code lines are wider than the live
+     demo's button. */
+  .demo-example-body:not(.is-source-only) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  }
+
+  .demo-example-body:not(.is-source-only) .demo-example-source {
+    border-radius: 0 0 10px 0;
+  }
 }
 
 .demo-example-toolbar {
@@ -415,16 +451,6 @@ code {
   overflow-x: auto;
   font-size: 0.85rem;
   line-height: 1.5;
-}
-
-@media (max-width: 900px) {
-  .demo-example-body {
-    grid-template-columns: 1fr;
-  }
-
-  .demo-example-source {
-    border-radius: 0 0 10px 10px;
-  }
 }
 
 /* demo toasts.
