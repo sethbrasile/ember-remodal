@@ -569,3 +569,75 @@ code {
 .demo-reduced-motion .remodal-cancel {
   transition: none;
 }
+
+/* Shiki sets its own colours inline on `pre.shiki`; the global `code {}`
+   rule above would otherwise paint a light background/padding box behind
+   every highlighted block (inside DemoExample's source panel and here). */
+pre.shiki code {
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+/* MIGRATION.md, rendered */
+
+.docs-markdown > h1:first-child {
+  display: none;
+}
+
+.docs-markdown h2 {
+  margin: 2rem 0 0.75rem;
+}
+
+.docs-markdown h3 {
+  margin: 1.5rem 0 0.5rem;
+}
+
+.docs-markdown p,
+.docs-markdown ul,
+.docs-markdown ol {
+  margin: 0 0 1rem;
+  max-width: 68ch;
+}
+
+.docs-markdown pre.shiki {
+  margin: 0 0 1.25rem;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.docs-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin: 0 0 1.25rem;
+}
+
+.docs-markdown th,
+.docs-markdown td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--demo-border);
+}
+
+.docs-markdown thead th {
+  color: var(--demo-muted);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.docs-markdown tbody tr:nth-child(even) {
+  background: var(--demo-bg);
+}
+
+.docs-markdown blockquote {
+  margin: 0 0 1.25rem;
+  padding: 0.5rem 1rem;
+  border-left: 4px solid var(--demo-border);
+  color: var(--demo-muted);
+}
