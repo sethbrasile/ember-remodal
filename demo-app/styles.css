@@ -44,11 +44,22 @@ body {
   line-height: 1.6;
 }
 
+/* Inline code chips (the `@forService`/`m.isOpen` nouns in prose, not the
+   Shiki-highlighted blocks — those reset this below).
+   `color` is set rather than inherited: inside .docs-lede and
+   .demo-example-description the inherited --demo-muted landed grey text on the
+   chip's grey fill at 4.25:1, under the 4.5:1 WCAG 1.4.3 AA floor and visibly
+   washed out. The old #eceef2 fill was also only 1.06:1 against --demo-bg, so
+   on the page background the chip read as no chip at all — hence the firmer
+   fill and the hairline edge. Borders on an inline box do not grow the line
+   box, so neither adds any layout shift. */
 code {
   font-family:
     ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.9em;
-  background: #eceef2;
+  color: #1c2028;
+  background: #e2e6ee;
+  border: 1px solid #bcc4d6;
   border-radius: 4px;
   padding: 0.1em 0.35em;
 }
@@ -600,7 +611,9 @@ code {
    rule above would otherwise paint a light background/padding box behind
    every highlighted block (inside DemoExample's source panel and here). */
 pre.shiki code {
+  color: inherit;
   background: none;
+  border: 0;
   padding: 0;
   border-radius: 0;
   font-size: inherit;
