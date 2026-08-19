@@ -46,8 +46,8 @@ sidebar groups in this order. 16 routes.
 | Options reference | `/options/content` | title, text, confirmButton, cancelButton, openButton, openLink, linkButton, closeButtonLabel, ariaLabel, ariaLabelledBy, name, dataTestId — table + example |
 | | `/options/behavior` | closeOnEscape, hasCustomKeyboardExit, closeOnCancel, closeOnConfirm, closeOnOutsideClick, disableNativeClose, disableAnimation, disableForeground — table + toggleable example |
 | | `/options/classes` | modalClasses, buttonClasses, outerButtonClasses, innerButtonClasses, openButtonClasses, openLinkClasses, cancelButtonClasses, confirmButtonClasses, modifier, legacyClassNames — table + example |
-| | `/options/actions` | onBeforeOpen, onOpen, onConfirm, onCancel, onClose(reason) — every hook fires a toast; `CloseReason` values enumerated and each demonstrable (Escape, backdrop, ✕, cancel, confirm, service `close()`) |
-| Styling | `/styling` | `@layer ember-remodal`, targeting `::backdrop` / dialog / buttons, the `demo-midnight` `@modifier` theme, reduced-motion and forced-colors demos |
+| | `/options/actions` | onBeforeOpen, onOpen, onConfirm, onCancel, onClose(reason) — every hook fires a toast; `CloseReason` (`'confirmation' | 'cancellation'`, or `undefined` for Escape / backdrop / ✕ / service `close()`) shown as a badge on the onClose toast, each close path demonstrable |
+| Styling | `/styling` | `@layer ember-remodal`, custom-property palette, targeting `::backdrop` / dialog / buttons, the `demo-midnight` `@modifier` theme, reduced-motion demo, forced-colors explained |
 | Accessibility | `/accessibility` | Native `<dialog>`, naming attributes, focus behavior, Escape force-close rules, focusable-control requirement in yielded blocks |
 | Testing | `/testing` | `ember-remodal/test-support` helpers, awaited animations, selector updates, `disableAnimationWhileTesting` note |
 | Migration | `/migration` | `MIGRATION.md` rendered at build time (single source) |
@@ -105,7 +105,7 @@ import inlineSimpleSrc from '../../examples/usage/inline-simple.gts?highlight';
 
 `DemoExample` is the only component that renders code on the site, so every
 shown source is the literal file that runs. Layout: live panel and source panel
-side by side at ≥ 900 px, stacked with a Live/Source tab switch below that.
+side by side at ≥ 900 px, stacked (live above source) below that — no tab switch.
 Copy button uses `source.text`.
 
 ### `?highlight` Vite plugin
@@ -129,7 +129,7 @@ adding.
 - **DemoToasts** service + component: `push(message, { badge? })`, auto-dismiss ~4 s, `aria-live="polite"`. Used by `/options/actions`, `/service`, `/service/promises` to visualise `onBeforeOpen/onOpen/onConfirm/onCancel/onClose(reason)`; the `CloseReason` is rendered as a badge.
 - **DemoLog**: timestamped lines, clear button; used by promise playground and state page.
 - **State demo**: list of dogs (name, breed, image), clicking one sets `selectedDog` and calls `remodal.open('dog-detail')`; a single `@forService` modal renders `selectedDog`.
-- **Reduced-motion / forced-colors**: demo-local toggles add classes on the example container that mirror the media-query rules, so the behavior is visible without OS changes (the addon CSS is not modified; the demo CSS re-states the rule under the class).
+- **Reduced-motion**: a demo-local checkbox adds a class on the example container; demo CSS re-states the addon's `prefers-reduced-motion` rules under that class so the behavior is visible without OS changes (the addon CSS is not modified). **Forced-colors** is documented in prose (what the addon does, how to preview it in DevTools → Rendering → Emulate `forced-colors: active`); no simulated toggle.
 - Styles: extend `demo-app/styles.css` with shell, sidebar, example-panel, code-panel, toast, log, table rules, reusing the existing tokens and `demo-midnight` theme.
 
 ## 4. Build, deploy, README
