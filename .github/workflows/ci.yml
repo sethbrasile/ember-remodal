@@ -42,6 +42,23 @@ jobs:
       - name: Verify committed package.json matches a fresh build
         run: git diff --exit-code package.json
 
+  demo:
+    name: "Demo build"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build demo
+        run: pnpm build:demo
+
   published-package:
     name: "Published Package"
     runs-on: ubuntu-latest

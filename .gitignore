@@ -1,6 +1,7 @@
 # compiled output
 dist/
 dist-tests/
+dist-demo/
 declarations/
 
 # from scenarios

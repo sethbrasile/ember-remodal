@@ -10,7 +10,7 @@ const pkg = require('./package.json');
 // For scenario testing
 const isCompat = Boolean(process.env.ENABLE_COMPAT_BUILD);
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     demoHighlight(),
     ...(isCompat ? [classicEmberSupport()] : []),
@@ -23,11 +23,22 @@ export default defineConfig({
   define: {
     'import.meta.env.DEMO_VERSION': JSON.stringify(pkg.version),
   },
-  build: {
-    rollupOptions: {
-      input: {
-        tests: 'tests/index.html',
-      },
-    },
-  },
-});
+  ...(mode === 'demo'
+    ? {
+        base: '/ember-remodal/',
+        build: {
+          rollupOptions: {
+            input: 'index.html',
+          },
+        },
+      }
+    : {
+        build: {
+          rollupOptions: {
+            input: {
+              tests: 'tests/index.html',
+            },
+          },
+        },
+      }),
+}));

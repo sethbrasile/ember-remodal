@@ -49,6 +49,7 @@
   ],
   "scripts": {
     "build": "rollup --config",
+    "build:demo": "vite build --mode=demo --out-dir dist-demo && node ./scripts/emit-demo-404.mjs",
     "build:dist": "rollup --config --environment SKIP_DECLARATIONS:true",
     "format": "prettier . --cache --write",
     "lint": "concurrently \"pnpm:lint:*(!fix)\" --names \"lint:\" --prefixColors auto",

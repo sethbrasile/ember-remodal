@@ -2,6 +2,8 @@
 
 [![npm version](https://img.shields.io/npm/v/ember-remodal.svg)](https://www.npmjs.com/package/ember-remodal)
 
+**[Interactive demo & documentation →](https://sethbrasile.github.io/ember-remodal)**
+
 An intensely usable modal addon for Ember.js — jQuery-free, built on the native
 `<dialog>` element, with the same remodal look and feel.
 
@@ -826,6 +828,13 @@ filtered by id with `registerWarnHandler`.
 | `ember-remodal.er-button-without-focusable-content` | An `<m.open>` / `<m.confirm>` / `<m.cancel>` block contains no focusable control                                                       |
 | `ember-remodal.duplicate-service-name`              | Two `@forService` modals register under the same `@name` (the newest wins until it is destroyed)                                       |
 | `ember-remodal.close-called-on-uninitialized-modal` | `close()` is called on a modal that has never been opened. Harmless; the promise resolves                                              |
+
+## Demo
+
+The interactive demo and documentation site linked at the top of this file is
+`demo-app/`. `pnpm start` runs it locally; `pnpm build:demo` builds it to
+`dist-demo/`. It deploys to GitHub Pages from `master` via
+[`.github/workflows/deploy-demo.yml`](.github/workflows/deploy-demo.yml).
 
 ## Contributing
 
