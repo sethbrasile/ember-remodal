@@ -129,6 +129,22 @@ export default defineConfig([
   },
 
   /**
+   * demo-app/examples/testing/example-test.ts is a documentation exhibit, not
+   * production code or a real suite member: it lives outside tests/, is never
+   * executed, and exists solely to be shown (via `?highlight`) on the Testing
+   * page as a realistic `ember-remodal/test-support` consumer. `no-test-support-import`
+   * exists to catch a real addon importing its own test helpers into
+   * production code, which is not what this file does — it just doesn't live
+   * under a tests/ or test-support/ directory, which is the rule's only signal.
+   */
+  {
+    files: ['demo-app/examples/testing/example-test.ts'],
+    rules: {
+      'ember/no-test-support-import': 'off',
+    },
+  },
+
+  /**
    * CJS node files
    */
   {

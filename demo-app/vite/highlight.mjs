@@ -8,6 +8,12 @@ import { createHighlighter } from 'shiki';
 import { marked } from 'marked';
 
 const VIRTUAL_PREFIX = '\0demo-highlight:';
+// Appended to every virtual id so it never ends in `.css` (or any other real
+// extension) — Vite's own `isCSSRequest` (and other extension-sniffing core
+// plugins) match by id suffix regardless of the `\0` prefix, and would
+// otherwise treat a `?highlight` import of a .css file as a genuine CSS
+// module and strip its JS exports from the production build.
+const VIRTUAL_SUFFIX = '.highlight.mjs';
 
 const LANGS = [
   'glimmer-ts',
@@ -140,13 +146,13 @@ export default function demoHighlight() {
       if (!resolved) {
         return null;
       }
-      return VIRTUAL_PREFIX + resolved.id;
+      return VIRTUAL_PREFIX + resolved.id + VIRTUAL_SUFFIX;
     },
     async load(id) {
-      if (!id.startsWith(VIRTUAL_PREFIX)) {
+      if (!id.startsWith(VIRTUAL_PREFIX) || !id.endsWith(VIRTUAL_SUFFIX)) {
         return null;
       }
-      const filePath = id.slice(VIRTUAL_PREFIX.length);
+      const filePath = id.slice(VIRTUAL_PREFIX.length, -VIRTUAL_SUFFIX.length);
       this.addWatchFile(filePath);
       const { html, text, lang } =
         extname(filePath) === '.md'

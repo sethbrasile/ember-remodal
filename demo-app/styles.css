@@ -3,6 +3,9 @@
  * The addon's own styles (the ported remodal theme) ship from src/styles/.
  */
 
+@import "./styles/demo-midnight.css";
+@import "./styles/demo-outline.css";
+
 :root {
   --demo-ink: #2b2e38;
   --demo-muted: #6b7080;
@@ -177,44 +180,6 @@ code {
 .demo-frameless-hint {
   font-size: 0.95rem;
   opacity: 0.7;
-}
-
-/* A custom remodal theme, applied via @modifier="demo-midnight".
-   Colours go through the addon's custom properties — the supported override
-   path, which needs no specificity fight — and only `border-radius`, which has
-   no variable, is declared directly. `--ember-remodal-color-scheme` is what
-   keeps form controls inside a dark card dark.
-
-   This is the worked example the README points at, so it re-pairs EVERY token
-   the card colour bears on, not only the ones the card itself uses. The addon's
-   confirm/cancel defaults are dark fills chosen for 5.13:1 / 5.62:1 against
-   their own white labels on a WHITE card; nothing re-derives them from
-   --ember-remodal-background, so on #1b1f2a they measure 3.21:1 and 2.93:1
-   against the surface behind them — the second one under the 3:1 non-text floor
-   (WCAG 1.4.11) that makes a button's shape perceivable at all. Light fills
-   with a dark label invert cleanly, and they happen to be upstream Remodal's
-   own colours. Ratios below are vs the #1b1f2a card / vs the #10131a label. */
-
-.remodal.demo-midnight {
-  --ember-remodal-background: #1b1f2a;
-  --ember-remodal-color: #e8eaf2;
-  --ember-remodal-color-scheme: dark;
-  --ember-remodal-close-color: #8b91a5;
-  --ember-remodal-close-color-hover: #e8eaf2;
-  --ember-remodal-focus-ring: #e8eaf2;
-  --ember-remodal-focus-ring-inverse: #10131a;
-
-  --ember-remodal-button-color: #10131a;
-  --ember-remodal-confirm-background: #66bb6a; /* 6.96:1 / 7.86:1 */
-  --ember-remodal-confirm-background-hover: #81c784; /* 8.18:1 / 9.23:1 */
-  --ember-remodal-cancel-background: #ef5350; /* 4.72:1 / 5.33:1 */
-  --ember-remodal-cancel-background-hover: #ef9a9a; /* 7.65:1 / 8.64:1 */
-
-  border-radius: 12px;
-}
-
-dialog.remodal-wrapper.demo-midnight::backdrop {
-  background: rgba(10, 12, 20, 0.85);
 }
 
 .demo-footer {
@@ -585,4 +550,22 @@ dialog.remodal-wrapper.demo-midnight::backdrop {
 
 .demo-options tbody tr:nth-child(even) {
   background: var(--demo-bg);
+}
+
+/* Reduced-motion demo: unlayered, so it wins over the addon's layered
+   animation rules without a specificity fight — mirroring the
+   `prefers-reduced-motion: reduce` block in src/styles/ember-remodal.css,
+   but keyed on a class so it can be toggled without OS settings. */
+
+.demo-reduced-motion .remodal.remodal-is-opening,
+.demo-reduced-motion .remodal.remodal-is-closing,
+.demo-reduced-motion dialog.remodal-wrapper.remodal-is-opening::backdrop,
+.demo-reduced-motion dialog.remodal-wrapper.remodal-is-closing::backdrop {
+  animation: none;
+}
+
+.demo-reduced-motion .remodal-close,
+.demo-reduced-motion .remodal-confirm,
+.demo-reduced-motion .remodal-cancel {
+  transition: none;
 }
