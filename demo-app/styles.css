@@ -450,3 +450,128 @@ dialog.remodal-wrapper.demo-midnight::backdrop {
     border-radius: 0 0 10px 10px;
   }
 }
+
+/* demo toasts.
+   z-index sits above the demo's own open buttons, but a modal's <dialog> is
+   rendered in the browser's top layer, which paints above every z-indexed
+   element regardless of stacking context — so while a modal is open, toasts
+   are visually behind its backdrop and only become visible once it closes.
+   That's expected; see the Action hooks page for the note. */
+
+.demo-toasts {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 22rem;
+}
+
+.demo-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--demo-ink);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.9rem;
+}
+
+.demo-toast-badge {
+  background: var(--demo-accent);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  font-family:
+    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.demo-toast-dismiss {
+  margin-left: auto;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  opacity: 0.7;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.demo-toast-dismiss:hover,
+.demo-toast-dismiss:focus {
+  opacity: 1;
+}
+
+/* demo event log */
+
+.demo-log-panel {
+  margin-top: 1rem;
+}
+
+.demo-log-panel .demo-log {
+  margin-top: 0.35rem;
+}
+
+.demo-log-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--demo-muted);
+}
+
+.demo-log-clear {
+  font: inherit;
+  color: var(--demo-ink);
+  background: #e8eaef;
+  border: 0;
+  border-radius: 4px;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+}
+
+.demo-log-clear:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.demo-log-empty {
+  margin: 0.35rem 0 0;
+  color: var(--demo-muted);
+  font-size: 0.9rem;
+}
+
+/* options reference table */
+
+.demo-options-wrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+.demo-options {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.demo-options th,
+.demo-options td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--demo-border);
+}
+
+.demo-options thead th {
+  color: var(--demo-muted);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.demo-options tbody tr:nth-child(even) {
+  background: var(--demo-bg);
+}

@@ -1,5 +1,6 @@
 import { LinkTo } from '@ember/routing';
 import type { TOC } from '@ember/component/template-only';
+import DemoToasts from './demo-toasts.gts';
 import SidebarNav from './sidebar-nav.gts';
 
 const version = import.meta.env.DEMO_VERSION;
@@ -28,6 +29,8 @@ const DocsShell: TOC<DocsShellSignature> = <template>
     <SidebarNav />
     <main class="docs-main">{{yield}}</main>
   </div>
+
+  <DemoToasts />
 
   <footer class="demo-footer">
     <p>
