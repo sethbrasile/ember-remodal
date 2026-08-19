@@ -127,6 +127,12 @@ code {
   gap: 0.75rem;
 }
 
+/* @confirmButtonClasses / @cancelButtonClasses worked example, so the effect
+   of those args is visible rather than merely described. */
+.demo-pill {
+  border-radius: 999px;
+}
+
 /* inside-modal helpers */
 
 .demo-modal-actions {
