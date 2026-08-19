@@ -68,6 +68,11 @@ code {
   font-size: 1.1rem;
 }
 
+.demo-hero-image {
+  max-width: 100%;
+  height: auto;
+}
+
 .demo-section {
   background: var(--demo-surface);
   border: 1px solid var(--demo-border);
