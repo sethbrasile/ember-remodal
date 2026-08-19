@@ -5,7 +5,7 @@ import RemodalService from '#src/services/remodal.ts';
 
 class Router extends EmberRouter {
   location = 'history';
-  rootURL = '/';
+  rootURL = import.meta.env.BASE_URL;
 }
 
 export class App extends EmberApp {
@@ -37,4 +37,25 @@ export class App extends EmberApp {
   };
 }
 
-Router.map(function () {});
+Router.map(function () {
+  this.route('install');
+  this.route('usage', function () {
+    this.route('inline');
+    this.route('block');
+    this.route('yielded');
+  });
+  this.route('service', function () {
+    this.route('promises');
+  });
+  this.route('state');
+  this.route('options', function () {
+    this.route('content');
+    this.route('behavior');
+    this.route('classes');
+    this.route('actions');
+  });
+  this.route('styling');
+  this.route('accessibility');
+  this.route('testing');
+  this.route('migration');
+});
