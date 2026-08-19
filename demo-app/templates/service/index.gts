@@ -15,9 +15,9 @@ import serviceMissingSrc from '../../examples/service/service-missing.gts?highli
     from anywhere with options merged at open time.</p>
 
   <p>Render one modal with
-    <code>@forService={{true}}</code>
-    — typically in your application template, so it is always available — and
-    give it a unique
+    <code>@forService</code>
+    set to true — typically in your application template, so it is always
+    available — and give it a unique
     <code>@name</code>. From anywhere in the app,
     <code>remodal.open(name, options?)</code>
     and
