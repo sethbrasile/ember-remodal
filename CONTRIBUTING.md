@@ -96,6 +96,36 @@ before you push.
 - Vite prints the URL it chose; by default that is
   [http://localhost:5173](http://localhost:5173).
 
+The demo is a 16-route documentation site under `demo-app/`: every live
+example is rendered from the same `.gts` file that is shown as highlighted
+source beside it, via a build-time `?highlight` Vite plugin
+(`demo-app/vite/highlight.mjs`). If you touch that plugin, note that its
+virtual module ids are deliberately suffixed with something other than a
+real extension (`.highlight.mjs`, not the source file's own extension) —
+see the comment on `VIRTUAL_SUFFIX` in the plugin. Without it, a
+`?highlight` import of a `.css` file builds fine in dev but silently loses
+its JS exports under `vite build`, because Vite's own CSS handling matches
+virtual ids by suffix regardless of the `\0` prefix.
+
+## Deploying the demo
+
+- `pnpm build:demo` — builds `demo-app/` to `dist-demo/` with
+  `base: '/ember-remodal/'` and writes `dist-demo/404.html` (a copy of
+  `index.html`) as the GitHub Pages fallback for `history`-mode routing.
+- `.github/workflows/deploy-demo.yml` runs that build and deploys
+  `dist-demo/` to GitHub Pages on every push to `master`, and on
+  `workflow_dispatch`.
+- **One-time setup, not automated:** GitHub Pages must be switched to
+  Actions-based deployment before the workflow's first run can succeed —
+  repo **Settings → Pages → Build and deployment → Source → "GitHub
+  Actions"**. Until that is set, `deploy-demo.yml` will fail at the
+  `actions/deploy-pages` step.
+- The repo previously deployed the demo from a `gh-pages` branch (the 2.x
+  demo, via `ember-cli-github-pages`). That branch is stale once
+  `deploy-demo.yml` lands and can be deleted, but doing so is a remote
+  branch delete and is left as a separate, deliberate decision rather than
+  something this workflow does automatically.
+
 ## Compatibility scenarios
 
 CI runs the eight `@embroider/try` scenarios declared in `.try.mjs`:
