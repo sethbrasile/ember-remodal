@@ -354,3 +354,99 @@ dialog.remodal-wrapper.demo-midnight::backdrop {
     display: block;
   }
 }
+
+/* demo-example: live panel + source panel */
+
+.demo-example {
+  background: var(--demo-surface);
+  border: 1px solid var(--demo-border);
+  border-radius: 10px;
+  margin-top: 1.5rem;
+}
+
+.demo-example-header {
+  padding: 1.25rem 1.5rem 0;
+}
+
+.demo-example-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+}
+
+.demo-example-description {
+  margin: 0 0 1rem;
+  color: var(--demo-muted);
+}
+
+.demo-example-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.demo-example-body.is-source-only {
+  grid-template-columns: 1fr;
+}
+
+.demo-example-live {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 6rem;
+  padding: 1.5rem;
+}
+
+.demo-example-source {
+  background: #24292e;
+  border-radius: 0 0 10px 0;
+  overflow: hidden;
+}
+
+.demo-example-body.is-source-only .demo-example-source {
+  border-radius: 0 0 10px 10px;
+}
+
+.demo-example-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #9aa5b1;
+  font-family:
+    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.demo-copy {
+  font: inherit;
+  color: #d7dde4;
+  background: rgba(255, 255, 255, 0.08);
+  border: 0;
+  border-radius: 4px;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+}
+
+.demo-copy:hover,
+.demo-copy:focus {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.demo-example-source pre {
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .demo-example-body {
+    grid-template-columns: 1fr;
+  }
+
+  .demo-example-source {
+    border-radius: 0 0 10px 10px;
+  }
+}

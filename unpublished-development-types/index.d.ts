@@ -9,3 +9,17 @@ declare module '*.css';
 interface ImportMetaEnv {
   readonly DEMO_VERSION: string;
 }
+
+// `import source from './example.gts?highlight'` — see demo-app/vite/highlight.mjs.
+// A wildcard module cannot be imported from by name, so this type is declared
+// at top level (global scope) rather than exported from the module below.
+interface HighlightedSource {
+  html: string;
+  text: string;
+  lang: string;
+}
+
+declare module '*?highlight' {
+  const source: HighlightedSource;
+  export default source;
+}
