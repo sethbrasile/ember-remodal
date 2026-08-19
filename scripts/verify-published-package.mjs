@@ -33,7 +33,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { copyFile, readdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve, sep } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const gateDir = join(root, 'scripts', 'publish-gate');
@@ -111,6 +111,16 @@ async function filesUnder(dir) {
  * keys, plus — for each wildcard key — one specifier per file its target can
  * actually serve.
  */
+/** Every string target reachable through (possibly nested) export conditions. */
+function flattenTargets(value) {
+  if (typeof value === 'string') return [value];
+  if (Array.isArray(value)) return value.flatMap(flattenTargets);
+  if (value && typeof value === 'object') {
+    return Object.values(value).flatMap(flattenTargets);
+  }
+  return [];
+}
+
 async function publishedSpecifiers(packageDir, manifest) {
   const files = await filesUnder(packageDir);
   const specifiers = new Set();
@@ -123,8 +133,9 @@ async function publishedSpecifiers(packageDir, manifest) {
       continue;
     }
 
-    const targets = typeof value === 'string' ? [value] : Object.values(value);
-    for (const target of targets) {
+    for (const target of flattenTargets(value)) {
+      // A non-wildcard target under a wildcard key can serve nothing.
+      if (!target.includes('*')) continue;
       const [prefix, suffix] = target.slice(2).split('*');
       for (const file of files) {
         if (!file.startsWith(prefix) || !file.endsWith(suffix)) continue;
@@ -227,7 +238,9 @@ async function main() {
 
     // 1. Coverage.
     const required = await publishedSpecifiers(installed, manifest);
-    const { ENTRIES } = await import(join(gateDir, 'consumer-smoke.mjs'));
+    const { ENTRIES } = await import(
+      pathToFileURL(join(gateDir, 'consumer-smoke.mjs')).href
+    );
     const smoked = new Set(ENTRIES.map((entry) => entry.specifier));
     const { bound, sideEffectOnly } = boundImports(
       await readFile(join(gateDir, 'consumer-types.ts'), 'utf8'),
@@ -266,6 +279,7 @@ async function main() {
     // 2. Types.
     console.log('publish gate: type-checking with skipLibCheck: false…');
     let tscOutput = '';
+    let tscExited = false;
     try {
       tscOutput = run(
         'npx',
@@ -273,7 +287,18 @@ async function main() {
         { cwd: fixture },
       );
     } catch (error) {
+      // A non-zero exit is the expected shape here (third-party diagnostics
+      // under skipLibCheck: false); the diagnostics are what we parse.
+      tscExited = true;
       tscOutput = `${error.stdout ?? ''}${error.stderr ?? ''}`;
+    }
+
+    // An empty non-zero run means tsc never ran (npx failed, process killed).
+    // Without this, "no diagnostics" would read as "types clean".
+    if (tscExited && !tscOutput.trim()) {
+      fail('tsc did not run in the fixture project', [
+        'the type-check exited non-zero and produced no output',
+      ]);
     }
 
     const ours = [];

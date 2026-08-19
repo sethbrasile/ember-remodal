@@ -575,6 +575,14 @@ function runThemeModule() {
     testPage,
   ]);
   const lines = `${result.stdout}\n${result.stderr}`.split('\n');
+  // A failing run has `not ok` lines; a broken run (testem or the browser
+  // never started) has no TAP at all. Without this, the latter reads as
+  // "every test killed" inside the mutation loop.
+  if (!lines.some((line) => /^(not )?ok \d+ /.test(line))) {
+    throw new Error(
+      `testem produced no TAP output (exit ${result.status})\n${result.stdout}\n${result.stderr}`,
+    );
+  }
   const passed = new Set();
   const failed = new Map();
   const prefix = `${MODULE} > `;
@@ -677,11 +685,31 @@ if (metaFailed) {
 }
 console.log(`meta: all ${CORPUS.length} mutations still match the stylesheet`);
 
+// dist/ and dist-tests/ are gitignored, so assert-clean-tree cannot see a
+// build left over from a mutated stylesheet. The single cleanup path restores
+// the source AND rebuilds whenever a mutated build has happened — on success,
+// on a thrown build()/runThemeModule(), and on SIGINT/SIGTERM.
+let distMutated = false;
 const restore = () => writeFileSync(cssPath, original);
+function cleanup() {
+  restore();
+  if (!distMutated) {
+    return;
+  }
+  console.log('\nrestoring the stylesheet and rebuilding…');
+  build();
+  distMutated = false;
+}
 process.on('exit', restore);
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () => {
-    restore();
+    try {
+      cleanup();
+    } catch (error) {
+      console.error(
+        `css-mutation-selftest: ${error.message}\ndist/ may still hold a build of the mutated stylesheet — run \`pnpm build:dist\`.`,
+      );
+    }
     process.exit(130);
   });
 }
@@ -731,11 +759,12 @@ if (cases.length === 0) {
 const rows = [];
 let broken = 0;
 
-for (const [index, entry] of cases.entries()) {
-  console.log(`\n[${index + 1}/${cases.length}] ${entry.id}`);
-  console.log(`  mutation: ${entry.mutation}`);
-  writeFileSync(cssPath, applyEdits(original, entry.edits));
-  try {
+try {
+  for (const [index, entry] of cases.entries()) {
+    console.log(`\n[${index + 1}/${cases.length}] ${entry.id}`);
+    console.log(`  mutation: ${entry.mutation}`);
+    writeFileSync(cssPath, applyEdits(original, entry.edits));
+    distMutated = true;
     build();
     const { failed } = runThemeModule();
     const survivors = entry.kills.filter((name) => !failed.has(name));
@@ -761,14 +790,11 @@ for (const [index, entry] of cases.entries()) {
     for (const name of collateral) {
       console.log(`  also failed (not claimed): ${name} — ${failed.get(name)}`);
     }
-  } finally {
-    writeFileSync(cssPath, original);
+    restore();
   }
+} finally {
+  cleanup();
 }
-
-console.log('\nrestoring the stylesheet and rebuilding…');
-writeFileSync(cssPath, original);
-build();
 
 console.log('\n## Mutation corpus\n');
 console.log('| deviation | pinning test | mutation | observed failure |');

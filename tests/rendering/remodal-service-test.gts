@@ -5,7 +5,11 @@ import Component from '@glimmer/component';
 import type Owner from '@ember/owner';
 import EmberRemodal from '#src/components/ember-remodal.gts';
 import type { CloseReason } from '#src/components/ember-remodal.gts';
-import { dialog, lookupService } from '../helpers/remodal-test-helpers.ts';
+import {
+  captureWarnings,
+  dialog,
+  lookupService,
+} from '../helpers/remodal-test-helpers.ts';
 import { setupRemodal } from '#src/test-support/index.ts';
 
 module('Rendering | remodal service', function (hooks) {
@@ -60,6 +64,43 @@ module('Rendering | remodal service', function (hooks) {
     assert
       .dom('[data-test-id="title"]')
       .hasText('Overridden', 'override persists on a subsequent open');
+  });
+
+  test('service.open on an already-open modal applies the new options in place without closing it', async function (assert) {
+    // MIGRATION.md promises this: "to change the text of an open modal, call
+    // open() again with the new text". The overrides write is tracked, and
+    // open() short-circuits when state and element agree that it is open, so
+    // the dialog never closes — onClose/onOpen must not fire again.
+    const service = lookupService(this);
+    const events: string[] = [];
+    const onOpen = () => events.push('open');
+    const onClose = () => events.push('close');
+
+    await render(
+      <template>
+        <EmberRemodal
+          @forService={{true}}
+          @name="live"
+          @text="Before"
+          @onOpen={{onOpen}}
+          @onClose={{onClose}}
+        />
+      </template>,
+    );
+
+    await service.open('live');
+    assert.dom('[data-test-id="text"]').hasText('Before');
+    assert.deepEqual(events, ['open']);
+
+    await service.open('live', { text: 'After' });
+
+    assert.dom('[data-test-id="text"]').hasText('After', 'content updated');
+    assert.true(dialog().open, 'the dialog stayed open');
+    assert.deepEqual(
+      events,
+      ['open'],
+      'no close/reopen cycle — the options were applied to the open modal',
+    );
   });
 
   test('service.open merges option overrides across calls instead of replacing them', async function (assert) {
@@ -306,22 +347,14 @@ module('Rendering | remodal service', function (hooks) {
         </template>,
       );
 
-      const warnings: unknown[] = [];
-      const originalWarn = console.warn;
-      console.warn = (...args: unknown[]) => {
-        warnings.push(args[0]);
-      };
-
-      try {
+      const warnings = await captureWarnings(async () => {
         const modal = await service.close('fresh');
         assert.strictEqual(modal.state, 'closed', 'resolves immediately');
-      } finally {
-        console.warn = originalWarn;
-      }
+      });
 
       assert.strictEqual(warnings.length, 1, 'warned once');
       assert.true(
-        String(warnings[0]).includes('has not yet been opened'),
+        warnings[0]!.includes('has not yet been opened'),
         'warns about closing an unopened modal',
       );
     });

@@ -22,8 +22,12 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const nodeModules = join(root, 'node_modules');
 const linkPath = join(nodeModules, 'ember-remodal');
-// Relative, so the link keeps working if the checkout is moved.
-const target = '..';
+// Relative, so the link keeps working if the checkout is moved. Windows
+// junctions are the exception: NTFS requires an absolute target, and Node
+// resolves a relative one against process.cwd() rather than the link's parent
+// — so there the target is `root`, which is also what readlink() hands back.
+const isWindows = process.platform === 'win32';
+const target = isWindows ? root : '..';
 
 async function currentLinkTarget() {
   try {
@@ -43,11 +47,7 @@ if (existing === target) {
     await rm(linkPath, { recursive: true, force: true });
   }
   await mkdir(nodeModules, { recursive: true });
-  await symlink(
-    target,
-    linkPath,
-    process.platform === 'win32' ? 'junction' : 'dir',
-  );
+  await symlink(target, linkPath, isWindows ? 'junction' : 'dir');
   console.log('link-self: linked node_modules/ember-remodal -> .');
 }
 

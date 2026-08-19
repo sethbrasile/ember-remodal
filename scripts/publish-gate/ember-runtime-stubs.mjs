@@ -27,8 +27,8 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 /** Specifier prefixes an Ember app's build supplies. Nothing else is stubbed. */
-const STUB_PREFIXES = ['@ember/', '@glimmer/', '@embroider/macros'];
-const STUB_EXACT = new Set(['ember']);
+const STUB_PREFIXES = ['@ember/', '@glimmer/', '@embroider/macros/'];
+const STUB_EXACT = new Set(['ember', '@embroider/macros']);
 
 const STUB_SCHEME = 'ember-build-stub:';
 

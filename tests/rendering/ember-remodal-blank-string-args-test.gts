@@ -238,9 +238,14 @@ function stringOptionKeys(): string[] {
     throw new Error('could not find the end of the EmberRemodalOptions body');
   }
   const body = componentSource.slice(start, end);
-  return Array.from(body.matchAll(/^ {2}(\w+)\?: string;$/gm)).map(
-    (match) => match[1]!,
-  );
+  // Accept `name?: string;`, `name?: string | undefined;`, any indentation
+  // and a trailing comment, so a new member cannot escape the enumeration on
+  // formatting alone.
+  return Array.from(
+    body.matchAll(
+      /^\s*(\w+)\?:\s*string(?:\s*\|\s*undefined)?\s*;\s*(?:\/\/.*)?$/gm,
+    ),
+  ).map((match) => match[1]!);
 }
 
 module('Rendering | ember-remodal | blank string arguments', function (hooks) {

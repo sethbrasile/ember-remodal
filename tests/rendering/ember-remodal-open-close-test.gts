@@ -393,22 +393,14 @@ module('Rendering | ember-remodal | open and close', function (hooks) {
       <template></template>
     }
 
-    const warnings: unknown[] = [];
-    const originalWarn = console.warn;
-    console.warn = (...args: unknown[]) => {
-      warnings.push(args[0]);
-    };
-
-    try {
-      await render(
+    const warnings = await captureWarnings(() =>
+      render(
         <template>
           <EmberRemodal @forService={{true}} @name="early-pair" @title="Pair" />
           <EarlyOpenCloser />
         </template>,
-      );
-    } finally {
-      console.warn = originalWarn;
-    }
+      ),
+    );
 
     assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-closed');
     assert.false(dialog().open, 'the close won over the pending open');

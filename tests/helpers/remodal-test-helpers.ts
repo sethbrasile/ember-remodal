@@ -32,14 +32,23 @@ export function suspendAnimationFrames(): () => void {
   };
 }
 
-/** Shadows `document.hidden` with an own property; returns a restore function. */
+/**
+ * Shadows `document.hidden` and `document.visibilityState` with own properties
+ * so both spellings of "the tab is backgrounded" agree; returns a restore
+ * function.
+ */
 export function hideDocument(): () => void {
   Object.defineProperty(document, 'hidden', {
     configurable: true,
     get: () => true,
   });
+  Object.defineProperty(document, 'visibilityState', {
+    configurable: true,
+    get: (): DocumentVisibilityState => 'hidden',
+  });
   return () => {
     Reflect.deleteProperty(document, 'hidden');
+    Reflect.deleteProperty(document, 'visibilityState');
   };
 }
 

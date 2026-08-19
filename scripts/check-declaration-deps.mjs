@@ -12,6 +12,7 @@
  * Runs as part of `lint:publish`, after the build that produces `declarations/`.
  */
 import { readdir, readFile } from 'node:fs/promises';
+import { isBuiltin } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -49,6 +50,8 @@ for await (const file of declarationFiles(declarationsDir)) {
   const contents = await readFile(file, 'utf8');
   for (const [, , specifier] of contents.matchAll(specifierPattern)) {
     if (specifier.startsWith('.') || specifier.startsWith('#')) continue;
+    // `node:fs`, `fs`, … resolve for every consumer; nothing to declare.
+    if (isBuiltin(specifier)) continue;
 
     // `@ember/*` (and `ember` itself) are provided by ember-source, which has to
     // be a declared peer for any of them to resolve.

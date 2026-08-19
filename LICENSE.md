@@ -20,7 +20,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 copyright notice and permission notice are reproduced here in full, as its
 licence requires. No Remodal code is bundled or installed by this package.
 
-```
+```text
 The MIT License (MIT)
 
 Copyright (c) 2015 Ilya Makarov <dfrost.00@gmail.com>

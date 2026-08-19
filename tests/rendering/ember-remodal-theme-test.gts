@@ -115,16 +115,24 @@ module('Rendering | ember-remodal theme', function (hooks) {
         'border-box',
         'the dialog is border-box, so its padding stays inside the viewport box',
       );
-      assert.strictEqual(dialogRect.x, 0, 'dialog left edge at the viewport');
-      assert.strictEqual(dialogRect.y, 0, 'dialog top edge at the viewport');
-      assert.strictEqual(
-        dialogRect.width,
-        viewportWidth,
+      // 1px tolerance: clientWidth/Height are integers, the rect is
+      // fractional, and fractional display scaling can split them by a
+      // sub-pixel. The regressions this pins (content-box: +20px; UA
+      // fit-content: the dialog shrinks to its content) are far larger.
+      assert.ok(
+        Math.abs(dialogRect.x) <= 1,
+        `dialog left edge ${dialogRect.x} is at the viewport`,
+      );
+      assert.ok(
+        Math.abs(dialogRect.y) <= 1,
+        `dialog top edge ${dialogRect.y} is at the viewport`,
+      );
+      assert.ok(
+        Math.abs(dialogRect.width - viewportWidth) <= 1,
         `dialog width ${dialogRect.width} matches the viewport ${viewportWidth}`,
       );
-      assert.strictEqual(
-        dialogRect.height,
-        viewportHeight,
+      assert.ok(
+        Math.abs(dialogRect.height - viewportHeight) <= 1,
         `dialog height ${dialogRect.height} matches the viewport ${viewportHeight}`,
       );
       assert.ok(

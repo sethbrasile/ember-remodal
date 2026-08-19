@@ -142,9 +142,11 @@ this.remodal.open('my-second-modal', {
 ```
 
 Options given to `open()` persist for the modal — they merge into any set by a
-previous call, exactly like 2.x's `setProperties` — so to change text without
-reopening, pass it on the next `open()`, or drive the content from your own
-tracked state in a block-form modal.
+previous call, exactly like 2.x's `setProperties`. Calling `open()` again while
+the modal is already open does not close and reopen it: the new options are
+applied in place and the open dialog re-renders with them. So to change the text
+of an open modal, call `open()` again with the new `text`, or drive the content
+from your own tracked state in a block-form modal.
 
 ### The `modal` property (and `getState()`) is removed
 
