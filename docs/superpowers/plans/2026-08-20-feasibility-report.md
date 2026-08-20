@@ -1,6 +1,6 @@
 # 2.x Toolchain Feasibility Report
 
-**Date:** 2026-08-20
+**Date:** 2026-08-20 (revised same day — see "Revision" below)
 **Task:** er-f0t.1 (Feasibility gate)
 **Repo:** ember-remodal 2.18.0 (from origin/master)
 
@@ -8,121 +8,85 @@
 
 ## Verdict
 
-**NO-GO**
+**GO**
 
-No pinned Node version yields any bootable consumer of the addon tarball. Even the era-appropriate ember-cli@2.18.2 itself fails to install/run due to transitive dependencies requiring Node 12+.
+The 2018 toolchain builds and the full test suite passes (116/116) under a
+pinned Node with the era-exact dependency tree from the committed `yarn.lock`.
+
+- **Pinned Node:** v8.17.0 (`~/.nvm/versions/node/v8.17.0`)
+- **Install command:** `yarn install --frozen-lockfile --ignore-engines --ignore-optional --non-interactive` (yarn 1.22.19, installed globally under the pinned Node)
+- **Build command:** `./node_modules/.bin/ember build` — succeeds
+- **Working test command:** `./node_modules/.bin/ember test` — 116 pass, 0 fail (Chrome 151, headless)
+- **Worktree:** `/Users/seth/Documents/GitHub/ember-remodal-2x`
+
+### Required local change: testem.js Chrome args
+
+2018-era testem (2.12.0) launch args do not work with modern Chrome on this
+machine (Apple Silicon, Chrome 151). One-line change, must be carried onto the
+`2.x` branch:
+
+```diff
+-        '--headless',
++        '--headless=new', '--no-sandbox', '--user-data-dir=/tmp/testem-chrome-profile', '--disable-dev-shm-usage',
+```
+
+Without `--user-data-dir` pointing at a throwaway profile, Chrome starts but
+never connects to testem ("Browser failed to connect within 30s").
 
 ---
 
-## Pinned Node Versions Tested
+## Revision: why the first pass said NO-GO
 
-### Node v8.17.0
-- **npm version:** 6.13.4
-- **npm install:** Completed (1645 packages) with fsevents build failure (Python 3 `collections.MutableSet` incompatibility) and mktemp engine warning
-- **ember build:** Failed with `Error: Cannot find module 'node:fs'` from mktemp/dist/creation.cjs
-- **Failure root cause:** mktemp@2.0.3 uses `require('node:fs')` syntax requiring Node 12.4+
+The initial run concluded NO-GO after `npm install` + `ember build` failed on
+Node 6/8/10 (mktemp@2.0.3 `require('node:fs')`, `npm ERR! Unsupported URL
+Type: npm:wrap-ansi@^7.0.0`). Those observations were real but the method was
+wrong: **`npm install` ignores the committed `yarn.lock`** and fresh-resolved
+every semver range to 2026 versions. The drifted tree pulled in mktemp 2.x and
+packages using the `npm:` alias protocol — none of which exist in the locked
+2018 tree (`yarn.lock` pins `mktemp@0.4.0` via `quick-temp`, plain `fs` API,
+Node-8-safe).
 
-### Node v6.17.1
-- **npm version:** 3.10.10
-- **npm install:** Failed immediately with `npm ERR! Unsupported URL Type: npm:wrap-ansi@^7.0.0`
-- **Failure root cause:** npm v3 doesn't support the `npm:` protocol introduced in npm v6
+Installing with yarn 1.x and `--frozen-lockfile` reproduces the era tree
+exactly; the registry still serves every pinned tarball. Install completes in
+~26s with only peer-dependency warnings, and build + tests pass.
 
-### Node v10.24.1
-- **npm version:** 6.14.12
-- **npm install:** Completed (1645 packages) with fsevents build failure (Python 3 `open(build_file_path, 'rU')` incompatibility) and mktemp engine warning
-- **ember build:** Failed with `Error: Cannot find module 'node:fs'` from mktemp/dist/creation.cjs
-- **Smoke app creation:** Failed with same mktemp error when running `npx ember-cli@2.18.2 new`
-- **Failure root cause:** mktemp@2.0.3 uses `require('node:fs')` syntax requiring Node 12.4+
+Original NO-GO findings preserved below for the record.
 
 ---
 
-## Step-by-Step Results
+## Step-by-Step Results (corrected run, Node v8.17.0)
 
-### Step 1: Create the 2.x worktree
-✅ Success - worktree created at `/Users/seth/Documents/GitHub/ember-remodal-2x`
+1. **Worktree** — ✅ `/Users/seth/Documents/GitHub/ember-remodal-2x`
+2. **Pin Node** — ✅ v8.17.0 / npm 6.13.4 / yarn 1.22.19
+3. **Install** — ✅ `yarn install --frozen-lockfile --ignore-engines --ignore-optional` clean in 26s (peer-dep warnings only; fsevents skipped via `--ignore-optional`)
+4. **Build** — ✅ `ember build` succeeds ("Could not start watchman" notice is harmless)
+5. **Test runner** — ✅ `ember test`: 116 pass / 0 fail after the testem.js Chrome-args fix above
+6. **Pack** — ✅ `npm pack` produces `ember-remodal-2.18.0.tgz` with `package/index.js`, `package/addon/`, `package/app/` (18.3 kB unpacked)
+7. **Smoke app** — not needed (GO path: steps 3–5 all green). If ever needed, note `npx ember-cli@2.18.2 new` hits the same drift problem — an era consumer must be built from a locked tree, not fresh resolution.
 
-### Step 2: Pin old Node and record versions
-✅ Success - Node v8.17.0 / npm 6.13.4 as expected
+## Consequences for later tasks
 
-### Step 3: Install
-⚠️ Partial success - `npm install` completes on v8.17.0 and v10.24.1 (with warnings and fsevents build failure), but fails on v6.17.1
-
-### Step 4: Build
-❌ Failed - `ember build` fails on both v8.17.0 and v10.24.1 with mktemp `node:fs` error
-
-### Step 5: Test runner
-❌ Skipped - Cannot test due to build failure
-
-### Step 6: Pack
-✅ Success - `npm pack` produces `ember-remodal-2.18.0.tgz` with correct structure:
-- Contains `package/index.js`
-- Contains `package/addon/` directory
-- Contains `package/app/` directory
-- Unpacked size: 18.3 kB
-
-### Step 7: Minimal smoke app
-❌ Failed - `npx ember-cli@2.18.2 new remodal-smoke --skip-git` fails with same mktemp error
-- Cannot create any era-appropriate consumer app to verify the tarball
+- GO path per plan: Tasks 2–7 proceed, test suite is the verification vehicle.
+- The testem.js diff must be committed on the `2.x` branch (Task 2).
+- All 2.x-branch work must install with yarn `--frozen-lockfile` under Node
+  v8.17.0. Never run `npm install` in the 2x worktree; it clobbers the tree.
+  New devDependencies (if any) must be added via `yarn add` under the pinned
+  Node so `yarn.lock` stays consistent.
 
 ---
 
-## Failures Verbatim
+## Appendix: original (superseded) NO-GO findings
 
-### v8.17.0 build failure:
-```
-module.js:550
-    throw err;
-    ^
-Error: Cannot find module 'node:fs'
-    at Function.Module._resolveFilename (module.js:548:15)
-    at Function.Module._load (module.js:475:25)
-    at Module.require (module.js:597:17)
-    at require (internal/module.js:11:18)
-    at Module.<anonymous> (/Users/seth/Documents/GitHub/ember-remodal-2x/node_modules/mktemp/dist/creation.cjs:4:15)
-```
+Method: `npm install` (no lockfile respected) on pinned Nodes, then `ember build`.
 
-### v6.17.1 install failure:
-```
-npm ERR! Unsupported URL Type: npm:wrap-ansi@^7.0.0
-```
+### Node v8.17.0 — npm 6.13.4
+- install completed (1645 packages) with fsevents build failure; `ember build` failed: `Error: Cannot find module 'node:fs'` from `mktemp/dist/creation.cjs` (mktemp@2.0.3 requires Node 12.4+)
 
-### v10.24.1 build failure (same as v8.17.0):
-```
-internal/modules/cjs/loader.js:638
-    throw err;
-    ^
-Error: Cannot find module 'node:fs'
-    at Function.Module._resolveFilename (internal/modules/cjs/loader.js:636:15)
-```
+### Node v6.17.1 — npm 3.10.10
+- install failed: `npm ERR! Unsupported URL Type: npm:wrap-ansi@^7.0.0` (npm 3 predates the `npm:` alias protocol)
 
-### v10.24.1 smoke app failure:
-```
-Error: Cannot find module 'node:fs'
-    at Function.Module._resolveFilename (internal/modules/cjs/loader.js:636:15)
-    at Module.require (internal/modules/cjs/loader.js:692:17)
-    at require (internal/modules/cjs/helpers.js:25:18)
-    at Module.<anonymous> (/<npx cache>/lib/node_modules/ember-cli/node_modules/mktemp/dist/creation.cjs:4:15)
-```
+### Node v10.24.1 — npm 6.14.12
+- same mktemp `node:fs` failure on build and on `npx ember-cli@2.18.2 new`
 
----
-
-## Analysis
-
-The blocker is mktemp@2.0.3, a transitive dependency of ember-cli, which:
-- Declares `"engines": {"node": "20 || 22 || 24"}` in its package.json
-- Uses `require('node:fs')` syntax (introduced in Node 12.4)
-
-This dependency chain makes ember-cli@2.18.2 (the era-appropriate CLI) impossible to run on any Node version prior to 12.4, which contradicts the original ember-cli 2.x engine support (`"^4.5 || 6.* || >= 7.*"`).
-
-The addon tarball itself is correctly structured and should work in a functioning ember-cli@2.18 environment, but such an environment cannot be provisioned today due to dependency drift in the transitive ecosystem (mktemp upgraded to 2.0.3 sometime after 2018).
-
----
-
-## Conclusion
-
-This is a **NO-GO** outcome per the spec criteria:
-- Neither GO (build + test) nor DEGRADED GO (smoke app boots) achieved
-- No pinned Node yields any bootable consumer of the packed addon
-- The 2018 dev toolchain is dead not just for the dummy app, but for ember-cli@2.18.2 itself
-
-**Next action:** Confirm with Seth, then proceed to Task F (docs-only fallback) instead of Tasks 2–4 and 7.
+Root cause in all cases: fresh npm resolution drifted the transitive tree to
+2026 versions. Not a property of the 2018 toolchain itself.
