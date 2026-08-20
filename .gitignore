@@ -1,27 +1,46 @@
-# See https://help.github.com/ignore-files/ for more about ignoring files.
-
 # compiled output
-/dist
-/tmp
+dist/
+dist-tests/
+dist-demo/
+declarations/
 
-# dependencies
-/node_modules
-/bower_components
+# from scenarios
+tmp/
+config/optional-features.json
+ember-cli-build.cjs
 
-# misc
-/.sass-cache
-/connect.lock
-/coverage/*
-/libpeerconnection.log
-npm-debug.log*
-yarn-error.log
-testem.log
+# npm/pnpm/yarn pack output
+*.tgz
 
-# ember-try
-.node_modules.ember-try/
-bower.json.ember-try
-package.json.ember-try
+# deps & caches
+node_modules/
+.eslintcache
+.prettiercache
 
-# editor
-remodal.sublime-project
-remodal.sublime-workspace
+# potentially containing secrets.
+#
+# `.env*` is denied by default rather than named file by file: whatever lands
+# next to a tracked env file would otherwise be committed without anyone
+# deciding to, and `package.json#files` publishes `src/` wholesale.
+#
+# `.env.development` is the one exception, and it is load-bearing, not
+# blueprint residue. It sets NODE_ENV=development for `vite build
+# --mode=development` (what `pnpm test` runs); without it `@embroider/macros`
+# resolves `isTesting` to false at compile time and the build dies on
+# `tests/test-helper.ts`: "setTesting(true) cannot change the testing state in
+# compile-time mode". A local run can mask this — an inherited NODE_ENV or a
+# warm Vite cache hides it — but CI fails outright. Anything else added here
+# needs the same kind of reason written down.
+*.local
+.env*
+!.env.development
+
+# Agent working directories. Untracked but not ignored, these made
+# `prepublishOnly`'s clean-tree guard abort every publish; none of them is under
+# `files`, so ignoring them cannot affect the tarball.
+.agents/
+.claude/
+skills-lock.json
+
+# OS cruft
+.DS_Store

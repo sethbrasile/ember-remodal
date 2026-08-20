@@ -1,0 +1,26 @@
+/* A light, high-contrast theme applied via @modifier="demo-outline" — square
+   corners and a solid accent border, instead of the default theme's soft
+   filled card. Demonstrates targeting a part the addon exposes no custom
+   property for (the card and button borders) alongside parts it does. */
+
+.remodal.demo-outline {
+  --ember-remodal-close-color: var(--demo-accent, #1f6bb8);
+  --ember-remodal-close-color-hover: var(--demo-accent-hover, #17518d);
+  --ember-remodal-button-color: var(--demo-accent, #1f6bb8);
+  --ember-remodal-confirm-background: transparent;
+  --ember-remodal-confirm-background-hover: #eaf2fa;
+  --ember-remodal-cancel-background: transparent;
+  --ember-remodal-cancel-background-hover: #eaf2fa;
+
+  border: 3px solid var(--demo-accent, #1f6bb8);
+  border-radius: 0;
+}
+
+dialog.remodal-wrapper.demo-outline::backdrop {
+  background: rgba(31, 107, 184, 0.35);
+}
+
+.remodal.demo-outline .remodal-confirm,
+.remodal.demo-outline .remodal-cancel {
+  border: 2px solid var(--demo-accent, #1f6bb8);
+}

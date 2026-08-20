@@ -1,2 +1,19 @@
-*.hbs
-.prettierignore
+# unconventional js
+/blueprints/*/files/
+
+# compiled output
+/dist/
+/dist-*/
+/declarations/
+
+# misc
+/coverage/
+config/ember-cli-update.json
+
+# Agent/QC working directories. Not package content, and not ours to reformat.
+/.agents/
+/.claude/
+/docs/superpowers/
+
+# Machine-generated, and rewritten wholesale on every install.
+pnpm-lock.yaml

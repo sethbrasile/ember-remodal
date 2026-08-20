@@ -1,0 +1,362 @@
+import { module, test } from 'qunit';
+import { setupRenderingTest } from 'ember-qunit';
+import { render, click } from '@ember/test-helpers';
+import Component from '@glimmer/component';
+import type Owner from '@ember/owner';
+import EmberRemodal from '#src/components/ember-remodal.gts';
+import type { CloseReason } from '#src/components/ember-remodal.gts';
+import {
+  captureWarnings,
+  dialog,
+  lookupService,
+} from '../helpers/remodal-test-helpers.ts';
+import { setupRemodal } from '#src/test-support/index.ts';
+
+module('Rendering | remodal service', function (hooks) {
+  setupRenderingTest(hooks);
+  setupRemodal(hooks);
+
+  test('a @forService modal registers under its @name and opens via the service', async function (assert) {
+    const service = lookupService(this);
+
+    await render(
+      <template>
+        <EmberRemodal @forService={{true}} @name="svc-modal" @title="Hi" />
+      </template>,
+    );
+
+    await service.open('svc-modal');
+
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
+    assert.true(dialog().open);
+  });
+
+  test('a @forService modal without a @name registers under the default name', async function (assert) {
+    const service = lookupService(this);
+
+    await render(
+      <template>
+        <EmberRemodal @forService={{true}} @title="Default" />
+      </template>,
+    );
+
+    await service.open();
+
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
+  });
+
+  test('service.open applies option overrides, which persist across opens', async function (assert) {
+    const service = lookupService(this);
+
+    await render(
+      <template>
+        <EmberRemodal @forService={{true}} @name="svc" @title="Original" />
+      </template>,
+    );
+
+    assert.dom('[data-test-id="title"]').hasText('Original');
+
+    await service.open('svc', { title: 'Overridden' });
+    assert.dom('[data-test-id="title"]').hasText('Overridden');
+
+    await service.close('svc');
+    await service.open('svc');
+    assert
+      .dom('[data-test-id="title"]')
+      .hasText('Overridden', 'override persists on a subsequent open');
+  });
+
+  test('service.open on an already-open modal applies the new options in place without closing it', async function (assert) {
+    // MIGRATION.md promises this: "to change the text of an open modal, call
+    // open() again with the new text". The overrides write is tracked, and
+    // open() short-circuits when state and element agree that it is open, so
+    // the dialog never closes — onClose/onOpen must not fire again.
+    const service = lookupService(this);
+    const events: string[] = [];
+    const onOpen = () => events.push('open');
+    const onClose = () => events.push('close');
+
+    await render(
+      <template>
+        <EmberRemodal
+          @forService={{true}}
+          @name="live"
+          @text="Before"
+          @onOpen={{onOpen}}
+          @onClose={{onClose}}
+        />
+      </template>,
+    );
+
+    await service.open('live');
+    assert.dom('[data-test-id="text"]').hasText('Before');
+    assert.deepEqual(events, ['open']);
+
+    await service.open('live', { text: 'After' });
+
+    assert.dom('[data-test-id="text"]').hasText('After', 'content updated');
+    assert.true(dialog().open, 'the dialog stayed open');
+    assert.deepEqual(
+      events,
+      ['open'],
+      'no close/reopen cycle — the options were applied to the open modal',
+    );
+  });
+
+  test('service.open merges option overrides across calls instead of replacing them', async function (assert) {
+    // Regression test: the 2.x service used setProperties, which merged each
+    // override onto the modal; a prior rewrite replaced the whole overrides
+    // object per call, silently dropping earlier keys.
+    const service = lookupService(this);
+
+    await render(
+      <template><EmberRemodal @forService={{true}} @name="merge" /></template>,
+    );
+
+    await service.open('merge', { title: 'A title' });
+    assert.dom('[data-test-id="title"]').hasText('A title');
+
+    await service.close('merge');
+    await service.open('merge', { text: 'B text' });
+
+    assert
+      .dom('[data-test-id="title"]')
+      .hasText('A title', 'earlier override survives a later one');
+    assert.dom('[data-test-id="text"]').hasText('B text');
+  });
+
+  test('service.open with options during the initial render pass applies them without a backtracking assertion', async function (assert) {
+    // Regression test: `service.open(name, opts)` writes `serviceOverrides` on
+    // the modal, which is a tracked write. Called from a component constructor
+    // it lands inside the same render transaction in which the already-rendered
+    // modal read those options, so Ember threw "You attempted to update
+    // 'serviceOverrides' on 'EmberRemodal', but it had already been used
+    // previously in the same computation". The write has to be deferred out of
+    // the transaction — but still applied before the open transition starts.
+    class EarlyOpener extends Component {
+      constructor(owner: Owner, args: object) {
+        super(owner, args);
+        const remodal = owner.lookup('service:remodal');
+        void remodal.open('early-opts', { title: 'Overridden' });
+      }
+
+      <template></template>
+    }
+
+    await render(
+      <template>
+        <EmberRemodal
+          @forService={{true}}
+          @name="early-opts"
+          @title="Original"
+        />
+        <EarlyOpener />
+      </template>,
+    );
+
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
+    assert.dom('[data-test-id="title"]').hasText('Overridden');
+  });
+
+  test('callbacks can be passed through service.open options', async function (assert) {
+    // 2.x used setProperties, so anything the service was handed landed on the
+    // component — including the callbacks.
+    const service = lookupService(this);
+    const events: string[] = [];
+    const handleOpen = () => events.push('open');
+    const handleConfirm = () => events.push('confirm');
+    const handleClose = (reason?: CloseReason) =>
+      events.push(`close:${String(reason)}`);
+
+    await render(
+      <template>
+        <EmberRemodal @forService={{true}} @name="svc-callbacks" />
+      </template>,
+    );
+
+    await service.open('svc-callbacks', {
+      confirmButton: 'Yes',
+      onOpen: handleOpen,
+      onConfirm: handleConfirm,
+      onClose: handleClose,
+    });
+
+    await click('[data-test-id="confirmButton"]');
+
+    assert.deepEqual(events, ['open', 'confirm', 'close:confirmation']);
+  });
+
+  test('service.close closes the modal and resolves', async function (assert) {
+    const service = lookupService(this);
+
+    await render(
+      <template><EmberRemodal @forService={{true}} @name="svc" /></template>,
+    );
+
+    await service.open('svc');
+    assert.true(dialog().open);
+
+    const modal = await service.close('svc');
+
+    assert.strictEqual(modal.state, 'closed', 'resolves with the modal');
+    assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-closed');
+    assert.false(dialog().open);
+  });
+
+  test('opening an unregistered modal name rejects helpfully', async function (assert) {
+    const service = lookupService(this);
+
+    await render(
+      <template><EmberRemodal @forService={{true}} @name="svc" /></template>,
+    );
+
+    await assert.rejects(
+      service.open('not-registered'),
+      /not-registered.*can not be opened because it is not rendered/,
+      'rejects with the not-registered diagnostic',
+    );
+  });
+
+  test('the registry is keyed by the name a modal registered under, not by @name after a service override changes it', async function (assert) {
+    // Regression test: registration used the constructor-time name, but a
+    // service override to @name could change what `this.name` returns
+    // afterward. unregister() must use the same snapshotted name, or a
+    // destroyed instance is stranded in the registry under its original name.
+    const service = lookupService(this);
+
+    await render(
+      <template>
+        <EmberRemodal @forService={{true}} @name="snap" @title="Snap" />
+      </template>,
+    );
+
+    await service.open('snap', { name: 'renamed-via-override' });
+    await service.close('snap');
+
+    await render(<template></template>);
+
+    await assert.rejects(
+      service.open('snap'),
+      /snap.*can not be opened because it is not rendered/,
+      'the registry has no stale entry left under the original name',
+    );
+  });
+
+  module('promise semantics', function () {
+    test('open() followed by an immediate close() both resolve, and the superseded open reports no @onOpen (#44)', async function (assert) {
+      const service = lookupService(this);
+      const events: string[] = [];
+      const handleOpen = () => events.push('open');
+      const handleClose = () => events.push('close');
+
+      await render(
+        <template>
+          <EmberRemodal
+            @forService={{true}}
+            @name="race"
+            @onOpen={{handleOpen}}
+            @onClose={{handleClose}}
+          />
+        </template>,
+      );
+
+      const openPromise = service.open('race');
+      const closePromise = service.close('race');
+
+      const [openedModal, closedModal] = await Promise.all([
+        openPromise,
+        closePromise,
+      ]);
+
+      assert.strictEqual(
+        openedModal,
+        closedModal,
+        'both resolve with the modal',
+      );
+      assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-closed');
+      assert.false(dialog().open, 'the interrupting close wins');
+      // A superseded open must not tell the consumer it opened: an @onOpen that
+      // fires for a modal the user never saw is a spurious analytics event, a
+      // focus steal, or a data load for nothing.
+      assert.deepEqual(
+        events,
+        ['close'],
+        'only the close was reported; the superseded open fired no @onOpen',
+      );
+    });
+
+    test('rapid open/close/open settles every promise, ends opened, and reports one open (#16)', async function (assert) {
+      const service = lookupService(this);
+      const events: string[] = [];
+      const handleOpen = () => events.push('open');
+      const handleClose = () => events.push('close');
+
+      await render(
+        <template>
+          <EmberRemodal
+            @forService={{true}}
+            @name="race"
+            @onOpen={{handleOpen}}
+            @onClose={{handleClose}}
+          />
+        </template>,
+      );
+
+      const first = service.open('race');
+      const second = service.close('race');
+      const third = service.open('race');
+
+      await Promise.all([first, second, third]);
+
+      assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-opened');
+      assert.true(dialog().open, 'the final open wins');
+      // Snapshotted: `events` keeps growing after this assertion (the modal is
+      // still open, so teardown fires @onClose), and QUnit renders a failure's
+      // `actual` at the end of the test rather than at push time.
+      assert.deepEqual(
+        [...events],
+        ['open'],
+        'only the winning open reported; the superseded open fired no @onOpen, and the superseded close never finalized so it fired no @onClose either',
+      );
+    });
+
+    test('service.open followed by modal.close() in a .then chain works', async function (assert) {
+      const service = lookupService(this);
+
+      await render(
+        <template>
+          <EmberRemodal @forService={{true}} @name="chain" />
+        </template>,
+      );
+
+      const modal = await service
+        .open('chain')
+        .then((openedModal) => openedModal.close());
+
+      assert.strictEqual(modal.state, 'closed');
+      assert.dom('[data-test-id="modalWindow"]').hasClass('remodal-is-closed');
+      assert.false(dialog().open);
+    });
+
+    test('close() on a never-opened modal resolves and warns', async function (assert) {
+      const service = lookupService(this);
+
+      await render(
+        <template>
+          <EmberRemodal @forService={{true}} @name="fresh" />
+        </template>,
+      );
+
+      const warnings = await captureWarnings(async () => {
+        const modal = await service.close('fresh');
+        assert.strictEqual(modal.state, 'closed', 'resolves immediately');
+      });
+
+      assert.strictEqual(warnings.length, 1, 'warned once');
+      assert.true(
+        warnings[0]!.includes('has not yet been opened'),
+        'warns about closing an unopened modal',
+      );
+    });
+  });
+});

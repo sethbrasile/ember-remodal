@@ -1,0 +1,156 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request: {}
+
+concurrency:
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+# Least privilege, declared rather than inherited: no job here touches the API,
+# so `contents: read` (what `actions/checkout` needs, and nothing else) is the
+# whole requirement. `pull_request` runs execute contributor code, which is
+# reason enough not to let the default token scope be whatever the repository
+# settings happen to say.
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: "Lints"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      # `lint:publish` builds, and the appReexports rollup plugin rewrites
+      # `package.json#ember-addon.app-js` in place while it does. If the
+      # committed map has gone stale, this is where we find out.
+      - name: Verify committed package.json matches a fresh build
+        run: git diff --exit-code package.json
+
+  demo:
+    name: "Demo build"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build demo
+        run: pnpm build:demo
+
+  published-package:
+    name: "Published Package"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+      # `npm pack`, install the tarball into a throwaway project outside the
+      # repo, then type-check (with skipLibCheck: false) and import every entry
+      # point `package.json#exports` publishes. This is the only check that
+      # treats the artifact — rather than its inputs — as the unit under test.
+      - name: Verify the packed tarball is consumable
+        run: pnpm verify:published-package
+
+  test:
+    name: "Tests"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Run Tests
+        run: pnpm test
+      # For the Try Scenarios. `@embroider/try` is a pinned devDependency so
+      # the matrix can't shift under us between runs.
+      - id: set-matrix
+        run: echo "matrix=$(pnpm -s exec try list)" >> $GITHUB_OUTPUT
+
+  floating:
+    name: "Floating Dependencies"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install Dependencies
+        run: pnpm install --no-lockfile
+      - name: Run Tests
+        run: pnpm test
+
+  try-scenarios:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    needs: "test"
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.test.outputs.matrix)}}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Apply Scenario
+        run: pnpm exec try apply ${{ matrix.name }}
+      - name: Install Scenario Dependencies
+        run: pnpm install --no-lockfile
+      - name: Run Tests
+        run: pnpm test
+        env: ${{ matrix.env }}
+      # `pnpm test` builds with SKIP_DECLARATIONS, so nothing in the matrix
+      # type-checks against the scenario's ember-source — and the types the
+      # published `.d.ts` reference (`@ember/owner`, `@ember/service`, Glint's
+      # `WithBoundArgs`) move across the 5.8 → 7.x span this addon claims. The
+      # ends of that span are where a break would show first.
+      - name: Type-check against this scenario's ember-source
+        if: matrix.name == 'ember-lts-5.8' || matrix.name == 'ember-alpha'
+        run: pnpm lint:types
+        env: ${{ matrix.env }}

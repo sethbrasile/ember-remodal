@@ -1,0 +1,70 @@
+# The mutation selftest for the CSS deviation-pinning suite
+# (`scripts/css-mutation-selftest.mjs`). For every entry in the deviation
+# registry in CHANGELOG.md it deletes or neutralises the CSS behind the claim,
+# rebuilds both copies of the stylesheet, re-runs the theme tests and requires
+# them to go RED — so a pinning test that has stopped pinning anything is
+# reported rather than kept green.
+#
+# Its own file rather than a job in `ci.yml`, for two reasons. The corpus is 26
+# mutations at a rebuild-plus-full-suite each: ten minutes serialised, against
+# `ci.yml`'s ten-minute-per-job budget, so it can never share that workflow's
+# push/pull_request triggers. And a `workflow_dispatch`-only job living inside
+# `ci.yml` would still be evaluated on every push and every pull request, adding
+# a permanently-skipped check to each one — noise on a status list whose whole
+# value is that everything on it means something.
+name: CSS mutation corpus
+
+on:
+  # Manual: the gate to run before cutting a release, or after touching
+  # `src/styles/` or the theme suite.
+  workflow_dispatch: {}
+  # Release-time. This addon is published by hand (`prepublishOnly` runs
+  # `scripts/assert-clean-tree.mjs`) and the release is marked by a `vX.Y.Z` tag
+  # — there is no release workflow for this to hook into, so the tag push is the
+  # only automatic release signal the repo actually has. Running here reports a
+  # rotted corpus against the exact tree that was published.
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: css-mutation-corpus-${{ github.ref }}
+  cancel-in-progress: true
+
+# Same least-privilege declaration as `ci.yml`: `actions/checkout` needs
+# `contents: read` and no step here touches the API. Version tags rather than
+# commit SHAs for the actions, matching `ci.yml` — the SHA pinning in
+# `push-dist.yml` is scoped to the one workflow that holds `contents: write`,
+# where a repointed tag would mean someone else's code running with push access.
+permissions:
+  contents: read
+
+jobs:
+  css-mutation-corpus:
+    name: "CSS Mutation Corpus"
+    runs-on: ubuntu-latest
+    # 26 mutations x (rebuild + full suite). The only end-to-end measurement so
+    # far is ~55 minutes on a developer laptop; a GitHub runner is slower, and
+    # this job has never actually executed (a workflow_dispatch trigger is not
+    # registered until the file reaches the default branch). The budget is set
+    # well above the measurement so the first real run reports on the corpus
+    # rather than on the timeout.
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+      # The script restores the stylesheet after every mutation; this asserts it
+      # actually did, so a crashed run cannot leave a mutated tree behind for a
+      # later step to build from.
+      - name: Run the mutation corpus
+        run: pnpm verify:css-deviations
+      - name: Verify the working tree was restored
+        if: always()
+        run: git diff --exit-code

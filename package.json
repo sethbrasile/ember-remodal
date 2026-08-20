@@ -1,71 +1,151 @@
 {
   "name": "ember-remodal",
-  "version": "2.18.0",
+  "version": "3.0.0-beta.0",
   "description": "An intensely usable modal addon for Ember.js",
-  "directories": {
-    "doc": "doc",
-    "test": "tests"
+  "keywords": [
+    "ember-addon",
+    "modal",
+    "dialog",
+    "remodal"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sethbrasile/ember-remodal.git"
   },
-  "scripts": {
-    "build": "ember build",
-    "lint:js": "eslint ./*.js addon addon-test-support app config lib server test-support tests",
-    "start": "ember serve",
-    "test": "ember try:each"
-  },
-  "repository": "https://github.com/sethbrasile/ember-remodal",
-  "demoURL": "http://sethbrasile.github.io/ember-remodal",
-  "author": "Seth Brasile <seth.brasile@gmail.com>",
   "license": "MIT",
+  "author": "Seth Brasile <seth.brasile@gmail.com>",
+  "type": "module",
+  "imports": {
+    "#src/*": "./src/*"
+  },
+  "exports": {
+    ".": {
+      "types": "./declarations/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./test-support": {
+      "types": "./declarations/test-support/index.d.ts",
+      "default": "./dist/test-support/index.js"
+    },
+    "./addon-main.js": "./addon-main.cjs",
+    "./package.json": "./package.json",
+    "./*.css": {
+      "types": "./declarations/*.d.css.ts",
+      "default": "./dist/*.css"
+    },
+    "./*": {
+      "types": "./declarations/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "publishConfig": {
+    "tag": "beta"
+  },
+  "files": [
+    "addon-main.cjs",
+    "declarations",
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "rollup --config",
+    "build:demo": "vite build --mode=demo --out-dir dist-demo && node ./scripts/emit-demo-404.mjs",
+    "build:dist": "rollup --config --environment SKIP_DECLARATIONS:true",
+    "format": "prettier . --cache --write",
+    "lint": "concurrently \"pnpm:lint:*(!fix)\" --names \"lint:\" --prefixColors auto",
+    "lint:audit": "pnpm audit --audit-level=high --ignore-registry-errors",
+    "lint:fix": "concurrently \"pnpm:lint:*:fix\" --names \"fix:\" --prefixColors auto && pnpm run format",
+    "lint:format": "prettier . --cache --check",
+    "lint:hbs": "ember-template-lint . --no-error-on-unmatched-pattern",
+    "lint:hbs:fix": "ember-template-lint . --fix --no-error-on-unmatched-pattern",
+    "lint:js": "eslint . --cache",
+    "lint:js:fix": "eslint . --fix",
+    "lint:publish": "pnpm build && publint run && attw --pack . --profile node16 --ignore-rules cjs-resolves-to-esm --exclude-entrypoints ./addon-main.js && node ./scripts/check-declaration-deps.mjs",
+    "lint:types": "ember-tsc --noEmit",
+    "prepack": "rollup --config",
+    "prepublishOnly": "node ./scripts/assert-clean-tree.mjs",
+    "start": "vite dev",
+    "test": "pnpm build:dist && node ./scripts/link-self.mjs && vite build --mode=development --out-dir dist-tests && testem --file testem.cjs ci --port 0",
+    "verify:css-deviations": "node ./scripts/css-mutation-selftest.mjs",
+    "verify:published-package": "node ./scripts/verify-published-package.mjs"
+  },
   "dependencies": {
-    "broccoli-funnel": "^2.0.1",
-    "broccoli-merge-trees": "^3.0.0",
-    "ember-cli-babel": "^6.6.0",
-    "ember-cli-htmlbars": "^2.0.1",
-    "remodal": "^1.1.1",
-    "resolve": "^1.8.1"
+    "@ember/test-waiters": "^4.1.1",
+    "@embroider/addon-shim": "^1.8.9",
+    "decorator-transforms": "^2.2.2",
+    "ember-modifier": "^4.2.0"
+  },
+  "peerDependencies": {
+    "@glimmer/component": ">= 1.1.2",
+    "@glint/template": ">= 1.6.1",
+    "ember-source": ">= 5.8.0"
+  },
+  "peerDependenciesMeta": {
+    "@glint/template": {
+      "optional": true
+    }
   },
   "devDependencies": {
-    "bootstrap": "^3.3.7",
-    "broccoli-asset-rev": "^2.4.5",
-    "ember-ajax": "^3.1.1",
-    "ember-bootstrap": "^2.1.1",
-    "ember-cli": "~2.18.2",
-    "ember-cli-code-coverage": "1.0.0-beta.6",
-    "ember-cli-dependency-checker": "^2.0.0",
-    "ember-cli-eslint": "^4.2.1",
-    "ember-cli-github-pages": "^0.2.0",
-    "ember-cli-htmlbars-inline-precompile": "^1.0.0",
-    "ember-cli-inject-live-reload": "^1.8.2",
-    "ember-cli-qunit": "^4.3.2",
-    "ember-cli-release": "0.2.9",
-    "ember-cli-shims": "^1.2.0",
-    "ember-cli-sri": "^2.1.0",
-    "ember-cli-stylus": "1.0.6",
-    "ember-cli-test-loader": "^2.2.0",
-    "ember-cli-uglify": "^2.0.0",
-    "ember-disable-prototype-extensions": "^1.1.2",
-    "ember-export-application-global": "^2.0.0",
-    "ember-font-awesome": "^4.0.0-rc.4",
-    "ember-load-initializers": "^1.0.0",
-    "ember-model-validator": "^3.4.0",
-    "ember-notify": "^5.3.0",
-    "ember-prism": "0.3.0",
-    "ember-resolver": "^4.0.0",
-    "ember-source": "~2.18.0",
-    "ember-try": "^1.0.0",
-    "ember-wormhole": "0.5.5",
-    "eslint-config-prettier": "3.1.0",
-    "eslint-plugin-ember": "^5.0.0",
-    "eslint-plugin-node": "^5.2.1",
-    "eslint-plugin-prettier": "^2.6.2",
-    "loader.js": "^4.2.3",
-    "prettier": "^1.14.3"
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@babel/core": "^7.25.2",
+    "@babel/eslint-parser": "^7.25.1",
+    "@babel/plugin-transform-typescript": "^7.25.2",
+    "@babel/runtime": "^7.25.6",
+    "@ember/app-tsconfig": "^2.0.0",
+    "@ember/library-tsconfig": "^2.0.0",
+    "@ember/test-helpers": "^5.2.1",
+    "@embroider/addon-dev": "^8.1.0",
+    "@embroider/compat": "^4.1.0",
+    "@embroider/core": "^4.1.0",
+    "@embroider/macros": "^1.20.1",
+    "@embroider/try": "^1.0.2",
+    "@embroider/vite": "^1.1.5",
+    "@eslint/js": "^9.17.0",
+    "@glimmer/component": "^2.0.0",
+    "@glint/ember-tsc": "^1.0.3",
+    "@glint/template": "^1.6.1",
+    "@glint/tsserver-plugin": "^2.0.0",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@types/qunit": "^2.19.12",
+    "babel-plugin-ember-template-compilation": "^4.0.0",
+    "concurrently": "^9.0.1",
+    "ember-page-title": "^9.0.3",
+    "ember-qunit": "^9.0.2",
+    "ember-source": "^6.7.0",
+    "ember-strict-application-resolver": "^0.1.0",
+    "ember-template-lint": "^7.9.0",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-ember": "^12.3.3",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-n": "^17.15.1",
+    "eslint-plugin-qunit": "^8.2.6",
+    "globals": "^16.1.0",
+    "marked": "^18.0.10",
+    "prettier": "^3.4.2",
+    "prettier-plugin-ember-template-tag": "^2.0.4",
+    "publint": "^0.3.16",
+    "qunit": "^2.24.1",
+    "qunit-dom": "^3.4.0",
+    "rollup": "^4.22.5",
+    "shiki": "^4.4.3",
+    "testem": "^3.15.1",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.19.1",
+    "vite": "^7.1.9"
   },
-  "engines": {
-    "node": "^4.5 || 6.* || >= 7.*"
+  "packageManager": "pnpm@11.20.0",
+  "ember": {
+    "edition": "octane"
   },
-  "keywords": ["ember-addon", "remodal", "modal"],
   "ember-addon": {
-    "configPath": "tests/dummy/config"
+    "version": 2,
+    "type": "addon",
+    "main": "addon-main.cjs",
+    "app-js": {
+      "./components/ember-remodal.js": "./dist/_app_/components/ember-remodal.js",
+      "./components/ember-remodal/er-button.js": "./dist/_app_/components/ember-remodal/er-button.js",
+      "./services/remodal.js": "./dist/_app_/services/remodal.js"
+    }
   }
 }

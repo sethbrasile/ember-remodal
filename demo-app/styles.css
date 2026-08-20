@@ -1,0 +1,694 @@
+/**
+ * Styles for the demo-app only — not included in the published addon.
+ * The addon's own styles (the ported remodal theme) ship from src/styles/.
+ */
+
+@import "./styles/demo-midnight.css";
+@import "./styles/demo-outline.css";
+
+:root {
+  --demo-ink: #2b2e38;
+  --demo-muted: #6b7080;
+  /* #1f6bb8 rather than the lighter #2f7dd1 this started as: the accent is
+     both the .demo-button fill under white 600-weight label text (5.45:1, was
+     4.22:1 — below the 4.5:1 WCAG 1.4.3 AA floor for text under 18.66px bold)
+     and the .demo-footer link colour on --demo-bg (5.00:1, was 3.87:1). The
+     demo is example code people copy. */
+  --demo-accent: #1f6bb8;
+  --demo-accent-hover: #17518d;
+  --demo-surface: #ffffff;
+  --demo-bg: #f4f5f7;
+  --demo-border: #e3e5ea;
+}
+
+/* The demo's own layout convenience. The addon must never depend on it: this
+   reset is what hid the wrapper's missing `box-sizing: border-box` (the dialog
+   box overflowed the viewport by 20px in an app without a reset). The test app
+   ships no reset at all, which is where that is now measured. */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  color: var(--demo-ink);
+  background: var(--demo-bg);
+  line-height: 1.6;
+}
+
+/* Inline code chips (the `@forService`/`m.isOpen` nouns in prose, not the
+   Shiki-highlighted blocks — those reset this below).
+   `color` is set rather than inherited: inside .docs-lede and
+   .demo-example-description the inherited --demo-muted landed grey text on the
+   chip's grey fill at 4.25:1, under the 4.5:1 WCAG 1.4.3 AA floor and visibly
+   washed out. The old #eceef2 fill was also only 1.06:1 against --demo-bg, so
+   on the page background the chip read as no chip at all — hence the firmer
+   fill and the hairline edge. Borders on an inline box do not grow the line
+   box, so neither adds any layout shift. */
+code {
+  font-family:
+    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  color: #1c2028;
+  background: #e2e6ee;
+  border: 1px solid #bcc4d6;
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+}
+
+.demo-hero {
+  text-align: center;
+  padding: 2.5rem 0 1.5rem;
+}
+
+.demo-hero h1 {
+  margin: 0 0 0.5rem;
+  font-size: 2.6rem;
+  letter-spacing: -0.02em;
+}
+
+.demo-tagline {
+  margin: 0 auto;
+  max-width: 34rem;
+  color: var(--demo-muted);
+  font-size: 1.1rem;
+}
+
+.demo-hero-image {
+  max-width: 100%;
+  height: auto;
+}
+
+.demo-section {
+  background: var(--demo-surface);
+  border: 1px solid var(--demo-border);
+  border-radius: 10px;
+  padding: 1.5rem 1.75rem 1.75rem;
+  margin-top: 1.5rem;
+}
+
+.demo-section h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.demo-section > p {
+  margin: 0 0 1rem;
+  color: var(--demo-muted);
+}
+
+/* buttons */
+
+.demo-button {
+  display: inline-block;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--demo-accent);
+  border: 0;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.demo-button:hover,
+.demo-button:focus {
+  background: var(--demo-accent-hover); /* white label 8.08:1 */
+}
+
+.demo-button.subtle {
+  color: var(--demo-ink);
+  background: #e8eaef;
+}
+
+.demo-button.subtle:hover,
+.demo-button.subtle:focus {
+  background: #dcdfe6;
+}
+
+.demo-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* @confirmButtonClasses / @cancelButtonClasses worked example, so the effect
+   of those args is visible rather than merely described. */
+.demo-pill {
+  border-radius: 999px;
+}
+
+/* inside-modal helpers */
+
+.demo-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.demo-lazy {
+  border-left: 4px solid var(--demo-accent);
+  background: #f0f6fc;
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+
+/* service demo log */
+
+.demo-log {
+  margin: 1rem 0 0;
+  padding: 0.75rem 1rem 0.75rem 2.25rem;
+  background: #10131a;
+  color: #9fe8a8;
+  border-radius: 8px;
+  font-family:
+    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+}
+
+/* frameless (disableForeground) modal content.
+   The addon's frameless card exposes its foreground as a custom property
+   (it sits on the themable overlay, not on the card background), so the demo's
+   own content follows the same token rather than hardcoding white. */
+
+.demo-frameless {
+  color: var(--ember-remodal-frameless-color, #fff);
+  font-size: 1.3rem;
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+.demo-frameless-hint {
+  font-size: 0.95rem;
+  opacity: 0.7;
+}
+
+.demo-footer {
+  margin-top: 2.5rem;
+  text-align: center;
+  color: var(--demo-muted);
+  font-size: 0.9rem;
+}
+
+.demo-footer a {
+  color: var(--demo-accent);
+}
+
+/* docs shell */
+
+.docs-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background: var(--demo-surface);
+  border-bottom: 1px solid var(--demo-border);
+  padding: 0.85rem 1.25rem;
+}
+
+.docs-brand {
+  font-weight: 700;
+  color: var(--demo-ink);
+  text-decoration: none;
+  margin-right: auto;
+}
+
+.docs-version {
+  color: var(--demo-muted);
+  font-family:
+    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+}
+
+.docs-layout {
+  display: grid;
+  grid-template-columns: 16rem 1fr;
+}
+
+.docs-nav {
+  position: sticky;
+  top: 3.4rem;
+  align-self: start;
+  max-height: calc(100vh - 3.4rem);
+  overflow-y: auto;
+  padding: 1.5rem 1rem;
+}
+
+.docs-nav-group {
+  margin-bottom: 1.5rem;
+}
+
+.docs-nav-heading {
+  margin: 0 0 0.4rem;
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--demo-muted);
+}
+
+.docs-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.docs-nav a {
+  display: block;
+  padding: 0.4rem 0.75rem;
+  border-left: 3px solid transparent;
+  color: var(--demo-ink);
+  text-decoration: none;
+  border-radius: 0 6px 6px 0;
+}
+
+.docs-nav a:hover,
+.docs-nav a:focus {
+  background: var(--demo-bg);
+}
+
+.docs-nav a.active {
+  color: var(--demo-accent);
+  border-left-color: var(--demo-accent);
+  background: #eaf2fa;
+}
+
+.docs-nav-toggle {
+  display: none;
+}
+
+.docs-main {
+  /* Wide enough that DemoExample's live/source split gets a source panel that
+     fits a real snippet; prose below is capped separately so lines stay at a
+     readable measure. */
+  max-width: 72rem;
+  padding: 2rem 1.25rem 4rem;
+}
+
+/* .docs-main is wide so the examples' code panels fit; body copy stays at a
+   readable measure regardless of where in the page it sits. */
+.docs-main p,
+.docs-main li {
+  max-width: 68ch;
+}
+
+.docs-lede {
+  color: var(--demo-muted);
+  font-size: 1.1rem;
+}
+
+.docs-section {
+  background: var(--demo-surface);
+  border: 1px solid var(--demo-border);
+  border-radius: 10px;
+  padding: 1.5rem 1.75rem 1.75rem;
+  margin-top: 1.5rem;
+}
+
+.docs-section h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+@media (max-width: 900px) {
+  .docs-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .docs-nav-toggle {
+    display: inline-block;
+    margin: 0.75rem 1.25rem 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--demo-ink);
+    background: #e8eaef;
+    border: 0;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+  }
+
+  .docs-nav {
+    display: none;
+    position: static;
+    max-height: none;
+  }
+
+  .docs-nav.is-open {
+    display: block;
+  }
+}
+
+/* demo-example: live panel + source panel */
+
+.demo-example {
+  background: var(--demo-surface);
+  border: 1px solid var(--demo-border);
+  border-radius: 10px;
+  margin-top: 1.5rem;
+  /* The live/source split keys off the example's own width, not the viewport:
+     the docs nav takes 16rem and .docs-main caps the rest, so a viewport-width
+     media query splits into two columns long before the example itself has
+     room for them. */
+  container-type: inline-size;
+}
+
+.demo-example-header {
+  padding: 1.25rem 1.5rem 0;
+}
+
+.demo-example-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+}
+
+.demo-example-description {
+  margin: 0 0 1rem;
+  color: var(--demo-muted);
+  max-width: 68ch;
+}
+
+/* Stacked by default; the container query below opts into two columns once
+   there is room. minmax(0, …) rather than 1fr so the source panel can be
+   narrower than its longest code line and let <pre> scroll, instead of the
+   line forcing the track wide and being clipped by the panel's overflow. */
+.demo-example-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+
+/* Column, not row: an example's live panel is a stack of blocks — controls,
+   then an event log, then the modal's own (display:none until opened) wrapper
+   span. A row laid the log out beside the button it belongs under. Multi-button
+   examples group their buttons in .demo-buttons, which is still a wrapping row.
+   No `gap` here: the always-rendered .remodal-component span is a zero-height
+   flex item that a gap would still push space around. Children carry their own
+   margins instead. */
+.demo-example-live {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 6rem;
+  padding: 1.5rem;
+}
+
+.demo-example-live > .demo-log-panel {
+  align-self: stretch;
+}
+
+.demo-example-source {
+  background: #24292e;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+}
+
+@container (min-width: 46rem) {
+  /* Source panel gets the larger share — code lines are wider than the live
+     demo's button. */
+  .demo-example-body:not(.is-source-only) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  }
+
+  .demo-example-body:not(.is-source-only) .demo-example-source {
+    border-radius: 0 0 10px 0;
+  }
+}
+
+.demo-example-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #9aa5b1;
+  font-family:
+    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.demo-copy {
+  font: inherit;
+  color: #d7dde4;
+  background: rgba(255, 255, 255, 0.08);
+  border: 0;
+  border-radius: 4px;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+}
+
+.demo-copy:hover,
+.demo-copy:focus {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.demo-example-source pre {
+  margin: 0;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+/* demo toasts.
+   z-index sits above the demo's own open buttons, but a modal's <dialog> is
+   rendered in the browser's top layer, which paints above every z-indexed
+   element regardless of stacking context — so while a modal is open, toasts
+   are visually behind its backdrop and only become visible once it closes.
+   That's expected; see the Action hooks page for the note. */
+
+.demo-toasts {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 22rem;
+}
+
+.demo-toast {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--demo-ink);
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.9rem;
+}
+
+.demo-toast-badge {
+  background: var(--demo-accent);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  font-family:
+    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.demo-toast-dismiss {
+  margin-left: auto;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  opacity: 0.7;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.demo-toast-dismiss:hover,
+.demo-toast-dismiss:focus {
+  opacity: 1;
+}
+
+/* demo event log */
+
+.demo-log-panel {
+  margin-top: 1rem;
+}
+
+.demo-log-panel .demo-log {
+  margin-top: 0.35rem;
+}
+
+.demo-log-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--demo-muted);
+}
+
+.demo-log-clear {
+  font: inherit;
+  color: var(--demo-ink);
+  background: #e8eaef;
+  border: 0;
+  border-radius: 4px;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+}
+
+.demo-log-clear:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.demo-log-empty {
+  margin: 0.35rem 0 0;
+  color: var(--demo-muted);
+  font-size: 0.9rem;
+}
+
+/* options reference table */
+
+.demo-options-wrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+.demo-options {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.demo-options th,
+.demo-options td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--demo-border);
+}
+
+.demo-options thead th {
+  color: var(--demo-muted);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.demo-options tbody tr:nth-child(even) {
+  background: var(--demo-bg);
+}
+
+/* Reduced-motion demo: unlayered, so it wins over the addon's layered
+   animation rules without a specificity fight — mirroring the
+   `prefers-reduced-motion: reduce` block in src/styles/ember-remodal.css,
+   but keyed on a class so it can be toggled without OS settings. */
+
+.demo-reduced-motion .remodal.remodal-is-opening,
+.demo-reduced-motion .remodal.remodal-is-closing,
+.demo-reduced-motion dialog.remodal-wrapper.remodal-is-opening::backdrop,
+.demo-reduced-motion dialog.remodal-wrapper.remodal-is-closing::backdrop {
+  animation: none;
+}
+
+.demo-reduced-motion .remodal-close,
+.demo-reduced-motion .remodal-confirm,
+.demo-reduced-motion .remodal-cancel {
+  transition: none;
+}
+
+/* Shiki sets its own colours inline on `pre.shiki`; the global `code {}`
+   rule above would otherwise paint a light background/padding box behind
+   every highlighted block (inside DemoExample's source panel and here). */
+pre.shiki code {
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+/* MIGRATION.md, rendered */
+
+.docs-markdown > h1:first-child {
+  display: none;
+}
+
+.docs-markdown h2 {
+  margin: 2rem 0 0.75rem;
+}
+
+.docs-markdown h3 {
+  margin: 1.5rem 0 0.5rem;
+}
+
+.docs-markdown p,
+.docs-markdown ul,
+.docs-markdown ol {
+  margin: 0 0 1rem;
+  max-width: 68ch;
+}
+
+.docs-markdown pre.shiki,
+.docs-markdown pre {
+  margin: 0 0 1.25rem;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.docs-markdown .demo-example-source {
+  margin: 0 0 1.25rem;
+  border-radius: 8px;
+}
+
+.docs-markdown .demo-example-source pre.shiki,
+.docs-markdown .demo-example-source pre {
+  margin: 0;
+  border-radius: 0 0 8px 8px;
+}
+
+.docs-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin: 0 0 1.25rem;
+}
+
+.docs-markdown th,
+.docs-markdown td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--demo-border);
+}
+
+.docs-markdown thead th {
+  color: var(--demo-muted);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.docs-markdown tbody tr:nth-child(even) {
+  background: var(--demo-bg);
+}
+
+.docs-markdown blockquote {
+  margin: 0 0 1.25rem;
+  padding: 0.5rem 1rem;
+  border-left: 4px solid var(--demo-border);
+  color: var(--demo-muted);
+}
