@@ -10,6 +10,27 @@ document assumes you have a working 2.x integration in front of you.
 
 ## The two-step upgrade path
 
+Do this in two steps. Do not jump straight to 3.0.
+
+**Step 1 — clear the 2.19 runtime deprecations.** Upgrade to
+`ember-remodal@2.19` and run the _app_, not just the test suite. The warnings
+are `console.warn` on purpose: they survive a production build, so a real
+session that opens every modal you actually use is the source of truth. Each
+`[ember-remodal] DEPRECATION` line names a stable id and links the section of
+this guide that replaces that usage. Warnings fire once per id per page load,
+no matter how many modals trigger them. If you are staying on 2.x, turn them
+all off with:
+
+```js
+// config/environment.js
+ENV['ember-remodal'] = { silenceDeprecations: true };
+```
+
+**Step 2 — run the readiness audit.** Runtime warnings cannot see CSS
+selectors, test selectors, markup assumptions, or the Ember/browser floors.
+Paste the prompt below into a coding assistant that can search the repository,
+fix what it reports, then install 3.0 and follow the rest of this guide.
+
 ### The readiness audit prompt
 
 Paste everything in the block below into your coding assistant — Claude Code, Cursor, Copilot, or any agent that can search your repository.
@@ -101,6 +122,7 @@ Only report findings you located with file:line evidence; list every match,
 do not sample; mark checks with no findings as clear; do not pad with maybes.
 ```
 
+- [The two-step upgrade path](#the-two-step-upgrade-path)
 - [Requirements](#requirements)
 - [Install](#install)
 - [Breaking changes](#breaking-changes)

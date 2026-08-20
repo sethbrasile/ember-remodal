@@ -1,6 +1,7 @@
 import { pageTitle } from 'ember-page-title';
 import { htmlSafe } from '@ember/template';
 import type { SafeString } from '@ember/template';
+import copyCode from '../modifiers/copy-code.ts';
 import migrationSrc from '../../MIGRATION.md?highlight';
 
 function trustedHtml(html: string): SafeString {
@@ -16,5 +17,7 @@ function trustedHtml(html: string): SafeString {
       href="https://github.com/sethbrasile/ember-remodal/blob/master/MIGRATION.md"
     >MIGRATION.md</a>.</p>
 
-  <article class="docs-markdown">{{trustedHtml migrationSrc.html}}</article>
+  <article class="docs-markdown" {{copyCode}}>{{trustedHtml
+      migrationSrc.html
+    }}</article>
 </template>

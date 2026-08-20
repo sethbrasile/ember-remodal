@@ -640,13 +640,25 @@ pre.shiki code {
   max-width: 68ch;
 }
 
-.docs-markdown pre.shiki {
+.docs-markdown pre.shiki,
+.docs-markdown pre {
   margin: 0 0 1.25rem;
   padding: 1rem;
   border-radius: 8px;
   overflow-x: auto;
   font-size: 0.85rem;
   line-height: 1.5;
+}
+
+.docs-markdown .demo-example-source {
+  margin: 0 0 1.25rem;
+  border-radius: 8px;
+}
+
+.docs-markdown .demo-example-source pre.shiki,
+.docs-markdown .demo-example-source pre {
+  margin: 0;
+  border-radius: 0 0 8px 8px;
 }
 
 .docs-markdown table {

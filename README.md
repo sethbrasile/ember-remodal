@@ -106,6 +106,10 @@ pnpm add ember-remodal@beta
 (`npm install ember-remodal@beta` / `yarn add ember-remodal@beta` work the same
 way. `ember install ember-remodal` would install 2.18.0.)
 
+**Upgrading from 2.x?** Install `ember-remodal@2.19`, clear every runtime
+deprecation, then run the readiness audit and jump to 3.0 — see
+[The two-step upgrade path](MIGRATION.md#the-two-step-upgrade-path).
+
 The theme is imported by the component, so there is nothing to add to your
 build. If you want to control when it loads, import it yourself:
 
