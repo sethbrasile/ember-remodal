@@ -13,6 +13,7 @@ import { sendEvent } from '@ember/object/events';
 import Component from '@ember/component';
 import layout from '../templates/components/ember-remodal';
 import Ember from 'ember';
+import { warnOnce, INTERNAL_CALL } from '../utils/deprecations';
 
 export default Component.extend({
   layout,
@@ -22,7 +23,7 @@ export default Component.extend({
   tagName: 'span',
   name: 'ember-remodal',
   modifier: '',
-  modal: null,
+  _remodalInstance: null,
   options: null,
   closeOnEscape: true,
   closeOnCancel: true,
@@ -65,6 +66,22 @@ export default Component.extend({
     }
   }),
 
+  modal: computed('_remodalInstance', {
+    get() {
+      warnOnce(
+        this._getConfig(),
+        'ember-remodal.modal-property',
+        'The "modal" property (the wrapped jQuery remodal instance, including getState()) is removed in 3.0. Use the yielded isOpen / the component\'s state, or data-test-id selectors, instead.',
+        'the-modal-property-and-getstate-is-removed'
+      );
+      return this.get('_remodalInstance');
+    },
+    set(key, value) {
+      this.set('_remodalInstance', value);
+      return value;
+    }
+  }),
+
   openDidFire: on('opened', function() {
     this.sendAction('onOpen');
   }),
@@ -73,12 +90,14 @@ export default Component.extend({
     this.sendAction('onClose');
   }),
 
-  open() {
+  open(internal) {
+    this._warnIfExternalCall(internal);
     return this._promiseAction('open');
   },
 
-  close() {
-    if (this.get('modal')) {
+  close(internal) {
+    this._warnIfExternalCall(internal);
+    if (this.get('_remodalInstance')) {
       return this._promiseAction('close');
     } else {
       Ember.Logger.warn(
@@ -109,6 +128,17 @@ export default Component.extend({
     }
   },
 
+  _warnIfExternalCall(internal) {
+    if (internal !== INTERNAL_CALL) {
+      warnOnce(
+        this._getConfig(),
+        'ember-remodal.component-via-service',
+        'Reaching the modal component through the service (e.g. this.remodal.get(name).open()) is removed in 3.0. Call service.open(name, options) / service.close(name) instead.',
+        'reaching-the-modal-component-through-the-service-is-removed'
+      );
+    }
+  },
+
   _setProperties() {
     let opts = this.get('options');
 
@@ -134,7 +164,7 @@ export default Component.extend({
   },
 
   _destroyDomElements() {
-    const modal = this.get('modal');
+    const modal = this.get('_remodalInstance');
 
     if (modal) {
       modal.destroy();
@@ -153,12 +183,51 @@ export default Component.extend({
       modifier: this.get('modifier')
     });
 
-    this.set('modal', modal);
+    this.set('_remodalInstance', modal);
     this.send('open');
   },
 
   _checkForDeprecations() {
-    // Deprecations go here
+    let config = this._getConfig();
+
+    // Debug: log config
+    // console.log('_checkForDeprecations called, config:', config);
+
+    warnOnce(
+      config,
+      'ember-remodal.v3-available',
+      'ember-remodal 3.0 is available. Upgrade in two steps: 1) fix every deprecation this release logs, 2) run the readiness audit prompt from the migration guide, then upgrade.',
+      'the-two-step-upgrade-path'
+    );
+
+    ['onOpen', 'onClose', 'onConfirm', 'onCancel'].forEach(actionName => {
+      if (typeof this.get(actionName) === 'string') {
+        warnOnce(
+          config,
+          'ember-remodal.string-actions',
+          `"${actionName}" was passed as a string action name (first seen on "${this.get('name')}"). 3.0 only accepts functions — pass a closure action or a method instead.`,
+          'string-actions--function-arguments'
+        );
+      }
+    });
+
+    if (this.get('hashTracking')) {
+      warnOnce(
+        config,
+        'ember-remodal.hash-tracking',
+        'hashTracking is removed in 3.0 — the router owns the URL in an Ember app. Drive service.open()/close() from a route or query param if you need URL-driven modals.',
+        'hashtracking-removed'
+      );
+    }
+
+    if (this.get('class')) {
+      warnOnce(
+        config,
+        'ember-remodal.class-attribute',
+        'class= in curly invocation stops merging onto the element in 3.0 (Glimmer treats it as an ignored argument). Use angle-bracket invocation (<EmberRemodal class="...">), or @modalClasses for the modal card.',
+        'ember-remodal-class-no-longer-merges-class'
+      );
+    }
   },
 
   _checkForTestingEnv() {
@@ -175,6 +244,12 @@ export default Component.extend({
 
       if (disableAnimation && env === 'test') {
         this.set('disableAnimation', true);
+        warnOnce(
+          config,
+          'ember-remodal.disable-animation-while-testing',
+          'disableAnimationWhileTesting only works with the classic resolver in 3.0. Prefer setupRemodal(hooks, { disableAnimation: true }) from ember-remodal/test-support.',
+          'disableanimationwhiletesting--classic-resolver-only'
+        );
       }
     }
   },
@@ -184,11 +259,11 @@ export default Component.extend({
   },
 
   _openModal() {
-    this.get('modal').open();
+    this.get('_remodalInstance').open();
   },
 
   _closeModal() {
-    this.get('modal').close();
+    this.get('_remodalInstance').close();
   },
 
   _closeOnCondition(condition) {
@@ -209,7 +284,7 @@ export default Component.extend({
     },
 
     open() {
-      if (this.get('modal')) {
+      if (this.get('_remodalInstance')) {
         scheduleOnce('afterRender', this, '_openModal');
       } else {
         scheduleOnce('afterRender', this, '_createInstanceAndOpen');
