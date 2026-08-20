@@ -14,7 +14,7 @@ module.exports = {
         process.env.TRAVIS ? '--no-sandbox' : null,
 
         '--disable-gpu',
-        '--headless',
+        '--headless=new', '--no-sandbox', '--user-data-dir=/tmp/testem-chrome-profile', '--disable-dev-shm-usage',
         '--remote-debugging-port=0',
         '--window-size=1440,900'
       ].filter(Boolean)
