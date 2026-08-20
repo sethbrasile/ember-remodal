@@ -8,6 +8,99 @@ change that can reach your code.
 If you are new to ember-remodal, read the [README](README.md) instead; this
 document assumes you have a working 2.x integration in front of you.
 
+## The two-step upgrade path
+
+### The readiness audit prompt
+
+Paste everything in the block below into your coding assistant — Claude Code, Cursor, Copilot, or any agent that can search your repository.
+
+```text
+Audit this Ember app for upgrade readiness from ember-remodal 2.x to 3.0.
+3.0 is a rewrite on the native <dialog> element. The runtime deprecations in
+ember-remodal 2.19 already cover option/API usage the app exercises at
+runtime; YOUR job is the breaks that leave no runtime trace: CSS selectors,
+test selectors, markup assumptions, and version floors. Search the consuming
+application: stylesheets (css/scss/sass/less/styl), templates (hbs/gjs/gts),
+JS/TS, tests, and config. Skip node_modules, dist, vendor, and ember-remodal's
+own library source (addon/, src/). If this checkout is the ember-remodal
+addon itself, audit tests/dummy/ plus tests/acceptance/ only.
+
+Hard floors — check these first; if either fails the verdict is NOT READY:
+0a. package.json: ember-source must be >= 5.8.
+0b. Browser floor Chrome/Edge 99, Firefox 98, Safari 15.4 (needs
+    dialog.showModal() and CSS @layer; no polyfill). Check browserslist
+    ("browserslist" in package.json or .browserslistrc) AND Ember CLI
+    config/targets.js (or tests/dummy/config/targets.js). Either listing
+    a browser below the floor, or having no targets/browserslist at all,
+    fails this check.
+
+Core checks — for each, report every matching file:line plus the fix
+(do not sample):
+1. Bare single-word class hooks in stylesheets and tests: .window .close
+   .button .open .link .text .outer .inner .title .paragraph .yielded
+   .content .native .confirm .cancel .invisible. Flag ONLY selectors that
+   target ember-remodal markup (compounded with .ember-remodal or .remodal*,
+   or used in tests that interact with the modal) — these tokens are common,
+   so judge context, don't just count grep hits. Skip documentation that
+   merely names the old hooks. Fix: the ember-remodal- prefixed replacements
+   (see "the bare single-word class hooks are retired" in MIGRATION.md).
+   @legacyClassNames={{true}} re-emits the old tokens per-modal as a
+   temporary bridge.
+2. [data-remodal-id] selectors → [data-test-id="modalWindow"] or @dataTestId.
+3. .remodal-overlay → dialog.remodal-wrapper::backdrop (there is no overlay
+   element anymore).
+4. Tests that dismiss the modal by clicking outside/on the overlay: 3.0
+   dismisses only when mousedown AND click both land on the backdrop, so a
+   synthetic click alone may stop working — flag for press+release semantics.
+5. Yielded m.open / m.confirm / m.cancel blocks (any block-param name) whose
+   block contains no focusable control (button, a[href], input, [tabindex]).
+   Flag live invocations only, not comments or code-block / fenced samples.
+   3.0 warns in development; keyboard users can't reach them. Fix: wrap the
+   label in <button type="button">.
+6. Direct er-button usage: imports of ember-remodal/components/er-button and
+   template invocations of ember-remodal/er-button or <ErButton>. The import
+   path moved, modalId= became @destination (an Element, not an id), and
+   action= became @onClick — and nothing fails at build time. Fix: prefer
+   the yielded m.open / m.confirm / m.cancel.
+7. Modals passing confirmButton/cancelButton (as arguments or via
+   service.open options): those buttons are now actually styled
+   (remodal-confirm / remodal-cancel, flat green/red). Flag for a visual
+   check; @confirmButtonClasses / @cancelButtonClasses still apply.
+8. !important overrides targeting .remodal-close::before font-family, or
+   visibility on the modal card: the 3.0 stylesheet ships in @layer
+   ember-remodal and its two !important declarations now beat unlayered
+   !important. Fix: declare your own layer after it —
+   @layer ember-remodal, my-overrides; — and override inside it.
+9. registerWarnHandler filters on
+   "ember-remodal.close-called-on-unitialized-modal" (2.x typo): 3.0 spells
+   it "...-uninitialized-...", so the filter stops matching.
+10. RSVP-specific handling of promises returned by open()/close():
+    "instanceof RSVP.Promise" checks (now false), and .then callbacks that
+    rely on RSVP's autorun to land inside a runloop (native promise
+    callbacks don't; wrap in Ember's runloop yourself if needed).
+
+Appendix — the 2.19 runtime warnings cover these, but if the app skipped
+that step, grep for them too: string action names (onOpen="name" etc.),
+hashTracking, service option properties (this.remodal.set('title', ...) /
+.get('title')), reaching modals through the service
+(this.remodal.get('someModalName')), curly {{ember-remodal class="..."}},
+and disableAnimationWhileTesting in config/environment.js.
+
+Report format — produce exactly this, then stop:
+# ember-remodal 3.0 readiness report
+Verdict: READY | READY WITH CHANGES | NOT READY
+(NOT READY only for a failed hard floor; READY only with zero findings.)
+| # | Check | Status (clear / needs change) | Findings (file:line) | Fix |
+...one row per check 0a-10...
+Then "Fix order:" — a short ordered list, floors first, then test-breaking
+changes, then cosmetic.
+Then, if any appendix grep hit, "Appendix (runtime-covered, skipped 2.19):"
+followed by file:line entries. Appendix hits never change a NOT READY
+verdict.
+Only report findings you located with file:line evidence; list every match,
+do not sample; mark checks with no findings as clear; do not pad with maybes.
+```
+
 - [Requirements](#requirements)
 - [Install](#install)
 - [Breaking changes](#breaking-changes)
