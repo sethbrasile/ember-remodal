@@ -2,6 +2,8 @@
 
 For current execution, use the [November release sequence and QC handoff](2026-11-24-release-sequence.md). It incorporates the 2.18.1 patch, the finalized review and the owner-approved release order.
 
+The rest of this file is the August record. Do not execute it as written. Its paths are from the previous Mac. Its `npm install` steps break the 2018 dependency tree, so use `yarn install --frozen-lockfile` as the feasibility report found. Task 7 bumps only `package.json`, and the release needs both version locations.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship ember-remodal 2.19.0 (runtime `console.warn` deprecations for every 3.0-breaking usage), an agent readiness-audit prompt for the statically-detectable breaks, and guides that teach the two-step upgrade path — gated on a feasibility check of the 2018-era 2.x toolchain.
