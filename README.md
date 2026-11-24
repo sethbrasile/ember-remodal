@@ -9,7 +9,7 @@ Under the hood, ember-remodal uses a jQuery-based modal library called
 
 ## Compatibility
 
-2.18.1 is tested on the configurations below, and [CI](https://github.com/sethbrasile/ember-remodal/actions/workflows/compatibility.yml) runs all of them on every push.
+2.18.1 is tested on the configurations below. [CI](https://github.com/sethbrasile/ember-remodal/actions/workflows/compatibility.yml) ran all of them on the release commit.
 
 The addon's own test suite, on Node 8.17.0 with Ember CLI 2.18.2:
 

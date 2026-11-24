@@ -17,7 +17,7 @@ import Ember from 'ember';
 export default Component.extend({
   layout,
   warn(message, test, options) {
-    // The Babel 6 debug macro calls Ember._warn, which is absent in Ember 2.x.
+    // Kept as a method so an app or a test can replace it.
     // eslint-disable-next-line ember/new-module-imports
     Ember.warn(message, test, options);
   },
