@@ -122,6 +122,7 @@ if [ "$CONSUMER" = floor ]; then
   swap_floor_runtime
 fi
 
+mkdir -p tests/helpers
 cat > tests/helpers/expected.js <<EOF
 export default {
   ember: '$EMBER',
