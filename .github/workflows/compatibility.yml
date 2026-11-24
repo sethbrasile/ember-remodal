@@ -7,6 +7,7 @@ permissions:
 
 jobs:
   test:
+    name: Addon suite, Ember ${{ matrix.ember }}
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     strategy:
@@ -24,3 +25,54 @@ jobs:
       - if: matrix.ember != '2.18.2'
         run: yarn add --dev --exact ember-source@${{ matrix.ember }} --ignore-engines --ignore-optional --non-interactive
       - run: yarn test
+      - if: matrix.ember == '2.18.2'
+        run: yarn build --environment=production
+
+  # Packs the tarball once. Every consumer job installs this file, and it is
+  # the file a release publishes.
+  pack:
+    name: Pack
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 8.17.0
+      - run: npm pack
+      - run: scripts/verify-pack.sh ember-remodal-*.tgz | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ember-remodal-tarball
+          path: ember-remodal-*.tgz
+          if-no-files-found: error
+          retention-days: 90
+
+  consumer:
+    name: Packed consumer, ${{ matrix.consumer }}
+    needs: pack
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - consumer: floor
+            node: 8.17.0
+          - consumer: '2.18'
+            node: 8.17.0
+          - consumer: '3.28'
+            node: 24.21.0
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ember-remodal-tarball
+      - run: scripts/test-consumer.sh ${{ matrix.consumer }} ember-remodal-*.tgz

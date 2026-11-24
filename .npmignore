@@ -21,3 +21,4 @@ bower.json.ember-try
 package.json.ember-try
 
 /.github
+/scripts
