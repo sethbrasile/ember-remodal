@@ -9,19 +9,29 @@ Under the hood, ember-remodal uses a jQuery-based modal library called
 
 ## Compatibility
 
-| ember-remodal |     Ember    |
-| :-----------: | :----------: |
-| less than 1.0 | 1.13+        |
-| 1.0 or greater| 2.3+         |
-| 1.2 or greater| adds fastboot|
-| 2.0 or greater| adds engines |
+2.18.1 is tested on the configurations below, and [CI](https://github.com/sethbrasile/ember-remodal/actions/workflows/compatibility.yml) runs all of them on every push.
 
-The 2.18.1 candidate passed the full addon suite on Ember 2.12.2, 2.16.4
-and 2.18.2. Separate apps exercised the packed addon's block trigger and
-modal service on Ember 2.3.2 (jQuery 2.2.4), 2.18.2 and 3.28.12. On
-Ember 3.28, the app needs `@ember/jquery` and the `jquery-integration`
-optional feature enabled. Ember 3.28 emits deprecations for classic APIs
-used by the addon and its dependencies.
+The addon's own test suite, on Node 8.17.0 with Ember CLI 2.18.2:
+
+| Ember  | What runs                         |
+| :----- | :-------------------------------- |
+| 2.12.2 | full suite                        |
+| 2.16.4 | full suite                        |
+| 2.18.2 | full suite and a production build |
+
+Separate apps that install the packed tarball (the same file that gets published) and run in headless Chrome:
+
+| App     | Ember   | jQuery | Setup                                                                                              |
+| :------ | :------ | :----- | :------------------------------------------------------------------------------------------------- |
+| `floor` | 2.3.2   | 2.2.4  | Ember CLI 2.18.2 app on Node 8.17.0, with the Ember 2.3.2 runtime and template compiler swapped in |
+| `2.18`  | 2.18.2  | 3.3.1  | the same app, untouched                                                                            |
+| `3.28`  | 3.28.12 | 3.8.0  | Ember CLI 3.28.6 app on Node 24.21.0, with `@ember/jquery` 0.5.2                                   |
+
+Each app opens the modal from a block trigger (`{{#modal.open}}`), opens and closes it through the `remodal` service, and checks that closing a modal that was never opened still resolves to the component.
+
+On Ember 3.28 your app needs `@ember/jquery` and the `jquery-integration` optional feature turned on. Ember warns about that flag at build time. The app then logs these deprecations from ember-remodal and ember-wormhole: `ember-global`, `this-property-fallback`, `ember-component.send-action`, `ember-views.curly-components.jquery-element`, `has-block-and-has-block-params` and `deprecated-run-loop-and-computed-dot-access`.
+
+Nothing else is tested for this release. That includes every other Ember version (Ember 4 and later too), FastBoot, engines, and browsers other than Chrome.
 
 ## Installation
 `ember install ember-remodal`
@@ -55,6 +65,7 @@ please feel free to fix it and PR or open an issue.
 
 * `yarn test`
 * `ember test --server`
+* `npm pack`, then `scripts/test-consumer.sh 2.18 ember-remodal-2.18.1.tgz`, to test the packed tarball in one of the apps from the Compatibility table. `floor` and `3.28` pick the other two (CI runs `3.28` on Node 24.21.0).
 
 ## Building
 
