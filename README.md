@@ -16,6 +16,13 @@ Under the hood, ember-remodal uses a jQuery-based modal library called
 | 1.2 or greater| adds fastboot|
 | 2.0 or greater| adds engines |
 
+The 2.18.1 candidate passed the full addon suite on Ember 2.12.2, 2.16.4
+and 2.18.2. Separate apps exercised the packed addon's block trigger and
+modal service on Ember 2.3.2 (jQuery 2.2.4), 2.18.2 and 3.28.12. On
+Ember 3.28, the app needs `@ember/jquery` and the `jquery-integration`
+optional feature enabled. Ember 3.28 emits deprecations for classic APIs
+used by the addon and its dependencies.
+
 ## Installation
 `ember install ember-remodal`
 
@@ -36,7 +43,8 @@ please feel free to fix it and PR or open an issue.
 ## Installation
 
 * `git clone` this repository
-* `npm install`
+* Use Node 8.17.0 and Yarn Classic 1.22 to reproduce the historical dependency tree.
+* `yarn install --frozen-lockfile --ignore-engines --ignore-optional`
 
 ## Running
 
@@ -45,7 +53,7 @@ please feel free to fix it and PR or open an issue.
 
 ## Running Tests
 
-* `ember test`
+* `yarn test`
 * `ember test --server`
 
 ## Building

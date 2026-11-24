@@ -12,12 +12,14 @@ import { scheduleOnce, next } from '@ember/runloop';
 import { sendEvent } from '@ember/object/events';
 import Component from '@ember/component';
 import layout from '../templates/components/ember-remodal';
-import { warn } from '@ember/debug';
+import Ember from 'ember';
 
 export default Component.extend({
   layout,
-  warn() {
-    return warn;
+  warn(message, test, options) {
+    // The Babel 6 debug macro calls Ember._warn, which is absent in Ember 2.x.
+    // eslint-disable-next-line ember/new-module-imports
+    Ember.warn(message, test, options);
   },
   remodal: service(),
   attributeBindings: ['dataTestId:data-test-id'],

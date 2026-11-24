@@ -1,6 +1,6 @@
 {
   "name": "ember-remodal",
-  "version": "2.18.0",
+  "version": "2.18.1",
   "description": "An intensely usable modal addon for Ember.js",
   "directories": {
     "doc": "doc",
@@ -10,7 +10,7 @@
     "build": "ember build",
     "lint:js": "eslint ./*.js addon addon-test-support app config lib server test-support tests",
     "start": "ember serve",
-    "test": "ember try:each"
+    "test": "ember test --launch \"Headless Chrome\""
   },
   "repository": "https://github.com/sethbrasile/ember-remodal",
   "demoURL": "http://sethbrasile.github.io/ember-remodal",
@@ -21,6 +21,7 @@
     "broccoli-merge-trees": "^3.0.0",
     "ember-cli-babel": "^6.6.0",
     "ember-cli-htmlbars": "^2.0.1",
+    "ember-wormhole": "0.5.5",
     "remodal": "^1.1.1",
     "resolve": "^1.8.1"
   },
@@ -53,7 +54,6 @@
     "ember-resolver": "^4.0.0",
     "ember-source": "~2.18.0",
     "ember-try": "^1.0.0",
-    "ember-wormhole": "0.5.5",
     "eslint-plugin-ember": "^5.0.0",
     "eslint-plugin-ember-suave": "^1.0.0",
     "eslint-plugin-node": "^5.2.1",

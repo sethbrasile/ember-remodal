@@ -350,6 +350,13 @@ test('"warn" is called if a modal is closed before opening', function(assert) {
   });
 });
 
+test('closing an unopened modal resolves to the component', function(assert) {
+  let component = this.subject();
+  return run(() => component.close()).then((result) => {
+    assert.strictEqual(result, component);
+  });
+});
+
 test('"_destroyDomElements" calls "destroy" on "modal"', function(assert) {
   assert.expect(2);
 

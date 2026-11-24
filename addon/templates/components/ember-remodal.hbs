@@ -11,7 +11,7 @@
 <div data-remodal-id="{{elementId}}" class="ember-remodal {{name}} {{animationState}} window {{if disableForeground 'invisible'}} {{modalClasses}}" data-test-id="modalWindow">
 
   {{#unless disableNativeClose}}
-    <button {{action 'close'}} class="remodal-close ember-remodal inner native close" data-test-id="nativeClose"></button>
+    <button {{action 'close'}} title="Close Modal" class="remodal-close ember-remodal inner native close" data-test-id="nativeClose"></button>
   {{/unless}}
 
   {{#if title}}

@@ -1,0 +1,26 @@
+name: Classic addon compatibility
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        ember: ['2.12.2', '2.16.4', '2.18.2']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 8.17.0
+      - run: yarn install --frozen-lockfile --ignore-engines --ignore-optional --non-interactive
+      - if: matrix.ember != '2.18.2'
+        run: yarn add --dev --exact ember-source@${{ matrix.ember }} --ignore-engines --ignore-optional --non-interactive
+      - run: yarn test
